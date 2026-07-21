@@ -1,0 +1,21 @@
+{
+  "name": "sora-lattice",
+  "private": true,
+  "engines": {
+    "node": ">=18.20.8"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "test": "turbo test",
+    "preview": "turbo preview"
+  },
+  "devDependencies": {
+    "turbo": "^2"
+  },
+  "packageManager": "bun@1.3.5"
+}

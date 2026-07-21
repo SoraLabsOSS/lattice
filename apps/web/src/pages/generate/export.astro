@@ -1,0 +1,8 @@
+---
+import GeneratorLayout from '../../layouts/GeneratorLayout.astro';
+import ExportPage from '../../components/Configurator/Export/ExportPage.tsx';
+---
+
+<GeneratorLayout title="Your design system | Sora Lattice" description="A complete token system and LLM skills, ready to ship.">
+  <ExportPage client:only="react" />
+</GeneratorLayout>

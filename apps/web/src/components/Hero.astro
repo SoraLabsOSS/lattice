@@ -1,0 +1,115 @@
+---
+import { FloralDecoration } from './FloralDecoration';
+import { AnimatedCTA } from './AnimatedCTA';
+
+// Master delay (seconds) — shifts all hero animations (text + florals) by this amount.
+// Loader takes 2.1s, header starts at 2.1s. Hero starts 0.15s after header begins.
+const MASTER_DELAY = 1.5;
+---
+
+<section class="relative min-h-screen flex items-center justify-center overflow-x-hidden" data-master-delay={MASTER_DELAY}>
+  <FloralDecoration client:load masterDelay={MASTER_DELAY} />
+  <div class="container-custom relative z-10">
+    <!-- Main Content -->
+    <div class="max-w-md md:max-w-2xl lg:max-w-4xl 2xl:max-w-6xl mx-auto text-center mt-[-100px]">
+      <!-- Headline -->
+      <h1
+        class="hero-headline mb-6 md:mb-8"
+        data-animate="headline"
+      >
+        Generate your design system foundation <i>in minutes</i>
+      </h1>
+
+      <!-- Sub-headline -->
+      <p
+        class="hero-subheadline text-base md:text-lg lg:text-xl leading-tight text-charcoal/80 mb-10 md:mb-12 max-w-3xl mx-auto"
+        data-animate="subheadline"
+      >
+        Brand-aware color ramps, DTCG-compliant semantic tokens, a ready-to-use CSS stylesheet, and shadcn/Tailwind configs, all generated from your brand.
+      </p>
+
+      <!-- CTA Button — navigates to /generate -->
+      <div data-animate="cta" class="flex flex-col items-center gap-4">
+        <AnimatedCTA
+          client:load
+          id="hero-cta"
+          href="/generate"
+          variant="primary"
+          size="lg"
+        >
+          Start Generating
+        </AnimatedCTA>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<style>
+  :global([data-animate-lines] [data-line-word]) {
+    display: inline-block;
+    opacity: 0;
+    animation: fadeInUp 1.6s cubic-bezier(0.17,0.84,0.44,1) forwards;
+    animation-delay: calc(var(--line-base-delay, 0s) + (var(--line-index, 0) * var(--line-step-delay, 0.1s)) + (var(--word-in-line-index, 0) * var(--word-step-delay, 0.03s)));
+    will-change: transform, opacity;
+  }
+
+  [data-animate='cta'] {
+    opacity: 0;
+    animation: fadeInUp 1.6s cubic-bezier(0.17,0.84,0.44,1) forwards;
+    animation-delay: 0.7s;
+  }
+</style>
+
+<script>
+  import { applyLineSplitAnimation } from '../utils/lineSplit';
+
+  const LINE_STAGGER_DELAY = 0.1;
+  const SECTION_GAP_DELAY = 0;
+
+  function getEffectiveMasterDelay(): number {
+    const loader = document.getElementById('sora-lattice-loader');
+    // If loader already finished (transition mode), we arrived via view transition
+    const isViewTransition = loader?.dataset.loaderMode === 'transition';
+    const section = document.querySelector<HTMLElement>('[data-master-delay]');
+    const configuredDelay = parseFloat(section?.dataset.masterDelay ?? '0');
+    return isViewTransition ? 0.1 : configuredDelay;
+  }
+
+  function initHeroAnimations() {
+    const masterDelay = getEffectiveMasterDelay();
+    const baseDelay = 0.4 + masterDelay;
+
+    const heroHeadline = document.querySelector<HTMLElement>('[data-animate="headline"]');
+    const heroSubheadline = document.querySelector<HTMLElement>('[data-animate="subheadline"]');
+    const ctaWrapper = document.querySelector<HTMLElement>('[data-animate="cta"]');
+
+    const update = () => {
+      const headlineResult = applyLineSplitAnimation(heroHeadline, {
+        baseDelay,
+        lineDelay: LINE_STAGGER_DELAY
+      });
+
+      const subheadlineResult = applyLineSplitAnimation(heroSubheadline, {
+        baseDelay: headlineResult.endDelay + SECTION_GAP_DELAY,
+        lineDelay: LINE_STAGGER_DELAY
+      });
+
+      if (ctaWrapper) {
+        const ctaDelay = subheadlineResult.endDelay + SECTION_GAP_DELAY;
+        ctaWrapper.style.animationDelay = `${ctaDelay.toFixed(2)}s`;
+      }
+    };
+
+    update();
+
+    let resizeRaf = 0;
+    window.addEventListener('resize', () => {
+      window.cancelAnimationFrame(resizeRaf);
+      resizeRaf = window.requestAnimationFrame(update);
+    });
+  }
+
+  initHeroAnimations();
+  document.addEventListener('astro:after-swap', initHeroAnimations);
+</script>

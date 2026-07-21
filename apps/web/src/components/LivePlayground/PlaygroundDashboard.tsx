@@ -1,0 +1,953 @@
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import type { EChartsOption } from 'echarts';
+import { graphic } from 'echarts';
+import ReactEChartsImport from 'echarts-for-react/lib/index.js';
+import {
+  LayoutDashboard,
+  Users,
+  BarChart3,
+  Settings,
+  Search,
+  Bell,
+  Plus,
+  ChevronDown,
+  TrendingUp,
+  TrendingDown,
+  Activity,
+  DollarSign,
+  ShoppingCart,
+  ExternalLink,
+  Mail,
+  Calendar,
+  FolderKanban,
+  FileBarChart,
+  Megaphone,
+  UsersRound,
+  Package,
+  CreditCard,
+  Plug,
+  HelpCircle,
+} from 'lucide-react';
+import type { PlaygroundConfig } from './types';
+
+// ---------------------------------------------------------------------------
+// Scoped interaction styles — CSS variables make these reactive to token
+// changes. Hover/active are a translucent scrim rather than a color swap: the
+// `pg-interactive` rule floods the border-box with an inset box-shadow that
+// sits above the element's background but below its label, so a single pair of
+// rules drives every button regardless of its own fill. Table rows can't carry
+// an inset box-shadow reliably, so they take the scrim as a background instead
+// (their base background is transparent, so the translucent token reads the
+// same way).
+// ---------------------------------------------------------------------------
+
+const PLAYGROUND_STYLES = `
+  .pg-interactive:hover { box-shadow: inset 0 0 0 999px var(--color-interactive-background-hover); }
+  .pg-interactive:active { box-shadow: inset 0 0 0 999px var(--color-interactive-background-active); }
+  .pg-row:hover { background-color: var(--color-interactive-background-hover); }
+  .pg-row:active { background-color: var(--color-interactive-background-active); }
+`;
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+const V = (token: string) => `var(--${token})`;
+const t = (token: string) => V(token);
+const ReactECharts = (ReactEChartsImport as unknown as { default?: React.ComponentType<any> }).default
+  ?? (ReactEChartsImport as unknown as React.ComponentType<any>);
+
+/**
+ * Resolve a CSS custom property to a concrete color string against an element
+ * inside the token cascade. Walks one or two levels of `var()` indirection in
+ * case the browser does not substitute nested vars within custom-property
+ * computed values.
+ */
+const readCssVar = (el: Element, name: string, fallback: string): string => {
+  const styles = getComputedStyle(el);
+  let value = styles.getPropertyValue(name).trim();
+  for (let depth = 0; depth < 4 && value.startsWith('var('); depth++) {
+    const m = value.match(/^var\(\s*(--[A-Za-z0-9-]+)\s*\)$/);
+    if (!m) break;
+    value = styles.getPropertyValue(m[1]).trim();
+  }
+  return value || fallback;
+};
+
+// Shorthand accessors for commonly used token groups
+const bg = {
+  base: t('color-background-base'),
+  sunken: t('color-background-sunken'),
+  sunkenStrong: t('color-background-sunkenStrong'),
+  raised: t('color-background-raised'),
+  raisedHover: t('color-background-raisedHover'),
+  primary: t('color-background-primary'),
+  primaryHover: t('color-background-primaryHover'),
+  primarySubtle: t('color-background-primarySubtle'),
+  accent: t('color-background-accent'),
+  accentSubtle: t('color-background-accentSubtle'),
+  success: t('color-background-success'),
+  successSubtle: t('color-background-successSubtle'),
+  warning: t('color-background-warning'),
+  warningSubtle: t('color-background-warningSubtle'),
+  critical: t('color-background-critical'),
+  criticalSubtle: t('color-background-criticalSubtle'),
+  info: t('color-background-info'),
+  infoSubtle: t('color-background-infoSubtle'),
+  gradientSoft: t('color-background-gradientSoft'),
+};
+const fg = {
+  onBase: t('color-foreground-onBase'),
+  onBaseMuted: t('color-foreground-onBaseMuted'),
+  onBaseFaint: t('color-foreground-onBaseFaint'),
+  onSunken: t('color-foreground-onSunken'),
+  onSunkenMuted: t('color-foreground-onSunkenMuted'),
+  primary: t('color-foreground-primary'),
+  onPrimary: t('color-foreground-onPrimary'),
+  accent: t('color-foreground-accent'),
+  success: t('color-foreground-success'),
+  warning: t('color-foreground-warning'),
+  critical: t('color-foreground-critical'),
+  info: t('color-foreground-info'),
+  onSuccessSubtle: t('color-foreground-onSuccessSubtle'),
+  onWarningSubtle: t('color-foreground-onWarningSubtle'),
+  onCriticalSubtle: t('color-foreground-onCriticalSubtle'),
+  onInfoSubtle: t('color-foreground-onInfoSubtle'),
+  onGradient: t('color-foreground-onGradient'),
+  onGradientMuted: t('color-foreground-onGradientMuted'),
+};
+const border = {
+  neutral: t('color-border-neutral'),
+  strong: t('color-border-strong'),
+  primary: t('color-border-primary'),
+};
+const radius = {
+  container: t('shape-radius-container'),
+  action: t('shape-radius-action'),
+  field: t('shape-radius-field'),
+  badge: t('shape-radius-badge'),
+  sub: t('shape-radius-subcontainer'),
+};
+const space = {
+  xs: t('space-xs'),
+  sm: t('space-sm'),
+  md: t('space-md'),
+  lg: t('space-lg'),
+  xl: t('space-xl'),
+  '2xl': t('space-2xl'),
+  '3xl': t('space-3xl'),
+  '4xl': t('space-4xl'),
+  '5xl': t('space-5xl'),
+  '6xl': t('space-6xl'),
+};
+const shadow = {
+  raised: t('shadow-raised'),
+  overlay: t('shadow-overlay'),
+};
+const transition = {
+  theme: t('transition-theme'),
+  interactive: t('transition-interactive'),
+  chart: t('transition-chart'),
+};
+const font = {
+  primary: t('font-body-family'),
+  secondary: t('font-heading-family'),
+};
+const weight = {
+  heading: t('font-heading-weight'),
+  bodyRegular: t('font-body-weight-regular'),
+};
+
+const gradient = t('gradient-primary');
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+
+interface PlaygroundDashboardProps {
+  config: PlaygroundConfig;
+  onChange: (updates: Partial<PlaygroundConfig>) => void;
+}
+
+interface ChartPalette {
+  primary: string;
+  primarySubtle: string;
+  raised: string;
+  grid: string;
+  textMuted: string;
+  textFaint: string;
+}
+
+const CHART_PALETTE_FALLBACK: ChartPalette = {
+  primary:       '#2f6d5c',
+  primarySubtle: '#d4e6de',
+  raised:        '#ffffff',
+  grid:          '#e5e7eb',
+  textMuted:     '#6b7280',
+  textFaint:     '#9ca3af',
+};
+
+const PlaygroundDashboard: React.FC<PlaygroundDashboardProps> = ({ config, onChange }) => {
+  const [activeNav, setActiveNav] = useState('dashboard');
+  void onChange;
+
+  // Refs/state to resolve cascading CSS vars from inside the dashboard subtree
+  // (the design tokens are inline-styled on a parent in Configurator, not on
+  // documentElement, so a global lookup misses).
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [chartPalette, setChartPalette] = useState<ChartPalette>(CHART_PALETTE_FALLBACK);
+
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el) return;
+    const next: ChartPalette = {
+      primary:       readCssVar(el, '--color-background-primary',        CHART_PALETTE_FALLBACK.primary),
+      primarySubtle: readCssVar(el, '--color-background-primarySubtle',  CHART_PALETTE_FALLBACK.primarySubtle),
+      raised:        readCssVar(el, '--color-background-raised',         CHART_PALETTE_FALLBACK.raised),
+      grid:          readCssVar(el, '--color-chart-grid',                CHART_PALETTE_FALLBACK.grid),
+      textMuted:     readCssVar(el, '--color-foreground-onBaseMuted',    CHART_PALETTE_FALLBACK.textMuted),
+      textFaint:     readCssVar(el, '--color-foreground-onBaseFaint',    CHART_PALETTE_FALLBACK.textFaint),
+    };
+    // Bail out via same-reference return to avoid an update loop, since the
+    // parent passes a fresh `config` object each render.
+    setChartPalette((prev) =>
+      (Object.keys(next) as (keyof ChartPalette)[]).every((k) => prev[k] === next[k])
+        ? prev
+        : next,
+    );
+  }, [config]);
+
+  // --- Static data ---
+
+  const navSections: {
+    title: string;
+    items: { id: string; label: string; icon: typeof LayoutDashboard }[];
+  }[] = [
+    {
+      title: 'Overview',
+      items: [
+        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { id: 'inbox', label: 'Inbox', icon: Mail },
+        { id: 'calendar', label: 'Calendar', icon: Calendar },
+        { id: 'projects', label: 'Projects', icon: FolderKanban },
+      ],
+    },
+    {
+      title: 'Commerce',
+      items: [
+        { id: 'orders', label: 'Orders', icon: Package },
+        { id: 'billing', label: 'Billing', icon: CreditCard },
+      ],
+    },
+    {
+      title: 'Insights',
+      items: [
+        { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+        { id: 'reports', label: 'Reports', icon: FileBarChart },
+        { id: 'campaigns', label: 'Campaigns', icon: Megaphone },
+      ],
+    }
+  ];
+
+  const metrics = [
+    { label: 'Monthly Revenue', value: '$124,563', change: '+14.5%', up: true, icon: DollarSign },
+    { label: 'Active Users', value: '8,234', change: '+4.2%', up: true, icon: Users },
+    { label: 'New Orders', value: '1,482', change: '-1.4%', up: false, icon: ShoppingCart },
+    { label: 'Live Sessions', value: '1,492', change: '+2.1%', up: true, icon: Activity },
+  ];
+
+  const tableRows = [
+    { customer: 'Acme Corporation', email: 'contact@acme.co', status: 'Paid' as const, date: 'Oct 24, 2023', amount: '$3,200.00' },
+    { customer: 'Global Media Ltd', email: 'billing@global.net', status: 'Pending' as const, date: 'Oct 23, 2023', amount: '$850.00' },
+    { customer: 'Stark Industries', email: 'tony@stark.com', status: 'Failed' as const, date: 'Oct 21, 2023', amount: '$12,450.00' },
+    { customer: 'Vanguard Inc', email: 'hello@vanguard.io', status: 'Draft' as const, date: 'Oct 20, 2023', amount: '$150.00' },
+  ];
+
+  const statusStyles: Record<string, { fg: string; bg: string }> = {
+    Paid: { fg: fg.onSuccessSubtle, bg: bg.successSubtle },
+    Pending: { fg: fg.onWarningSubtle, bg: bg.warningSubtle },
+    Failed: { fg: fg.onCriticalSubtle, bg: bg.criticalSubtle },
+    Draft: { fg: fg.onSunken, bg: bg.sunken },
+  };
+
+  const revenueDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const revenueSeries = [1820, 2240, 2090, 2985, 2650, 3120, 3390];
+  const orderSeries = [38, 48, 44, 67, 59, 72, 78];
+
+  const revenueChartOption = useMemo<EChartsOption>(() => {
+    const { primary, primarySubtle, raised, grid, textMuted, textFaint } = chartPalette;
+    const reduceMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    return {
+      animation: !reduceMotion,
+      animationDuration: reduceMotion ? 0 : 700,
+      animationDurationUpdate: reduceMotion ? 0 : 420,
+      animationEasing: 'cubicOut',
+      animationEasingUpdate: 'cubicOut',
+      grid: {
+        top: 16,
+        left: 10,
+        right: 10,
+        bottom: 22,
+        containLabel: true,
+      },
+      tooltip: {
+        trigger: 'axis',
+        backgroundColor: raised,
+        borderColor: grid,
+        borderWidth: 1,
+        textStyle: {
+          color: textMuted,
+          fontFamily: font.primary,
+          fontSize: 11,
+        },
+        extraCssText: `border-radius:${radius.sub}; box-shadow:${shadow.overlay};`,
+        axisPointer: {
+          type: 'line',
+          lineStyle: {
+            color: primary,
+            width: 1,
+            type: 'dashed',
+          },
+        },
+      },
+      xAxis: {
+        type: 'category',
+        boundaryGap: true,
+        data: revenueDays,
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: {
+          color: textFaint,
+          fontSize: 10,
+          margin: 10,
+        },
+      },
+      yAxis: [
+        {
+          type: 'value',
+          splitNumber: 4,
+          axisLabel: {
+            color: textFaint,
+            fontSize: 10,
+            formatter: '${value}',
+          },
+          splitLine: {
+            lineStyle: { color: grid },
+          },
+          axisTick: { show: false },
+          axisLine: { show: false },
+        },
+        {
+          type: 'value',
+          splitLine: { show: false },
+          axisLabel: { show: false },
+          axisTick: { show: false },
+          axisLine: { show: false },
+        },
+      ],
+      series: [
+        {
+          name: 'Orders',
+          type: 'bar',
+          yAxisIndex: 1,
+          data: orderSeries,
+          barMaxWidth: 16,
+          itemStyle: {
+            color: primarySubtle,
+            borderRadius: [4, 4, 0, 0],
+          },
+          emphasis: {
+            itemStyle: {
+              color: primary,
+            },
+          },
+        },
+        {
+          name: 'Revenue',
+          type: 'line',
+          smooth: 0.42,
+          showSymbol: false,
+          data: revenueSeries,
+          lineStyle: {
+            width: 2.8,
+            color: primary,
+          },
+          z: 3,
+        },
+      ],
+    };
+  }, [config, chartPalette]);
+
+  const trafficSources = [
+    { label: 'Direct', share: 45, color: bg.primary },
+    { label: 'Organic Search', share: 32, color: bg.success },
+    { label: 'Referral', share: 18, color: bg.warning },
+    { label: 'Social', share: 5, color: bg.info },
+  ];
+
+  const avatarColors = [bg.primarySubtle, bg.accentSubtle, bg.successSubtle, bg.warningSubtle];
+  const initials = ['A', 'GM', 'S', 'V'];
+  const todayLabel = useMemo(
+    () => new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'short', day: 'numeric' }).format(new Date()),
+    [],
+  );
+
+  return (
+    <>
+      <style>{PLAYGROUND_STYLES}</style>
+      <div
+        ref={rootRef}
+        className="flex overflow-hidden h-full select-none"
+        style={{
+          backgroundColor: bg.sunken,
+          fontFamily: font.primary,
+          borderRadius: radius.container,
+          transition: transition.theme
+        }}
+      >
+        {/* Sidebar */}
+        <div
+          className="hidden md:flex flex-col shrink-0 min-h-0 h-full"
+          style={{
+            width: '196px',
+            paddingTop: space.lg,
+            paddingBottom: space.lg,
+            transition: transition.theme,
+          }}
+        >
+          <div className="px-4 mb-6 flex items-center gap-2 shrink-0">
+            <div
+              className="w-6 h-6 flex items-center justify-center text-white text-[10px] font-bold"
+              style={{
+                background: bg.accent,
+                borderRadius: radius.badge,
+                transition: transition.theme,
+              }}
+            >
+              A
+            </div>
+            <span className="text-sm font-semibold" style={{ color: fg.onBase }}>Acme</span>
+          </div>
+
+          <div className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto">
+            <nav className="flex flex-col gap-4 px-2 pb-2">
+              {navSections.map((section) => (
+                <div key={section.title}>
+                  <div
+                    className="text-[11px] font-semibold px-2 mb-2"
+                    style={{ color: fg.onBaseFaint }}
+                  >
+                    {section.title}
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    {section.items.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = activeNav === item.id;
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => setActiveNav(item.id)}
+                          className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium cursor-pointer pg-interactive"
+                          style={{
+                            fontFamily: 'inherit',
+                            borderRadius: radius.badge,
+                            color: isActive ? fg.onBase : fg.onBaseMuted,
+                            backgroundColor: isActive ? bg.sunkenStrong : 'transparent',
+                            transition: transition.interactive,
+                          }}
+                        >
+                          <Icon size={14} />
+                          {item.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </nav>
+          </div>
+
+          <div className="shrink-0 mt-auto pt-4 px-3" style={{ transition: transition.theme }}>
+            <div
+              style={{
+                backgroundColor: bg.raised,
+                borderRadius: radius.container,
+                padding: space.lg,
+                transition: transition.theme,
+              }}
+            >
+              <div className="text-[10px] font-semibold" style={{ color: fg.onBase }}>Pro Workspace</div>
+              <div className="mt-1 text-[10px]" style={{ color: fg.onBaseMuted }}>80% quota used</div>
+              <div
+                className="mt-3 h-1.5 w-full overflow-hidden"
+                style={{ backgroundColor: bg.raisedHover, borderRadius: radius.action, transition: transition.theme }}
+              >
+                <div
+                  className="h-full"
+                  style={{
+                    width: '80%',
+                    backgroundColor: bg.primary,
+                    borderRadius: radius.action,
+                    transition: transition.theme,
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content — inset panel */}
+        <div
+          className="flex-1 flex flex-col min-w-0 overflow-hidden my-2 mr-2 md:ml-0 ml-2"
+          style={{
+            backgroundColor: bg.base,
+            borderRadius: radius.container,
+            boxShadow: shadow.raised,
+            transition: transition.theme,
+          }}
+        >
+          {/* Top Bar */}
+          <div
+            className="flex flex-wrap items-center shrink-0"
+            style={{
+              gap: space.md,
+              padding: `${space.md} ${space.lg}`,
+              borderBottom: `1px solid ${border.neutral}`,
+              transition: transition.theme,
+            }}
+          >
+            <div className="flex-1 min-w-[120px]">
+              <div
+                className="flex items-center gap-2"
+                style={{
+                  borderRadius: radius.field,
+                  padding: `${space.sm}`,
+                  transition: transition.theme,
+                }}
+              >
+                <Search size={14} style={{ color: fg.onBaseMuted }} />
+                <input
+                  aria-label="Search dashboard data"
+                  placeholder="Search components, users, or settings..."
+                  className="w-full bg-transparent text-xs outline-none bordder-none"
+                  style={{ color: fg.onBase, fontFamily: 'inherit' }}
+                />
+              </div>
+            </div>
+            <div className="ml-auto flex items-center gap-2">
+              {/* Ghost icon button */}
+              <button
+                className="h-8 w-8 flex items-center justify-center cursor-pointer pg-interactive"
+                style={{
+                  color: fg.onBaseMuted,
+                  backgroundColor: 'transparent',
+                  borderRadius: radius.action,
+                  border: `1px solid ${border.neutral}`,
+                  transition: transition.interactive,
+                }}
+                aria-label="Notifications"
+              >
+                <Bell size={13} />
+              </button>
+              {/* Primary button */}
+              <button
+                className="flex items-center gap-1.5 text-[11px] font-semibold px-3 h-8 cursor-pointer pg-interactive"
+                style={{
+                  color: fg.onPrimary,
+                  backgroundColor: bg.primary,
+                  borderRadius: radius.action,
+                  transition: transition.interactive,
+                }}
+              >
+                <Plus size={12} />
+                New Project
+              </button>
+            </div>
+          </div>
+
+          {/* Content area */}
+          <div
+            className="flex-1 overflow-y-auto overflow-x-hidden"
+            style={{ paddingTop: space.xl, paddingBottom: space.xl, paddingLeft: space['2xl'], paddingRight: space['2xl'], transition: transition.theme }}
+          >
+            <div className="mb-4" style={{ transition: transition.theme, marginBottom: space.xl }}>
+              <span
+                className="block text-[11px]"
+                style={{
+                  color: fg.onBaseMuted,
+                  fontFamily: font.primary,
+                  fontWeight: weight.bodyRegular as unknown as number,
+                  letterSpacing: '0.01em',
+                  marginBottom: space.xs,
+                  transition: transition.theme,
+                }}
+              >
+                {todayLabel}
+              </span>
+              <h2
+                className="leading-tight"
+                style={{
+                  color: fg.onBase,
+                  fontFamily: font.secondary,
+                  fontSize: '1.5rem',
+                  fontWeight: weight.heading as unknown as number,
+                  lineHeight: 1.15,
+                  letterSpacing: '-0.02em',
+                  margin: 0,
+                  transition: transition.theme,
+                }}
+              >
+                Good morning, Dave
+              </h2>
+            </div>
+
+            {/* Metric Cards */}
+            <div
+              className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 mb-4"
+              style={{ gap: space.md, transition: transition.theme }}
+            >
+              {metrics.map((m) => (
+                <div
+                  key={m.label}
+                  className="flex flex-col"
+                  style={{
+                    padding: space.lg,
+                    backgroundColor: bg.raised,
+                    border: `1px solid ${border.neutral}`,
+                    borderRadius: radius.container,
+                    boxShadow: shadow.raised,
+                    transition: transition.theme,
+                  }}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-[9px] font-medium uppercase tracking-wider mb-1" style={{ color: fg.onBaseMuted }}>
+                      {m.label}
+                    </span>
+                    <div
+                      className="w-6 h-6 flex items-center justify-center"
+                      style={{
+                        borderRadius: radius.badge,
+                        backgroundColor: bg.sunken,
+                        color: fg.onSunken,
+                        transition: transition.theme,
+                      }}
+                    >
+                      <m.icon size={12} />
+                    </div>
+                  </div>
+                  <span
+                    className="text-2xl leading-tight"
+                    style={{
+                      color: fg.onBase,
+                      fontFamily: font.secondary,
+                      fontWeight: 'var(--font-heading-weight)' as unknown as number,
+                    }}
+                  >
+                    {m.value}
+                  </span>
+                  <span
+                    className="text-[10px] font-medium mt-1 flex items-center gap-0.5"
+                    style={{ color: m.up ? fg.success : fg.critical, transition: transition.theme }}
+                  >
+                    {m.up ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+                    {m.change} vs last month
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div
+              className="grid grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]"
+              style={{ gap: space.md, transition: transition.theme }}
+            >
+              <div className="flex flex-col" style={{ gap: space.md, transition: transition.theme }}>
+                {/* Chart Area */}
+                <div
+                  style={{
+                    padding: space.lg,
+                    backgroundColor: bg.raised,
+                    border: `1px solid ${border.neutral}`,
+                    borderRadius: radius.container,
+                    boxShadow: shadow.raised,
+                    transition: transition.theme,
+                  }}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <span className="text-xs font-semibold block" style={{ color: fg.onBase }}>Revenue Analytics</span>
+                      <span className="text-[10px]" style={{ color: fg.onBaseMuted }}>Daily income over the last 7 days</span>
+                    </div>
+                    {/* Ghost button */}
+                    <button
+                      className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 cursor-pointer pg-interactive"
+                      style={{
+                        color: fg.onBaseMuted,
+                        backgroundColor: bg.raisedHover,
+                        borderRadius: radius.badge,
+                        transition: transition.interactive,
+                      }}
+                    >
+                      Last 7 days <ChevronDown size={10} />
+                    </button>
+                  </div>
+                  <ReactECharts
+                    option={revenueChartOption}
+                    style={{ height: 210, width: '100%' }}
+                    opts={{ renderer: 'canvas' }}
+                    notMerge
+                    lazyUpdate
+                  />
+                </div>
+
+                {/* Transactions */}
+                <div
+                  style={{
+                    backgroundColor: bg.raised,
+                    border: `1px solid ${border.neutral}`,
+                    borderRadius: radius.container,
+                    overflow: 'hidden',
+                    boxShadow: shadow.raised,
+                    transition: transition.theme,
+                  }}
+                >
+                  <div
+                    className="flex items-center justify-between"
+                    style={{ padding: `${space.lg} ${space.lg} 10px`, transition: transition.theme }}
+                  >
+                    <div>
+                      <span className="text-xs font-semibold block" style={{ color: fg.onBase }}>Recent Transactions</span>
+                      <span className="text-[10px]" style={{ color: fg.onBaseMuted }}>Latest payments processed across all projects</span>
+                    </div>
+                    {/* Link button */}
+                    <button
+                      className="text-[10px] font-medium px-2 py-1 cursor-pointer pg-interactive flex items-center gap-1"
+                      style={{
+                        color: fg.primary,
+                        borderRadius: radius.badge,
+                        transition: transition.interactive,
+                      }}
+                    >
+                      View all <ExternalLink size={9} />
+                    </button>
+                  </div>
+
+                  <div className="overflow-x-auto" style={{ transition: transition.theme }}>
+                    <table className="w-full min-w-[560px] text-[11px]">
+                      <thead>
+                        <tr style={{ borderBottom: `1px solid ${border.neutral}`, transition: transition.theme }}>
+                          {['Customer', 'Status', 'Date', 'Amount'].map((h) => (
+                            <th
+                              key={h}
+                              className="text-left font-medium"
+                              style={{
+                                color: fg.onBaseMuted,
+                                padding: `${space.sm} ${space.md}`,
+                                transition: transition.theme,
+                              }}
+                            >
+                              {h}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {tableRows.map((row, index) => {
+                          const tone = statusStyles[row.status] ?? statusStyles.Draft;
+                          return (
+                            <tr
+                              key={row.customer}
+                              className="pg-row"
+                              style={{ borderBottom: `1px solid ${border.neutral}`, transition: transition.theme }}
+                            >
+                              <td style={{ padding: `${space.sm} ${space.md}` }}>
+                                <div className="flex items-center gap-2">
+                                  <div
+                                    className="w-6 h-6 flex items-center justify-center text-[9px] font-semibold"
+                                    style={{
+                                      color: fg.onBase,
+                                      backgroundColor: avatarColors[index],
+                                      borderRadius: radius.action,
+                                      transition: transition.theme,
+                                    }}
+                                  >
+                                    {initials[index]}
+                                  </div>
+                                  <div>
+                                    <div className="font-medium" style={{ color: fg.onBase }}>{row.customer}</div>
+                                    <div className="text-[10px]" style={{ color: fg.onBaseMuted }}>{row.email}</div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td style={{ padding: `${space.sm} ${space.md}` }}>
+                                <span
+                                  className="inline-block px-2 py-0.5 text-[9px] font-semibold"
+                                  style={{
+                                    borderRadius: radius.badge,
+                                    color: tone.fg,
+                                    backgroundColor: tone.bg,
+                                    transition: transition.theme,
+                                  }}
+                                >
+                                  {row.status}
+                                </span>
+                              </td>
+                              <td style={{ color: fg.onBaseMuted, padding: `${space.sm} ${space.md}`, transition: transition.theme }}>{row.date}</td>
+                              <td style={{ color: fg.onBase, fontWeight: 600, padding: `${space.sm} ${space.md}`, transition: transition.theme }}>{row.amount}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col" style={{ gap: space.md, transition: transition.theme }}>
+                {/* Traffic Sources */}
+                <div
+                  style={{
+                    padding: space.lg,
+                    backgroundColor: bg.raised,
+                    border: `1px solid ${border.neutral}`,
+                    borderRadius: radius.container,
+                    boxShadow: shadow.raised,
+                    transition: transition.theme,
+                  }}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-semibold" style={{ color: fg.onBase }}>Traffic Sources</span>
+                    <span className="text-[10px]" style={{ color: fg.onBaseMuted }}>Where visitors come from</span>
+                  </div>
+                  <div className="flex flex-col" style={{ gap: space.md, transition: transition.theme }}>
+                    {trafficSources.map((source) => (
+                      <div key={source.label}>
+                        <div className="mb-1 flex items-center justify-between text-[10px]">
+                          <span style={{ color: fg.onBase }}>{source.label}</span>
+                          <span style={{ color: fg.onBaseMuted }}>{source.share}%</span>
+                        </div>
+                        <div
+                          className="h-1.5 w-full overflow-hidden"
+                          style={{
+                            backgroundColor: bg.sunkenStrong,
+                            borderRadius: radius.action,
+                            transition: transition.theme,
+                          }}
+                        >
+                          <div
+                            className="h-full"
+                            style={{
+                              width: `${source.share}%`,
+                              backgroundColor: bg.primary,
+                              borderRadius: radius.action,
+                              transition: transition.theme,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Preferences */}
+                <div
+                  style={{
+                    padding: space.lg,
+                    backgroundColor: bg.raised,
+                    border: `1px solid ${border.neutral}`,
+                    borderRadius: radius.container,
+                    boxShadow: shadow.raised,
+                    transition: transition.theme,
+                  }}
+                >
+                  <span className="text-xs font-semibold block mb-1" style={{ color: fg.onBase }}>Preferences</span>
+                  <span className="text-[10px] block mb-3" style={{ color: fg.onBaseMuted }}>Configure visual and functional elements.</span>
+                  <div className="flex flex-col" style={{ gap: space.md, transition: transition.theme }}>
+                    {[
+                      ['Display Name', 'Acme Design Team'],
+                      ['Default Role', 'Viewer (Read-only)'],
+                    ].map(([label, value]) => (
+                      <div key={label}>
+                        <div className="text-[10px] mb-1" style={{ color: fg.onBaseMuted }}>{label}</div>
+                        <div
+                          className="text-[10px] flex items-center justify-between"
+                          style={{
+                            color: fg.onBase,
+                            border: `1px solid ${border.neutral}`,
+                            backgroundColor: bg.base,
+                            borderRadius: radius.field,
+                            padding: `${space.sm} ${space.lg}`,
+                            transition: transition.theme,
+                          }}
+                        >
+                          <span>{value}</span>
+                          <ChevronDown size={11} style={{ color: fg.onBaseFaint }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-4 flex gap-2">
+                    {/* Primary button */}
+                    <button
+                      className="flex-1 text-[10px] font-semibold py-2 cursor-pointer pg-interactive"
+                      style={{
+                        borderRadius: radius.action,
+                        color: fg.onPrimary,
+                        backgroundColor: bg.primary,
+                        transition: transition.interactive,
+                      }}
+                    >
+                      Save Preferences
+                    </button>
+                    {/* Secondary (outlined) button */}
+                    <button
+                      className="text-[10px] font-semibold py-2 px-3 cursor-pointer pg-interactive"
+                      style={{
+                        borderRadius: radius.action,
+                        color: fg.onBase,
+                        backgroundColor: 'transparent',
+                        border: `1px solid ${border.neutral}`,
+                        transition: transition.interactive,
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+
+                {/* CTA Card */}
+                <div
+                  style={{
+                    padding: space.lg,
+                    background: gradient,
+                    borderRadius: radius.container,
+                    boxShadow: shadow.raised,
+                    transition: transition.theme,
+                  }}
+                >
+                  <div className="text-xs font-semibold" style={{ color: fg.onGradient, transition: transition.theme }}>Unleash the new API v2.0</div>
+                  <div className="text-[10px] mt-1" style={{ color: fg.onGradientMuted, transition: transition.theme }}>Faster response times and realtime event streams.</div>
+                  {/* Ghost-on-gradient button */}
+                  <button
+                    className="mt-3 text-[10px] px-2.5 py-1 cursor-pointer pg-interactive"
+                    style={{
+                      color: fg.onGradientSoft,
+                      backgroundColor: bg.gradientSoft,
+                      borderRadius: radius.badge,
+                      transition: transition.interactive,
+                    }}
+                  >
+                    Read Docs
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default PlaygroundDashboard;

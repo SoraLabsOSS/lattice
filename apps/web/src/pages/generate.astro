@@ -1,0 +1,10 @@
+---
+import GeneratorLayout from '../layouts/GeneratorLayout.astro';
+import Configurator from '../components/Configurator/index.tsx';
+---
+
+<GeneratorLayout title="Generate | Sora Lattice">
+  <main class="h-full" data-lenis-prevent="true">
+    <Configurator client:load />
+  </main>
+</GeneratorLayout>
