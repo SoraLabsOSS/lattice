@@ -67,8 +67,8 @@ function renderMdInline(text: string): React.ReactNode {
   let i = 0;
   let idx = 0;
   const re = /`([^`]+)`|\[([^\]]+)\]\(([^)]+)\)/g;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(text)) !== null) {
+  let m: RegExpExecArray | null = re.exec(text);
+  while (m !== null) {
     if (m.index > i) {
       parts.push(
         <span className={MD_COLORS.plain} key={`p${idx++}`}>
@@ -92,6 +92,7 @@ function renderMdInline(text: string): React.ReactNode {
       );
     }
     i = m.index + m[0].length;
+    m = re.exec(text);
   }
   if (i < text.length) {
     parts.push(
