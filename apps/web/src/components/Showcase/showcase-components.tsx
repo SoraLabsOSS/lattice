@@ -146,7 +146,6 @@ const ShowcaseComponents: React.FC = () => {
           input: "9999px",
           tag: "6px",
         };
-      case "rounded":
       default:
         return {
           button: "8px",

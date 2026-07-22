@@ -231,7 +231,7 @@ function renderJsonLine(line: string, key: number): React.ReactNode {
 function renderJsRest(rest: string): React.ReactNode {
   const commaMatch = rest.match(/,\s*$/);
   const hasComma = !!commaMatch;
-  const body = hasComma ? rest.slice(0, commaMatch!.index) : rest;
+  const body = hasComma ? rest.slice(0, commaMatch?.index) : rest;
   const trimmed = body.trim();
 
   let content: React.ReactNode;

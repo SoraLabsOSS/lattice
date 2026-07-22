@@ -150,7 +150,7 @@ const TreeRow: React.FC<{ node: TreeNode; depth?: number }> = ({
       </button>
       {hasChildren &&
         open &&
-        node.children!.map((child, i) => (
+        node.children?.map((child, i) => (
           <TreeRow depth={depth + 1} key={`${child.label}-${i}`} node={child} />
         ))}
     </div>
@@ -390,7 +390,7 @@ const AvatarGroup: React.FC = () => {
 // Rich Text
 // ---------------------------------------------------------------------------
 
-const RichTextBlock: React.FC = () => (
+const _RichTextBlock: React.FC = () => (
   <Card>
     <p
       style={{

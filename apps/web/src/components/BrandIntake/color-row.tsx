@@ -88,7 +88,9 @@ export const RampSliders: React.FC<{
       className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-charcoal/10 accent-forest-green"
       max="100"
       min="0"
-      onChange={(e) => onChromaFalloffChange(Number.parseInt(e.target.value))}
+      onChange={(e) =>
+        onChromaFalloffChange(Number.parseInt(e.target.value, 10))
+      }
       type="range"
       value={chromaFalloff}
     />

@@ -59,8 +59,6 @@ const weight = {
   bodyRegular: t("font-body-weight-regular"),
   heading: t("font-heading-weight"),
 };
-const gradient = t("gradient-primary");
-
 // ---------------------------------------------------------------------------
 // Article Preview — styled like an editorial blog post
 // ---------------------------------------------------------------------------
@@ -72,8 +70,8 @@ interface PreviewTypographyProps {
 }
 
 const PreviewTypography: React.FC<PreviewTypographyProps> = ({
-  headingFont: headingFontName,
-  bodyFont: bodyFontName,
+  headingFont: _headingFontName,
+  bodyFont: _bodyFontName,
 }) => {
   return (
     <div

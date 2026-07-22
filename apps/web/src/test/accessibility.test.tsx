@@ -23,7 +23,7 @@ expect.extend({
 
 declare module "vitest" {
   interface Assertion<T = unknown> {
-    toHaveNoViolations(): T;
+    toHaveNoViolations: () => T;
   }
 }
 
