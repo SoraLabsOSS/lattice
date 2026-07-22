@@ -43,8 +43,10 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "agentation": "^2.2.1",
+    "babel-plugin-react-compiler": "^1.0.0",
     "jest-axe": "^9.0.0",
     "jsdom": "^25.0.0",
+    "playwright": "^1.61.1",
     "vitest": "^2.1.0"
   }
 }

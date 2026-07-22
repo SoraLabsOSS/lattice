@@ -6,7 +6,13 @@ import { defineConfig } from "astro/config";
 
 // https://astro.build/config
 export default defineConfig({
-  integrations: [react()],
+  integrations: [
+    react({
+      babel: {
+        plugins: [["babel-plugin-react-compiler", { target: "19" }]],
+      },
+    }),
+  ],
   site: "https://lattice.soralabs.io.vn/",
   vite: {
     plugins: [tailwindcss()],
