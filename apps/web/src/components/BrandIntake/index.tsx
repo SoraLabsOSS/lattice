@@ -259,6 +259,7 @@ const BrandIntake: React.FC = () => {
               type="button"
             >
               <svg
+                aria-hidden="true"
                 className="h-5 w-5"
                 fill="none"
                 stroke="currentColor"

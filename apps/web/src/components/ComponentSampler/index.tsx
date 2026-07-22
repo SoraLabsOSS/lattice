@@ -752,7 +752,7 @@ const DonutStatCard: React.FC = () => {
             width: size,
           }}
         >
-          <svg height={size} width={size}>
+          <svg aria-hidden="true" height={size} width={size}>
             <circle
               cx={size / 2}
               cy={size / 2}
@@ -1145,6 +1145,7 @@ const PrefCheckbox: React.FC<{ checked: boolean; onChange: () => void }> = ({
   >
     {checked && (
       <svg
+        aria-hidden="true"
         fill="none"
         height="10"
         stroke={fg.onPrimary}
@@ -1580,6 +1581,7 @@ const PreviewComponents: React.FC = () => {
               <IconButton
                 icon={() => (
                   <svg
+                    aria-hidden="true"
                     fill="none"
                     height="14"
                     stroke="currentColor"
@@ -1595,6 +1597,7 @@ const PreviewComponents: React.FC = () => {
               <IconButton
                 icon={() => (
                   <svg
+                    aria-hidden="true"
                     fill="none"
                     height="14"
                     stroke="currentColor"
@@ -1610,6 +1613,7 @@ const PreviewComponents: React.FC = () => {
               <IconButton
                 icon={() => (
                   <svg
+                    aria-hidden="true"
                     fill="none"
                     height="14"
                     stroke="currentColor"
@@ -1626,6 +1630,7 @@ const PreviewComponents: React.FC = () => {
               <IconButton
                 icon={() => (
                   <svg
+                    aria-hidden="true"
                     fill="none"
                     height="14"
                     stroke="currentColor"
@@ -1641,6 +1646,7 @@ const PreviewComponents: React.FC = () => {
               <IconButton
                 icon={() => (
                   <svg
+                    aria-hidden="true"
                     fill="none"
                     height="14"
                     stroke="currentColor"

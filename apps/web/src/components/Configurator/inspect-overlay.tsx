@@ -133,7 +133,7 @@ const InspectOverlay: React.FC<InspectOverlayProps> = ({
         if (styled === lastElementRef.current) {
           // Same element — just update rect position (for scroll)
           const rect = styled.getBoundingClientRect();
-          setHighlight((prev) => (prev ? { ...prev, rect } : null));
+          setHighlight((current) => (current ? { ...current, rect } : null));
           return;
         }
 

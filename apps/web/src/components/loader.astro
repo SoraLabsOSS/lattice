@@ -1,14 +1,12 @@
----
-/**
- * Reusable loader component used on initial page load and Mode A route transitions.
- *
- * Modes (via `data-loader-mode`):
- *   "initial"    → first page load: plays CSS keyframe, then switches to "transition" mode
- *   "transition" → controlled programmatically by view-transitions.ts
- *
- * Uses `transition:persist` so the same DOM element survives across view-transition swaps.
- */
----
+<!--
+  Reusable loader component used on initial page load and Mode A route transitions.
+
+  Modes (via `data-loader-mode`):
+    "initial"    → first page load: plays CSS keyframe, then switches to "transition" mode
+    "transition" → controlled programmatically by view-transitions.ts
+
+  Uses `transition:persist` so the same DOM element survives across view-transition swaps.
+-->
 
 <div
   aria-hidden="true"
@@ -17,6 +15,7 @@
   id="sora-lattice-loader"
 >
   <svg
+    aria-hidden="true"
     class="loader-logo"
     fill="none"
     height="40"

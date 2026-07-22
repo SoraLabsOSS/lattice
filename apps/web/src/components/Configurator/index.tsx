@@ -495,6 +495,7 @@ const Configurator: React.FC = () => {
                   href={exportHref}
                 >
                   <svg
+                    aria-hidden="true"
                     fill="none"
                     height="13"
                     stroke="currentColor"
