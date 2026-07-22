@@ -1,19 +1,24 @@
-import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
-import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { HexColorPicker } from 'react-colorful';
-import { STEPS, type ColorRamp, type NeutralColorRamp } from '@sora-lattice/generator';
-import { Tooltip } from '../ui/Tooltip';
+import {
+  type ColorRamp,
+  type NeutralColorRamp,
+  STEPS,
+} from "@sora-lattice/generator";
+import { AnimatePresence, motion } from "framer-motion";
+import type React from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { HexColorPicker } from "react-colorful";
+import { createPortal } from "react-dom";
+import { Tooltip } from "../ui/Tooltip";
 
 interface ColorRampViewProps {
+  className?: string;
+  compact?: boolean;
+  label?: string;
+  /** When provided, each swatch becomes editable on click. Called with (step, newColor). */
+  onStepChange?: (step: number, color: string) => void;
   ramp: ColorRamp | NeutralColorRamp;
   /** Override which step keys to render. Defaults to STEPS (standard 12-step ramp). */
   steps?: readonly number[];
-  label?: string;
-  compact?: boolean;
-  className?: string;
-  /** When provided, each swatch becomes editable on click. Called with (step, newColor). */
-  onStepChange?: (step: number, color: string) => void;
 }
 
 const EditableSwatch: React.FC<{
@@ -22,7 +27,7 @@ const EditableSwatch: React.FC<{
   onStepChange: (step: number, color: string) => void;
 }> = ({ step, color, onStepChange }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [position, setPosition] = useState({ top: 0, left: 0 });
+  const [position, setPosition] = useState({ left: 0, top: 0 });
   const triggerRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
 
@@ -33,24 +38,31 @@ const EditableSwatch: React.FC<{
     if (triggerRef.current && isOpen) {
       const rect = triggerRef.current.getBoundingClientRect();
       let left = rect.left + rect.width / 2 - POPOVER_OUTER_W / 2;
-      left = Math.max(MARGIN, Math.min(left, window.innerWidth - POPOVER_OUTER_W - MARGIN));
-      setPosition({ top: rect.bottom + 8, left });
+      left = Math.max(
+        MARGIN,
+        Math.min(left, window.innerWidth - POPOVER_OUTER_W - MARGIN)
+      );
+      setPosition({ left, top: rect.bottom + 8 });
     }
   };
 
   useLayoutEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      return;
+    }
     updatePosition();
-    window.addEventListener('scroll', updatePosition, true);
-    window.addEventListener('resize', updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    window.addEventListener("resize", updatePosition);
     return () => {
-      window.removeEventListener('scroll', updatePosition, true);
-      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
     };
   }, [isOpen]);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      return;
+    }
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as Node;
       if (
@@ -63,21 +75,23 @@ const EditableSwatch: React.FC<{
         triggerRef.current?.focus();
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      return;
+    }
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         e.preventDefault();
         setIsOpen(false);
         triggerRef.current?.focus();
       }
     };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen]);
 
   return (
@@ -92,65 +106,74 @@ const EditableSwatch: React.FC<{
         side="top"
       >
         <motion.button
-          ref={triggerRef}
-          type="button"
-          className="flex-1 group relative cursor-pointer transition-transform hover:scale-y-110 hover:z-10"
-          style={{ backgroundColor: color }}
-          aria-label={`Edit color step ${step}, current value ${color.toUpperCase()}`}
-          aria-haspopup="dialog"
-          aria-expanded={isOpen}
           animate={{ backgroundColor: color }}
-          transition={{ duration: 0.3 }}
+          aria-expanded={isOpen}
+          aria-haspopup="dialog"
+          aria-label={`Edit color step ${step}, current value ${color.toUpperCase()}`}
+          className="group relative flex-1 cursor-pointer transition-transform hover:z-10 hover:scale-y-110"
           onClick={() => {
             if (!isOpen && triggerRef.current) {
               const rect = triggerRef.current.getBoundingClientRect();
               let left = rect.left + rect.width / 2 - POPOVER_OUTER_W / 2;
-              left = Math.max(MARGIN, Math.min(left, window.innerWidth - POPOVER_OUTER_W - MARGIN));
-              setPosition({ top: rect.bottom + 8, left });
+              left = Math.max(
+                MARGIN,
+                Math.min(left, window.innerWidth - POPOVER_OUTER_W - MARGIN)
+              );
+              setPosition({ left, top: rect.bottom + 8 });
             }
             setIsOpen(!isOpen);
           }}
+          ref={triggerRef}
+          style={{ backgroundColor: color }}
+          transition={{ duration: 0.3 }}
+          type="button"
         />
       </Tooltip>
-      {typeof document !== 'undefined' &&
+      {typeof document !== "undefined" &&
         createPortal(
           <AnimatePresence>
             {isOpen && (
               <motion.div
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                aria-label={`Edit color step ${step}`}
+                className="fixed z-9999 rounded-xl border border-charcoal/10 bg-white p-3 shadow-xl"
+                exit={{ opacity: 0, scale: 0.95, y: -6 }}
+                initial={{ opacity: 0, scale: 0.95, y: -6 }}
                 ref={popoverRef}
                 role="dialog"
-                aria-label={`Edit color step ${step}`}
+                style={{ left: position.left, top: position.top }}
                 tabIndex={-1}
-                initial={{ opacity: 0, y: -6, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -6, scale: 0.95 }}
                 transition={{ duration: 0.15 }}
-                className="fixed z-9999 bg-white rounded-xl shadow-xl p-3 border border-charcoal/10"
-                style={{ top: position.top, left: position.left }}
               >
                 <HexColorPicker
                   color={color}
                   onChange={(c) => onStepChange(step, c)}
-                  style={{ width: '200px' }}
+                  style={{ width: "200px" }}
                 />
                 <div className="mt-2 flex items-center justify-between gap-2">
                   <div className="relative flex items-center">
-                    <span className="absolute left-1.5 text-xs font-mono text-charcoal/40">#</span>
+                    <span className="absolute left-1.5 font-mono text-charcoal/40 text-xs">
+                      #
+                    </span>
                     <input
                       aria-label="Hex color value"
-                      value={color.replace('#', '').toUpperCase()}
-                      onChange={(e) => {
-                        const raw = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6);
-                        if (raw.length === 6) onStepChange(step, `#${raw}`);
-                      }}
+                      className="w-22 rounded-md border border-charcoal/10 bg-charcoal/5 py-1 pr-1.5 pl-5 font-mono text-xs outline-none focus:border-forest-green"
                       maxLength={6}
-                      className="w-22 pl-5 pr-1.5 py-1 text-xs font-mono bg-charcoal/5 rounded-md border border-charcoal/10 outline-none focus:border-forest-green"
+                      onChange={(e) => {
+                        const raw = e.target.value
+                          .replace(/[^0-9a-fA-F]/g, "")
+                          .slice(0, 6);
+                        if (raw.length === 6) {
+                          onStepChange(step, `#${raw}`);
+                        }
+                      }}
+                      value={color.replace("#", "").toUpperCase()}
                     />
                   </div>
                   <button
-                    type="button"
+                    className="cursor-pointer font-bold text-forest-green text-xs hover:underline"
                     onClick={() => setIsOpen(false)}
-                    className="text-xs font-bold text-forest-green hover:underline cursor-pointer"
+                    type="button"
                   >
                     Done
                   </button>
@@ -158,7 +181,7 @@ const EditableSwatch: React.FC<{
               </motion.div>
             )}
           </AnimatePresence>,
-          document.body,
+          document.body
         )}
     </>
   );
@@ -169,7 +192,7 @@ export const ColorRampView: React.FC<ColorRampViewProps> = ({
   steps: stepsProp,
   label,
   compact = false,
-  className = '',
+  className = "",
   onStepChange,
 }) => {
   const stepsToRender = stepsProp ?? STEPS;
@@ -177,32 +200,32 @@ export const ColorRampView: React.FC<ColorRampViewProps> = ({
   return (
     <div className="space-y-2">
       {label && (
-        <div className="flex justify-between items-baseline gap-2">
+        <div className="flex items-baseline justify-between gap-2">
           <label className="text-[12px] text-charcoal/80">{label}</label>
-          <span className="text-[8px] font-mono text-charcoal/20">OKLCH</span>
+          <span className="font-mono text-[8px] text-charcoal/20">OKLCH</span>
         </div>
       )}
       <div
-        className={`flex w-full rounded-lg overflow-hidden shadow-sm border border-charcoal/5 ${
-          className ? className : compact ? 'h-6' : 'h-8'
+        aria-label={label ? `${label} color ramp` : "Color ramp"}
+        className={`flex w-full overflow-hidden rounded-lg border border-charcoal/5 shadow-sm ${
+          className ? className : compact ? "h-6" : "h-8"
         }`}
-        aria-label={label ? `${label} color ramp` : 'Color ramp'}
       >
         {stepsToRender.map((step) => {
           const color = (ramp as Record<number, string>)[step];
           return onStepChange ? (
             <EditableSwatch
-              key={step}
-              step={step}
               color={color}
+              key={step}
               onStepChange={onStepChange}
+              step={step}
             />
           ) : (
             <motion.div
-              key={step}
-              className="flex-1 group relative"
-              style={{ backgroundColor: color }}
               animate={{ backgroundColor: color }}
+              className="group relative flex-1"
+              key={step}
+              style={{ backgroundColor: color }}
               transition={{ duration: 0.3 }}
             />
           );

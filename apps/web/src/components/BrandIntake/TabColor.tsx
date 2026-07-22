@@ -1,37 +1,53 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { useStore } from '@nanostores/react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Info } from 'lucide-react';
-
-import { $brandConfig, updateConfig, updateRampStep } from './store';
-import { useColorRamps, type ColorSlot } from './useColorRamps';
-import { HexColorInput, RampSliders, NeutralTintSelector, GenerationModeSelector } from './ColorRow';
-import { ColorPickerPopover } from '../ui/ColorPickerPopover';
-import { ColorRampView } from '../Showcase/ColorRampView';
-import { NEUTRAL_STEPS, clampPrimaryForContrast } from '@sora-lattice/generator';
-import type { GenerationMode } from '@sora-lattice/generator';
-import { SEMANTIC_HUES } from '@sora-lattice/generator';
+import { useStore } from "@nanostores/react";
+import type { GenerationMode } from "@sora-lattice/generator";
+import {
+  clampPrimaryForContrast,
+  NEUTRAL_STEPS,
+  SEMANTIC_HUES,
+} from "@sora-lattice/generator";
+import { AnimatePresence, motion } from "framer-motion";
+import { ChevronDown } from "lucide-react";
+import type React from "react";
+import { useCallback, useMemo, useState } from "react";
+import { ColorRampView } from "../Showcase/ColorRampView";
+import { ColorPickerPopover } from "../ui/ColorPickerPopover";
+import {
+  GenerationModeSelector,
+  HexColorInput,
+  NeutralTintSelector,
+  RampSliders,
+} from "./ColorRow";
+import { $brandConfig, updateConfig, updateRampStep } from "./store";
+import { type ColorSlot, useColorRamps } from "./useColorRamps";
 
 const EXPAND_TRANSITION = { duration: 0.25, ease: [0.32, 0.72, 0, 1] as const };
 
-const AdditionalColorRow: React.FC<ColorSlot & { onStepChange: (step: number, color: string) => void }> = ({ name, ramp, onStepChange }) => {
+const AdditionalColorRow: React.FC<
+  ColorSlot & { onStepChange: (step: number, color: string) => void }
+> = ({ name, ramp, onStepChange }) => {
   const isSemantic = SEMANTIC_HUES.includes(name);
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center gap-2">
-        <span className="text-sm text-charcoal/70">{name}</span>
+        <span className="text-charcoal/70 text-sm">{name}</span>
         {isSemantic && (
-          <span className="text-[10px] font-medium text-charcoal/50 bg-charcoal/5 px-1.5 py-0.5 rounded">
+          <span className="rounded bg-charcoal/5 px-1.5 py-0.5 font-medium text-[10px] text-charcoal/50">
             core
           </span>
         )}
       </div>
-      <ColorRampView ramp={ramp} className="h-6 rounded-lg" onStepChange={onStepChange} />
+      <ColorRampView
+        className="h-6 rounded-lg"
+        onStepChange={onStepChange}
+        ramp={ramp}
+      />
     </div>
   );
 };
 
-const TabColor: React.FC<{ isDarkMode?: boolean }> = ({ isDarkMode = false }) => {
+const TabColor: React.FC<{ isDarkMode?: boolean }> = ({
+  isDarkMode = false,
+}) => {
   const config = useStore($brandConfig);
   const derived = useColorRamps(config, isDarkMode);
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
@@ -39,33 +55,39 @@ const TabColor: React.FC<{ isDarkMode?: boolean }> = ({ isDarkMode = false }) =>
 
   const handlePrimaryChange = useCallback(
     (c: string) => updateConfig({ primaryColor: c, rampOverrides: {} }),
-    [],
+    []
   );
 
   const handleSecondaryChange = useCallback(
-    (c: string) => updateConfig({ useCustomSecondary: true, secondaryColor: c }),
-    [],
+    (c: string) =>
+      updateConfig({ secondaryColor: c, useCustomSecondary: true }),
+    []
   );
 
   const handleSecondaryGeneration = useCallback(
     (mode: GenerationMode) =>
-      updateConfig({ useCustomSecondary: false, secondaryGenerationMode: mode }),
-    [],
+      updateConfig({
+        secondaryGenerationMode: mode,
+        useCustomSecondary: false,
+      }),
+    []
   );
 
   const handleNeutralTintChange = useCallback(
-    (tint: 'pure' | 'cool' | 'warm' | 'brand-tinted') => updateConfig({ neutralTint: tint }),
-    [],
+    (tint: "pure" | "cool" | "warm" | "brand-tinted") =>
+      updateConfig({ neutralTint: tint }),
+    []
   );
 
   const handleChromaFalloffChange = useCallback(
     (value: number) => updateConfig({ chromaFalloff: value }),
-    [],
+    []
   );
 
   const handleRampStep = useCallback(
-    (rampKey: string) => (step: number, color: string) => updateRampStep(rampKey, step, color),
-    [],
+    (rampKey: string) => (step: number, color: string) =>
+      updateRampStep(rampKey, step, color),
+    []
   );
 
   // The exact-input primary becomes `--color-primary-base` (button/border fill).
@@ -76,164 +98,165 @@ const TabColor: React.FC<{ isDarkMode?: boolean }> = ({ isDarkMode = false }) =>
     const lightBase = derived.neutralRamp[0];
     const darkBase = derived.dark?.neutralRamp[800];
     const light = lightBase
-      ? clampPrimaryForContrast(config.primaryColor, lightBase, 'light')
+      ? clampPrimaryForContrast(config.primaryColor, lightBase, "light")
       : null;
     const dark = darkBase
-      ? clampPrimaryForContrast(config.primaryColor, darkBase, 'dark')
+      ? clampPrimaryForContrast(config.primaryColor, darkBase, "dark")
       : null;
-    if (!light?.adjusted && !dark?.adjusted) return null;
-    return { light, dark };
+    if (!(light?.adjusted || dark?.adjusted)) {
+      return null;
+    }
+    return { dark, light };
   }, [config.primaryColor, derived.neutralRamp, derived.dark]);
 
   return (
     <div className="flex flex-col gap-8">
       {/* Primary color picker */}
       <div className="flex flex-col gap-3">
-        <label className="text-sm font-medium text-charcoal">Primary Color</label>
+        <label className="font-medium text-charcoal text-sm">
+          Primary Color
+        </label>
         <div className="flex items-center gap-3">
-          <ColorPickerPopover color={config.primaryColor} onChange={handlePrimaryChange} />
-          <HexColorInput color={config.primaryColor} onChange={handlePrimaryChange} />
-        </div>
-        <ColorRampView ramp={derived.primaryRamp} className="h-8 rounded-lg" onStepChange={handleRampStep('primary')} />
-        {false && (
-          <div className="flex items-start gap-2 text-xs text-charcoal/80 bg-amber-50 rounded-lg px-3 py-2">
-            <Info size={13} className="mt-0.5 shrink-0 text-amber-600" />
-            <div className="flex flex-col gap-1.5">
-              <span>
-                {primaryContrastNotice.light?.adjusted && primaryContrastNotice.dark?.adjusted
-                  ? 'This color sits at the edge of legibility against the page background in both light and dark modes.'
-                  : primaryContrastNotice.dark?.adjusted
-                  ? 'This color is too dark to read against the dark-mode background.'
-                  : 'This color is too light to read against the light-mode background.'}
-                {' '}We’ve nudged the applied color to preserve contrast — your input is preserved here in the picker.
-              </span>
-              <div className="flex flex-wrap gap-3 pt-0.5">
-                {primaryContrastNotice.light?.adjusted && (
-                  <span className="inline-flex items-center gap-1.5">
-                    <span className="text-charcoal/50">Light:</span>
-                    <span
-                      className="inline-block w-3 h-3 rounded-sm border border-charcoal/10"
-                      style={{ backgroundColor: primaryContrastNotice.light.applied }}
-                    />
-                    <span className="font-mono">{primaryContrastNotice.light.applied}</span>
-                  </span>
-                )}
-                {primaryContrastNotice.dark?.adjusted && (
-                  <span className="inline-flex items-center gap-1.5">
-                    <span className="text-charcoal/50">Dark:</span>
-                    <span
-                      className="inline-block w-3 h-3 rounded-sm border border-charcoal/10"
-                      style={{ backgroundColor: primaryContrastNotice.dark.applied }}
-                    />
-                    <span className="font-mono">{primaryContrastNotice.dark.applied}</span>
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-        <div>
-        <button
-          type="button"
-          aria-expanded={isAdvancedOpen}
-          aria-controls="primary-advanced-settings"
-          onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
-          className={`flex items-center justify-between w-full py-2 text-sm font-medium transition-colors cursor-pointer rounded-lg ${
-            isAdvancedOpen ? 'text-forest-green' : 'text-charcoal/70 hover:text-charcoal'
-          }`}
-        >
-          <span>Advanced Settings</span>
-          <ChevronDown
-            size={16}
-            className={`transition-transform duration-200 ${isAdvancedOpen ? 'rotate-180' : ''}`}
+          <ColorPickerPopover
+            color={config.primaryColor}
+            onChange={handlePrimaryChange}
           />
-        </button>
+          <HexColorInput
+            color={config.primaryColor}
+            onChange={handlePrimaryChange}
+          />
+        </div>
+        <ColorRampView
+          className="h-8 rounded-lg"
+          onStepChange={handleRampStep("primary")}
+          ramp={derived.primaryRamp}
+        />
+        {false}
+        <div>
+          <button
+            aria-controls="primary-advanced-settings"
+            aria-expanded={isAdvancedOpen}
+            className={`flex w-full cursor-pointer items-center justify-between rounded-lg py-2 font-medium text-sm transition-colors ${
+              isAdvancedOpen
+                ? "text-forest-green"
+                : "text-charcoal/70 hover:text-charcoal"
+            }`}
+            onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
+            type="button"
+          >
+            <span>Advanced Settings</span>
+            <ChevronDown
+              className={`transition-transform duration-200 ${isAdvancedOpen ? "rotate-180" : ""}`}
+              size={16}
+            />
+          </button>
 
-        <AnimatePresence initial={false}>
-          {isAdvancedOpen && (
-            <motion.div
-              id="primary-advanced-settings"
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{
-                height: EXPAND_TRANSITION,
-                opacity: { duration: 0.2, ease: 'easeInOut' },
-              }}
-              className="overflow-hidden"
-            >
-              <div className="bg-charcoal/5 rounded-xl p-4 mt-2">
-                <RampSliders
-                  chromaFalloff={config.chromaFalloff}
-                  onChromaFalloffChange={handleChromaFalloffChange}
-                />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+          <AnimatePresence initial={false}>
+            {isAdvancedOpen && (
+              <motion.div
+                animate={{ height: "auto", opacity: 1 }}
+                className="overflow-hidden"
+                exit={{ height: 0, opacity: 0 }}
+                id="primary-advanced-settings"
+                initial={{ height: 0, opacity: 0 }}
+                transition={{
+                  height: EXPAND_TRANSITION,
+                  opacity: { duration: 0.2, ease: "easeInOut" },
+                }}
+              >
+                <div className="mt-2 rounded-xl bg-charcoal/5 p-4">
+                  <RampSliders
+                    chromaFalloff={config.chromaFalloff}
+                    onChromaFalloffChange={handleChromaFalloffChange}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
       {/* Secondary color */}
-      <div className="flex flex-col gap-5 pt-6 border-t border-charcoal/10">
+      <div className="flex flex-col gap-5 border-charcoal/10 border-t pt-6">
         <div className="flex flex-col gap-3">
-          <label className="text-sm font-medium text-charcoal">Secondary</label>
+          <label className="font-medium text-charcoal text-sm">Secondary</label>
           <div className="flex items-center gap-3">
-            <ColorPickerPopover color={derived.secondaryColor} onChange={handleSecondaryChange} />
-            <HexColorInput color={derived.secondaryColor} onChange={handleSecondaryChange} />
+            <ColorPickerPopover
+              color={derived.secondaryColor}
+              onChange={handleSecondaryChange}
+            />
+            <HexColorInput
+              color={derived.secondaryColor}
+              onChange={handleSecondaryChange}
+            />
           </div>
-          <ColorRampView ramp={derived.secondaryRamp} className="h-8 rounded-lg" onStepChange={handleRampStep('secondary')} />
+          <ColorRampView
+            className="h-8 rounded-lg"
+            onStepChange={handleRampStep("secondary")}
+            ramp={derived.secondaryRamp}
+          />
         </div>
         <GenerationModeSelector
-          value={config.secondaryGenerationMode}
           onChange={handleSecondaryGeneration}
+          value={config.secondaryGenerationMode}
         />
       </div>
 
       {/* Neutral tint */}
-      <div className="flex flex-col gap-3 pt-6 border-t border-charcoal/10">
-        <label className="text-sm font-medium text-charcoal">Neutral</label>
-        <ColorRampView ramp={derived.neutralRamp} steps={NEUTRAL_STEPS} className="h-8 rounded-lg" onStepChange={handleRampStep('neutral')} />
+      <div className="flex flex-col gap-3 border-charcoal/10 border-t pt-6">
+        <label className="font-medium text-charcoal text-sm">Neutral</label>
+        <ColorRampView
+          className="h-8 rounded-lg"
+          onStepChange={handleRampStep("neutral")}
+          ramp={derived.neutralRamp}
+          steps={NEUTRAL_STEPS}
+        />
         <NeutralTintSelector
-          value={config.neutralTint}
           onChange={handleNeutralTintChange}
+          value={config.neutralTint}
         />
       </div>
 
       {/* Additional colors */}
-      <div className="border-t border-charcoal/10 pt-6">
+      <div className="border-charcoal/10 border-t pt-6">
         <button
-          type="button"
-          aria-expanded={isAdditionalOpen}
           aria-controls="additional-color-ramps"
-          onClick={() => setIsAdditionalOpen(!isAdditionalOpen)}
-          className={`flex items-center justify-between w-full py-2 text-sm font-medium transition-colors cursor-pointer rounded-lg ${
-            isAdditionalOpen ? 'text-forest-green' : 'text-charcoal/70 hover:text-charcoal'
+          aria-expanded={isAdditionalOpen}
+          className={`flex w-full cursor-pointer items-center justify-between rounded-lg py-2 font-medium text-sm transition-colors ${
+            isAdditionalOpen
+              ? "text-forest-green"
+              : "text-charcoal/70 hover:text-charcoal"
           }`}
+          onClick={() => setIsAdditionalOpen(!isAdditionalOpen)}
+          type="button"
         >
           <span>Additional Colors</span>
           <ChevronDown
+            className={`transition-transform duration-200 ${isAdditionalOpen ? "rotate-180" : ""}`}
             size={16}
-            className={`transition-transform duration-200 ${isAdditionalOpen ? 'rotate-180' : ''}`}
           />
         </button>
 
         <AnimatePresence initial={false}>
           {isAdditionalOpen && (
             <motion.div
+              animate={{ height: "auto", opacity: 1 }}
+              className="overflow-hidden"
+              exit={{ height: 0, opacity: 0 }}
               id="additional-color-ramps"
               initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
               transition={{
                 height: EXPAND_TRANSITION,
-                opacity: { duration: 0.2, ease: 'easeInOut' },
+                opacity: { duration: 0.2, ease: "easeInOut" },
               }}
-              className="overflow-hidden"
             >
               <div className="flex flex-col gap-6 py-4">
                 {derived.additionalColors.map((slot) => (
-                  <AdditionalColorRow key={slot.name} {...slot} onStepChange={handleRampStep(slot.name)} />
+                  <AdditionalColorRow
+                    key={slot.name}
+                    {...slot}
+                    onStepChange={handleRampStep(slot.name)}
+                  />
                 ))}
               </div>
             </motion.div>

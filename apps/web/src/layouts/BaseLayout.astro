@@ -1,84 +1,84 @@
 ---
-import '../styles/global.css';
+import "../styles/global.css";
 
 export interface Props {
-  title?: string;
   description?: string;
+  title?: string;
 }
 
 const {
-  title = 'Sora Lattice - Build a design system in 10 minutes',
-  description = 'Tokens, components, Figma, and complete documentation—customized to your brand. Skip the 6-month setup and start building today.',
+  title = "Sora Lattice - Build a design system in 10 minutes",
+  description = "Tokens, components, Figma, and complete documentation—customized to your brand. Skip the 6-month setup and start building today.",
 } = Astro.props;
 
-const ogImage = new URL('/og.jpg', Astro.site ?? Astro.url);
+const ogImage = new URL("/og.jpg", Astro.site ?? Astro.url);
 ---
 
 <!doctype html>
-<html lang="en" class="lenis">
+<html class="lenis" lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="description" content={description} />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="generator" content={Astro.generator} />
+    <meta charset="UTF-8">
+    <meta content={description} name="description">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <link href="/favicon.svg" rel="icon" type="image/svg+xml">
+    <meta content={Astro.generator} name="generator">
     <title>{title}</title>
 
     <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:image" content={ogImage.href} />
-    <meta property="og:image:alt" content="Sora Lattice" />
+    <meta content="website" property="og:type">
+    <meta content={title} property="og:title">
+    <meta content={description} property="og:description">
+    <meta content={ogImage.href} property="og:image">
+    <meta content="Sora Lattice" property="og:image:alt">
 
     <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:title" content={title} />
-    <meta property="twitter:description" content={description} />
-    <meta property="twitter:image" content={ogImage.href} />
-    <meta property="twitter:image:alt" content="Sora Lattice" />
+    <meta content="summary_large_image" property="twitter:card">
+    <meta content={title} property="twitter:title">
+    <meta content={description} property="twitter:description">
+    <meta content={ogImage.href} property="twitter:image">
+    <meta content="Sora Lattice" property="twitter:image:alt">
 
     <!-- Preload fonts for better performance -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
   </head>
   <body>
     <slot />
 
     <!-- Locomotive Scroll v5 -->
     <script>
-      import LocomotiveScroll from 'locomotive-scroll';
+      import LocomotiveScroll from "locomotive-scroll";
 
       // Initialize Locomotive Scroll (built on Lenis)
       const scroll = new LocomotiveScroll({
         lenisOptions: {
           duration: 1.2,
-          easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-          orientation: 'vertical',
-          gestureOrientation: 'vertical',
+          easing: (t: number) => Math.min(1, 1.001 - 2 ** (-10 * t)),
+          gestureOrientation: "vertical",
+          orientation: "vertical",
           smoothWheel: true,
-          wheelMultiplier: 1,
           touchMultiplier: 2,
+          wheelMultiplier: 1,
         },
       });
 
       // Expose scroll instance to window for debugging
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         (window as any).locomotiveScroll = scroll;
         (window as any).lenis = scroll.lenisInstance;
       }
 
       // Handle anchor link smooth scrolling
       document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-        anchor.addEventListener('click', function (e) {
+        anchor.addEventListener("click", function (e) {
           e.preventDefault();
-          const targetId = (this as HTMLAnchorElement).getAttribute('href');
-          if (targetId && targetId !== '#') {
+          const targetId = (this as HTMLAnchorElement).getAttribute("href");
+          if (targetId && targetId !== "#") {
             const target = document.querySelector(targetId);
             if (target) {
               scroll.scrollTo(target as HTMLElement, {
-                offset: 0,
                 duration: 1.5,
+                offset: 0,
               });
             }
           }

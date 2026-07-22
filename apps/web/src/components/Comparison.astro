@@ -2,86 +2,108 @@
 // What you get grid
 import {
   Braces,
-  FileCode,
-  Wind,
-  Component,
   Clock3,
-  WandSparkles
+  Component,
+  FileCode,
+  WandSparkles,
+  Wind,
 } from "lucide-react";
 ---
 
-<section id="what-you-get" class="section-spacing">
+<section class="section-spacing" id="what-you-get">
   <div class="container-custom">
     <!-- Section Header -->
     <div class="text-center mb-8 md:mb-12 flex flex-col gap-4">
       <p class="text-base md:text-lg text-charcoal/80 mx-auto">
         Why Sora Lattice?
       </p>
-      <h2 class="max-w-2xl mx-auto">Not another UI kit, this is a <i>full theming system.</i></h2>
+      <h2 class="max-w-2xl mx-auto">
+        Not another UI kit, this is a <i>full theming system.</i>
+      </h2>
     </div>
 
     <!-- What You Get Grid -->
     <div class="max-w-3xl mx-auto">
       <div class="border border-charcoal/10 bg-white">
         <div class="grid grid-cols-1 md:grid-cols-2">
-          <div class="flex gap-4 p-6 md:p-8 border-b border-charcoal/10 md:border-r">
-            <div class="mt-1 text-forest-green" aria-hidden="true">
-              <Braces className="h-5 w-5" strokeWidth={1.5}/>
+          <div
+            class="flex gap-4 p-6 md:p-8 border-b border-charcoal/10 md:border-r"
+          >
+            <div aria-hidden="true" class="mt-1 text-forest-green">
+              <Braces className="h-5 w-5" strokeWidth={1.5} />
             </div>
             <div>
               <h5 class="mb-1">DTCG token files</h5>
-              <p class="text-sm md:text-base text-charcoal/80">OKLCH-based color ramps with perceptual uniformity across every lightness step.</p>
+              <p class="text-sm md:text-base text-charcoal/80">
+                OKLCH-based color ramps with perceptual uniformity across every
+                lightness step.
+              </p>
             </div>
           </div>
 
           <div class="flex gap-4 p-6 md:p-8 border-b border-charcoal/10">
-            <div class="mt-1 text-forest-green" aria-hidden="true">
-              <FileCode className="h-5 w-5" strokeWidth={1.5}/>
+            <div aria-hidden="true" class="mt-1 text-forest-green">
+              <FileCode className="h-5 w-5" strokeWidth={1.5} />
             </div>
             <div>
               <h5 class="mb-1">CSS custom-property stylesheet</h5>
-              <p class="text-sm md:text-base text-charcoal/80">Light and dark mode derived automatically from your tokens.</p>
+              <p class="text-sm md:text-base text-charcoal/80">
+                Light and dark mode derived automatically from your tokens.
+              </p>
             </div>
           </div>
 
-          <div class="flex gap-4 p-6 md:p-8 border-b border-charcoal/10 md:border-r">
-            <div class="mt-1 text-forest-green" aria-hidden="true">
-              <WandSparkles className="h-5 w-5" strokeWidth={1.5}/>
+          <div
+            class="flex gap-4 p-6 md:p-8 border-b border-charcoal/10 md:border-r"
+          >
+            <div aria-hidden="true" class="mt-1 text-forest-green">
+              <WandSparkles className="h-5 w-5" strokeWidth={1.5} />
             </div>
             <div>
               <h5 class="mb-1">Agentic skill files</h5>
-              <p class="text-sm md:text-base text-charcoal/80">Markdown guidance for LLMs to compose your tokens into production-ready UI.</p>
+              <p class="text-sm md:text-base text-charcoal/80">
+                Markdown guidance for LLMs to compose your tokens into
+                production-ready UI.
+              </p>
             </div>
           </div>
 
           <div class="flex gap-4 p-6 md:p-8 border-b border-charcoal/10">
-            <div class="mt-1 text-forest-green" aria-hidden="true">
-              <Wind className="h-5 w-5" strokeWidth={1.5}/>
+            <div aria-hidden="true" class="mt-1 text-forest-green">
+              <Wind className="h-5 w-5" strokeWidth={1.5} />
             </div>
             <div>
               <h5 class="mb-1">Tailwind theme config</h5>
-              <p class="text-sm md:text-base text-charcoal/80">Semantic color and spacing scales mapped straight from your tokens.</p>
+              <p class="text-sm md:text-base text-charcoal/80">
+                Semantic color and spacing scales mapped straight from your
+                tokens.
+              </p>
             </div>
           </div>
 
           <div class="flex gap-4 p-6 md:p-8 border-charcoal/10 md:border-r">
-            <div class="mt-1 text-forest-green" aria-hidden="true">
-              <Component className="h-5 w-5" strokeWidth={1.5}/>
+            <div aria-hidden="true" class="mt-1 text-forest-green">
+              <Component className="h-5 w-5" strokeWidth={1.5} />
             </div>
             <div>
               <h5 class="mb-1">Shadcn-compatible</h5>
-              <p class="text-sm md:text-base text-charcoal/80">Generated theme translates into a shadcn-compatible config.</p>
+              <p class="text-sm md:text-base text-charcoal/80">
+                Generated theme translates into a shadcn-compatible config.
+              </p>
             </div>
           </div>
 
           <div class="p-6 md:p-8 bg-gray/80">
             <div class="flex gap-4">
-              <div class="mt-1 text-forest-green" aria-hidden="true">
-                <Clock3 className="h-5 w-5" strokeWidth={1.5}/>
+              <div aria-hidden="true" class="mt-1 text-forest-green">
+                <Clock3 className="h-5 w-5" strokeWidth={1.5} />
               </div>
               <div>
                 <h5 class="mb-2">20+ hours saved</h5>
-                <p class="text-sm md:text-base text-charcoal/80">Skip the hours of hand-authoring tokens, stylesheets, and config files from scratch.</p>
+                <p class="text-sm md:text-base text-charcoal/80">
+                  Skip the hours of hand-authoring tokens, stylesheets, and
+                  config files from scratch.
+                </p>
               </div>
             </div>
           </div>
@@ -91,7 +113,8 @@ import {
       <!-- Bottom Note -->
       <div class="mt-8 text-center">
         <p class="text-charcoal/80 text-sm md:text-base">
-          Sora Lattice gives you an enterprise-level design system foundation tailored to your brand.
+          Sora Lattice gives you an enterprise-level design system foundation
+          tailored to your brand.
         </p>
       </div>
     </div>

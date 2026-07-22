@@ -1,5 +1,5 @@
-import React from 'react';
-import { bg, border, radius, space, shadow, transition } from './tokens';
+import type React from "react";
+import { bg, border, radius, shadow, space, transition } from "./tokens";
 
 interface CardProps {
   children: React.ReactNode;
@@ -12,8 +12,8 @@ const Card: React.FC<CardProps> = ({ children, style }) => (
       backgroundColor: bg.raised,
       border: `1px solid ${border.neutral}`,
       borderRadius: radius.container,
-      padding: space.lg,
       boxShadow: shadow.raised,
+      padding: space.lg,
       transition: transition.theme,
       ...style,
     }}

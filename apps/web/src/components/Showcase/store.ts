@@ -1,36 +1,36 @@
-import { map } from 'nanostores';
+import { map } from "nanostores";
 
 export interface ShowcaseConfig {
   // Panel 1: Design System Configurator
   brandName: string;
-  systemName: string;
-  primaryColor: string;
-  secondaryColor: string;
-  saturation: number;
-  lightness: number;
+  density: "compact" | "default" | "comfortable";
+  expressiveness: "minimal" | "balanced" | "expressive";
   fontFamily: string;
-  roundness: 'sharp' | 'subtle' | 'rounded' | 'pill';
-  density: 'compact' | 'default' | 'comfortable';
-  expressiveness: 'minimal' | 'balanced' | 'expressive';
-  shadows: 'none' | 'subtle' | 'dramatic';
 
   // Panel 2: Component Showcase
   isDarkMode: boolean;
+  lightness: number;
+  primaryColor: string;
+  roundness: "sharp" | "subtle" | "rounded" | "pill";
+  saturation: number;
+  secondaryColor: string;
+  shadows: "none" | "subtle" | "dramatic";
+  systemName: string;
 }
 
 const defaultShowcaseConfig: ShowcaseConfig = {
-  brandName: 'Acme',
-  systemName: 'Atlas',
-  primaryColor: '#3B82F6',
-  secondaryColor: '#8B5CF6',
-  saturation: 100,
-  lightness: 100,
-  fontFamily: 'Inter',
-  roundness: 'rounded',
-  density: 'default',
-  expressiveness: 'balanced',
-  shadows: 'subtle',
+  brandName: "Acme",
+  density: "default",
+  expressiveness: "balanced",
+  fontFamily: "Inter",
   isDarkMode: false,
+  lightness: 100,
+  primaryColor: "#3B82F6",
+  roundness: "rounded",
+  saturation: 100,
+  secondaryColor: "#8B5CF6",
+  shadows: "subtle",
+  systemName: "Atlas",
 };
 
 export const $showcaseConfig = map<ShowcaseConfig>(defaultShowcaseConfig);

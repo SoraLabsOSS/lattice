@@ -1,93 +1,92 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, Check, ChevronDown, Copy, Download } from 'lucide-react';
-import { Select as BaseSelect } from '@base-ui/react/select';
-import { strToU8, zipSync } from 'fflate';
-
+import { Select as BaseSelect } from "@base-ui/react/select";
 import {
+  type BrandConfig,
+  type ColorSpace,
+  type ExportFormat,
   exportTokens,
   generateDesignTokens,
   generateSkills,
   initialConfig,
-  type BrandConfig,
-  type ColorSpace,
-  type ExportFormat,
   type SkillArtifact,
   type TokenSet,
-} from '@sora-lattice/generator';
-
-import { Select } from '../../ui/Select';
-import { siteImages } from '../../../lib/siteImages';
-import { decodeBrandConfig, encodeBrandConfig } from '../../../lib/configUrl';
-import { FileIcon, type FileIconKind } from './FileIcon';
-import { highlight, type Lang } from './highlight';
+} from "@sora-lattice/generator";
+import { strToU8, zipSync } from "fflate";
+import { ArrowLeft, Check, ChevronDown, Copy, Download } from "lucide-react";
+import type React from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { decodeBrandConfig, encodeBrandConfig } from "../../../lib/configUrl";
+import { siteImages } from "../../../lib/siteImages";
+import { Select } from "../../ui/Select";
+import { FileIcon, type FileIconKind } from "./FileIcon";
+import { highlight, type Lang } from "./highlight";
 
 // ---------------------------------------------------------------------------
 // Asset descriptors
 // ---------------------------------------------------------------------------
 
 type TokenAssetId = ExportFormat;
-type SkillAssetId = `skill-${SkillArtifact['id']}`;
+type SkillAssetId = `skill-${SkillArtifact["id"]}`;
 type AssetId = TokenAssetId | SkillAssetId;
 
 interface AssetDescriptor {
-  id: AssetId;
-  filename: string;
-  iconKind: FileIconKind;
-  lang: Lang;
-  title: string;
   description: string;
-  group: 'tokens' | 'skills';
+  filename: string;
+  group: "tokens" | "skills";
+  iconKind: FileIconKind;
+  id: AssetId;
+  lang: Lang;
   takesColorSpace: boolean;
+  title: string;
 }
 
 const TOKEN_ASSETS: AssetDescriptor[] = [
   {
-    id: 'css',
-    filename: 'tokens.css',
-    iconKind: 'css',
-    lang: 'css',
-    title: 'CSS variables',
-    description: 'Custom properties for light & dark themes',
-    group: 'tokens',
+    description: "Custom properties for light & dark themes",
+    filename: "tokens.css",
+    group: "tokens",
+    iconKind: "css",
+    id: "css",
+    lang: "css",
     takesColorSpace: true,
+    title: "CSS variables",
   },
   {
-    id: 'dtcg',
-    filename: 'tokens.json',
-    iconKind: 'json',
-    lang: 'json',
-    title: 'DTCG tokens',
-    description: 'Design Token Community Group format',
-    group: 'tokens',
+    description: "Design Token Community Group format",
+    filename: "tokens.json",
+    group: "tokens",
+    iconKind: "json",
+    id: "dtcg",
+    lang: "json",
     takesColorSpace: true,
+    title: "DTCG tokens",
   },
   {
-    id: 'tailwind',
-    filename: 'tailwind.config.js',
-    iconKind: 'js',
-    lang: 'js',
-    title: 'Tailwind config',
-    description: 'Tailwind v4 colors & semantic tokens',
-    group: 'tokens',
+    description: "Tailwind v4 colors & semantic tokens",
+    filename: "tailwind.config.js",
+    group: "tokens",
+    iconKind: "js",
+    id: "tailwind",
+    lang: "js",
     takesColorSpace: true,
+    title: "Tailwind config",
   },
   {
-    id: 'shadcn',
-    filename: 'shadcn.css',
-    iconKind: 'css',
-    lang: 'css',
-    title: 'shadcn/ui',
-    description: 'shadcn v2-compatible CSS variables',
-    group: 'tokens',
+    description: "shadcn v2-compatible CSS variables",
+    filename: "shadcn.css",
+    group: "tokens",
+    iconKind: "css",
+    id: "shadcn",
+    lang: "css",
     takesColorSpace: true,
+    title: "shadcn/ui",
   },
 ];
 
 const COLOR_SPACE_OPTIONS = [
-  { value: 'oklch', label: 'oklch' },
-  { value: 'hex',   label: 'hex'   },
-  { value: 'rgb',   label: 'rgb'   },
-  { value: 'hsl',   label: 'hsl'   },
+  { label: "oklch", value: "oklch" },
+  { label: "hex", value: "hex" },
+  { label: "rgb", value: "rgb" },
+  { label: "hsl", value: "hsl" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -98,32 +97,37 @@ const COLOR_SPACE_OPTIONS = [
 // the icons reflect whatever palette the user configured rather than fixed
 // blues/ambers.
 const ICON_TOKEN_BY_KIND: Record<FileIconKind, string> = {
-  css:  '--color-background-primary',
-  json: '--color-background-warning',
-  js:   '--color-background-accent',
-  md:   '--color-background-success',
+  css: "--color-background-primary",
+  js: "--color-background-accent",
+  json: "--color-background-warning",
+  md: "--color-background-success",
 };
 
 const VAR_REF = /^var\(\s*(--[\w-]+)\s*\)$/;
 
 /** Follow `var(--x)` indirection in a token map until a literal color is reached. */
-function resolveTokenValue(tokens: Record<string, string>, name: string): string {
+function resolveTokenValue(
+  tokens: Record<string, string>,
+  name: string
+): string {
   let value = tokens[name];
   for (let i = 0; i < 8 && value; i++) {
     const m = value.match(VAR_REF);
-    if (!m) return value;
+    if (!m) {
+      return value;
+    }
     value = tokens[m[1]];
   }
-  return value ?? '#888888';
+  return value ?? "#888888";
 }
 
 /** Trigger a browser download for an in-memory blob via a synthetic anchor. */
 function saveBlob(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const a = document.createElement("a");
   a.href = url;
   a.download = filename;
-  a.rel = 'noopener';
+  a.rel = "noopener";
   document.body.appendChild(a);
   a.click();
   // Defer cleanup: revoking the URL or removing the anchor synchronously can
@@ -144,10 +148,14 @@ const ExportPage: React.FC = () => {
   const [decodeFailed, setDecodeFailed] = useState(false);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") {
+      return;
+    }
     const params = new URLSearchParams(window.location.search);
-    const raw = params.get('c');
-    if (!raw) return;
+    const raw = params.get("c");
+    if (!raw) {
+      return;
+    }
     const decoded = decodeBrandConfig(raw);
     if (decoded) {
       setConfig(decoded);
@@ -157,81 +165,121 @@ const ExportPage: React.FC = () => {
   }, []);
 
   // Recompute tokens when config changes (and load fonts to match the system).
-  const tokenSet = useMemo<TokenSet>(() => ({
-    light: generateDesignTokens(config, false).tokens,
-    dark:  generateDesignTokens(config, true ).tokens,
-  }), [config]);
+  const tokenSet = useMemo<TokenSet>(
+    () => ({
+      dark: generateDesignTokens(config, true).tokens,
+      light: generateDesignTokens(config, false).tokens,
+    }),
+    [config]
+  );
 
   useEffect(() => {
     for (const family of [config.headingFont, config.primaryFont]) {
-      if (!family) continue;
-      const id = `export-font-${family.replace(/\s+/g, '+')}`;
-      if (document.getElementById(id)) continue;
-      const link = document.createElement('link');
+      if (!family) {
+        continue;
+      }
+      const id = `export-font-${family.replace(/\s+/g, "+")}`;
+      if (document.getElementById(id)) {
+        continue;
+      }
+      const link = document.createElement("link");
       link.id = id;
-      link.rel = 'stylesheet';
-      link.href = `https://fonts.googleapis.com/css2?family=${family.replace(/\s+/g, '+')}:wght@400;600;700&display=swap`;
+      link.rel = "stylesheet";
+      link.href = `https://fonts.googleapis.com/css2?family=${family.replace(/\s+/g, "+")}:wght@400;600;700&display=swap`;
       document.head.appendChild(link);
     }
   }, [config.headingFont, config.primaryFont]);
 
-  const skills = useMemo(() => generateSkills(config, tokenSet), [config, tokenSet]);
-  const skillAssets: AssetDescriptor[] = useMemo(() => skills.map((s) => ({
-    id: `skill-${s.id}` as SkillAssetId,
-    filename: s.filename,
-    iconKind: 'md',
-    lang: 'md',
-    title: s.title,
-    description: s.description,
-    group: 'skills',
-    takesColorSpace: false,
-  })), [skills]);
+  const skills = useMemo(
+    () => generateSkills(config, tokenSet),
+    [config, tokenSet]
+  );
+  const skillAssets: AssetDescriptor[] = useMemo(
+    () =>
+      skills.map((s) => ({
+        description: s.description,
+        filename: s.filename,
+        group: "skills",
+        iconKind: "md",
+        id: `skill-${s.id}` as SkillAssetId,
+        lang: "md",
+        takesColorSpace: false,
+        title: s.title,
+      })),
+    [skills]
+  );
 
-  const allAssets = useMemo(() => [...TOKEN_ASSETS, ...skillAssets], [skillAssets]);
+  const allAssets = useMemo(
+    () => [...TOKEN_ASSETS, ...skillAssets],
+    [skillAssets]
+  );
 
   // Per-kind colors derived from the generated tokens. Resolved from the
   // light token set so the icons stay legible against the white preview card.
-  const iconColors = useMemo<Record<FileIconKind, string>>(() => ({
-    css:  resolveTokenValue(tokenSet.light, ICON_TOKEN_BY_KIND.css),
-    json: resolveTokenValue(tokenSet.light, ICON_TOKEN_BY_KIND.json),
-    js:   resolveTokenValue(tokenSet.light, ICON_TOKEN_BY_KIND.js),
-    md:   resolveTokenValue(tokenSet.light, ICON_TOKEN_BY_KIND.md),
-  }), [tokenSet]);
+  const iconColors = useMemo<Record<FileIconKind, string>>(
+    () => ({
+      css: resolveTokenValue(tokenSet.light, ICON_TOKEN_BY_KIND.css),
+      js: resolveTokenValue(tokenSet.light, ICON_TOKEN_BY_KIND.js),
+      json: resolveTokenValue(tokenSet.light, ICON_TOKEN_BY_KIND.json),
+      md: resolveTokenValue(tokenSet.light, ICON_TOKEN_BY_KIND.md),
+    }),
+    [tokenSet]
+  );
 
   // Default selection: the canonical CSS export.
   const [selectedId, setSelectedId] = useState<AssetId>(TOKEN_ASSETS[0].id);
   const selectedAsset = useMemo(
     () => allAssets.find((a) => a.id === selectedId) ?? TOKEN_ASSETS[0],
-    [allAssets, selectedId],
+    [allAssets, selectedId]
   );
 
-  const [colorSpace, setColorSpace] = useState<ColorSpace>('oklch');
+  const [colorSpace, setColorSpace] = useState<ColorSpace>("oklch");
   const [copiedId, setCopiedId] = useState<AssetId | null>(null);
 
-  const generateContent = useCallback((asset: AssetDescriptor): string => {
-    if (asset.group === 'skills') {
-      const skill = skills.find((s) => `skill-${s.id}` === asset.id);
-      return skill?.content ?? '';
-    }
-    return exportTokens(tokenSet, asset.id as ExportFormat, colorSpace, { includeSemantic: true });
-  }, [skills, tokenSet, colorSpace]);
+  const generateContent = useCallback(
+    (asset: AssetDescriptor): string => {
+      if (asset.group === "skills") {
+        const skill = skills.find((s) => `skill-${s.id}` === asset.id);
+        return skill?.content ?? "";
+      }
+      return exportTokens(tokenSet, asset.id as ExportFormat, colorSpace, {
+        includeSemantic: true,
+      });
+    },
+    [skills, tokenSet, colorSpace]
+  );
 
-  const content = useMemo(() => generateContent(selectedAsset), [generateContent, selectedAsset]);
-  const highlighted = useMemo(() => highlight(content, selectedAsset.lang), [content, selectedAsset.lang]);
+  const content = useMemo(
+    () => generateContent(selectedAsset),
+    [generateContent, selectedAsset]
+  );
+  const highlighted = useMemo(
+    () => highlight(content, selectedAsset.lang),
+    [content, selectedAsset.lang]
+  );
 
-  const handleCopy = useCallback(async (asset: AssetDescriptor) => {
-    const text = generateContent(asset);
-    await navigator.clipboard.writeText(text);
-    setCopiedId(asset.id);
-    setTimeout(() => setCopiedId((id) => (id === asset.id ? null : id)), 2000);
-  }, [generateContent]);
+  const handleCopy = useCallback(
+    async (asset: AssetDescriptor) => {
+      const text = generateContent(asset);
+      await navigator.clipboard.writeText(text);
+      setCopiedId(asset.id);
+      setTimeout(
+        () => setCopiedId((id) => (id === asset.id ? null : id)),
+        2000
+      );
+    },
+    [generateContent]
+  );
 
-  const handleDownload = useCallback((asset: AssetDescriptor) => {
-    const blob = new Blob([generateContent(asset)], {
-      type: asset.lang === 'json' ? 'application/json' : 'text/plain',
-    });
-    saveBlob(blob, asset.filename);
-  }, [generateContent]);
+  const handleDownload = useCallback(
+    (asset: AssetDescriptor) => {
+      const blob = new Blob([generateContent(asset)], {
+        type: asset.lang === "json" ? "application/json" : "text/plain",
+      });
+      saveBlob(blob, asset.filename);
+    },
+    [generateContent]
+  );
 
   // Bundle every token + skill asset into a single zip so "Download all" hands
   // the user one file instead of a burst of individual downloads.
@@ -241,7 +289,10 @@ const ExportPage: React.FC = () => {
       files[asset.filename] = strToU8(generateContent(asset));
     }
     const zipped = zipSync(files, { level: 6 });
-    saveBlob(new Blob([zipped], { type: 'application/zip' }), 'sora-lattice-export.zip');
+    saveBlob(
+      new Blob([zipped], { type: "application/zip" }),
+      "sora-lattice-export.zip"
+    );
   }, [allAssets, generateContent]);
 
   // `encodeURIComponent` is required: the LZ alphabet contains `+`, which
@@ -249,11 +300,13 @@ const ExportPage: React.FC = () => {
   // the param on read.
   const encodedConfig = useMemo(
     () => encodeURIComponent(encodeBrandConfig(config)),
-    [config],
+    [config]
   );
 
   const shareUrl = useMemo(() => {
-    if (typeof window === 'undefined') return '';
+    if (typeof window === "undefined") {
+      return "";
+    }
     return `${window.location.origin}/generate/export?c=${encodedConfig}`;
   }, [encodedConfig]);
 
@@ -263,7 +316,9 @@ const ExportPage: React.FC = () => {
 
   const [shareCopied, setShareCopied] = useState(false);
   const handleShareCopy = useCallback(async () => {
-    if (!shareUrl) return;
+    if (!shareUrl) {
+      return;
+    }
     await navigator.clipboard.writeText(shareUrl);
     setShareCopied(true);
     setTimeout(() => setShareCopied(false), 2000);
@@ -273,52 +328,77 @@ const ExportPage: React.FC = () => {
 
   // Mobile dropdown options — same list/order as the sidebar, with the file
   // icon rendered inline so the type stays scannable in the trigger.
-  const mobileAssetOptions = useMemo(() => allAssets.map((a) => ({
-    value: a.id,
-    label: a.title,
-    icon: <FileIcon kind={a.iconKind} color={iconColors[a.iconKind]} size={20} className="shrink-0" />,
-  })), [allAssets, iconColors]);
+  const mobileAssetOptions = useMemo(
+    () =>
+      allAssets.map((a) => ({
+        icon: (
+          <FileIcon
+            className="shrink-0"
+            color={iconColors[a.iconKind]}
+            kind={a.iconKind}
+            size={20}
+          />
+        ),
+        label: a.title,
+        value: a.id,
+      })),
+    [allAssets, iconColors]
+  );
 
   return (
-    <div className="export-page relative min-h-dvh bg-gray text-charcoal overflow-x-hidden">
+    <div className="export-page relative min-h-dvh overflow-x-hidden bg-gray text-charcoal">
       <div className="relative z-10">
         {/* Top bar */}
         <header
           className="export-anim flex items-center justify-between px-6 py-5 md:px-10"
-          style={{ animationDelay: '0.8s' }}
+          style={{ animationDelay: "0.8s" }}
         >
           <a
+            className="inline-flex items-center gap-2 text-charcoal/70 text-sm transition-colors hover:text-charcoal"
             href={backHref}
-            className="inline-flex items-center gap-2 text-sm text-charcoal/70 hover:text-charcoal transition-colors"
           >
             <ArrowLeft size={16} />
             Back to configurator
           </a>
-          <a href="/" aria-label="Sora Lattice home">
-            <img src={siteImages.logoIcon} alt="Sora Lattice" className="w-7 h-7 hover:opacity-70 transition-opacity" />
+          <a aria-label="Sora Lattice home" href="/">
+            <img
+              alt="Sora Lattice"
+              className="h-7 w-7 transition-opacity hover:opacity-70"
+              src={siteImages.logoIcon}
+            />
           </a>
         </header>
 
         {/* Hero */}
         <section
-          className="export-anim px-6 md:px-10 max-w-5xl mx-auto pt-8 pb-8 md:pt-16 md:pb-10 text-center"
-          style={{ animationDelay: '1.9s' }}
+          className="export-anim mx-auto max-w-5xl px-6 pt-8 pb-8 text-center md:px-10 md:pt-16 md:pb-10"
+          style={{ animationDelay: "1.9s" }}
         >
-          <h2 className="mb-6 text-charcoal">
-            Ready to ship
-          </h2>
-          <p className="text-base md:text-lg text-charcoal/80 max-w-2xl mx-auto leading-relaxed">
-            A complete token and configuration set, plus three LLM-ready skills, scoped to <em className="not-italic font-medium text-charcoal">{config.headingFont}</em> & <em className="not-italic font-medium text-charcoal">{config.primaryFont}</em>, anchored on
+          <h2 className="mb-6 text-charcoal">Ready to ship</h2>
+          <p className="mx-auto max-w-2xl text-base text-charcoal/80 leading-relaxed md:text-lg">
+            A complete token and configuration set, plus three LLM-ready skills,
+            scoped to{" "}
+            <em className="font-medium text-charcoal not-italic">
+              {config.headingFont}
+            </em>{" "}
+            &{" "}
+            <em className="font-medium text-charcoal not-italic">
+              {config.primaryFont}
+            </em>
+            , anchored on
             <span
-              className="inline-block w-3 h-3 rounded-full align-middle mx-1.5 ring-1 ring-charcoal/10"
-              style={{ backgroundColor: config.primaryColor }}
               aria-hidden
+              className="mx-1.5 inline-block h-3 w-3 rounded-full align-middle ring-1 ring-charcoal/10"
+              style={{ backgroundColor: config.primaryColor }}
             />
-            <code className="text-charcoal/80 font-mono text-sm">{config.primaryColor.toLowerCase()}</code>.
+            <code className="font-mono text-charcoal/80 text-sm">
+              {config.primaryColor.toLowerCase()}
+            </code>
+            .
           </p>
 
           {decodeFailed && (
-            <p className="mt-6 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 inline-block">
+            <p className="mt-6 inline-block rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-amber-700 text-xs">
               Couldn't read configuration from the URL — showing defaults.
             </p>
           )}
@@ -326,23 +406,23 @@ const ExportPage: React.FC = () => {
 
         {/* Share + bulk-download actions */}
         <section
-          className="export-anim px-6 md:px-10 max-w-2xl mx-auto pb-10"
-          style={{ animationDelay: '2.05s' }}
+          className="export-anim mx-auto max-w-2xl px-6 pb-10 md:px-10"
+          style={{ animationDelay: "2.05s" }}
         >
           <div className="flex items-center justify-center gap-3">
             <CopyButton
-              copied={shareCopied}
-              onClick={handleShareCopy}
               className="btn btn-secondary btn-sm border-none"
-              idleIcon={<Copy size={16} />}
+              copied={shareCopied}
               copiedIcon={<Check size={16} strokeWidth={2.5} />}
-              idleLabel="Copy URL"
               copiedLabel="Copied"
+              idleIcon={<Copy size={16} />}
+              idleLabel="Copy URL"
+              onClick={handleShareCopy}
             />
             <button
-              type="button"
-              onClick={handleDownloadAll}
               className="btn btn-secondary btn-sm gap-2 border-none"
+              onClick={handleDownloadAll}
+              type="button"
             >
               <Download size={16} /> Download all
             </button>
@@ -351,30 +431,30 @@ const ExportPage: React.FC = () => {
 
         {/* Main: left nav + preview card */}
         <section
-          className="export-anim px-6 md:px-10 max-w-7xl mx-auto pb-20 md:pb-28"
-          style={{ animationDelay: '2.2s' }}
+          className="export-anim mx-auto max-w-7xl px-6 pb-20 md:px-10 md:pb-28"
+          style={{ animationDelay: "2.2s" }}
         >
-          <article className="bg-white rounded-2xl border border-charcoal/5 shadow-[0_4px_14px_-6px_rgba(20,30,50,0.10)] overflow-hidden">
+          <article className="overflow-hidden rounded-2xl border border-charcoal/5 bg-white shadow-[0_4px_14px_-6px_rgba(20,30,50,0.10)]">
             <div className="grid md:grid-cols-[14rem_minmax(0,1fr)]">
               {/* Left nav — md+ only. On mobile the asset switcher lives in the preview header as a dropdown. */}
               <nav
                 aria-label="Export assets"
-                className="hidden md:block px-2 md:py-6 md:border-r border-charcoal/8"
+                className="hidden border-charcoal/8 px-2 md:block md:border-r md:py-6"
               >
                 <NavGroup
-                  label="Theme artifacts"
                   assets={TOKEN_ASSETS}
-                  selectedId={selectedId}
-                  onSelect={setSelectedId}
                   iconColors={iconColors}
+                  label="Theme artifacts"
+                  onSelect={setSelectedId}
+                  selectedId={selectedId}
                 />
                 <NavGroup
-                  label="System skills"
                   assets={skillAssets}
-                  selectedId={selectedId}
-                  onSelect={setSelectedId}
-                  iconColors={iconColors}
                   className="mt-7"
+                  iconColors={iconColors}
+                  label="System skills"
+                  onSelect={setSelectedId}
+                  selectedId={selectedId}
                 />
               </nav>
 
@@ -384,89 +464,93 @@ const ExportPage: React.FC = () => {
                   <div className="flex items-center gap-3">
                     {/* Mobile: title doubles as the asset dropdown trigger */}
                     <MobileTitleDropdown
+                      className="min-w-0 flex-1 md:hidden"
+                      iconColors={iconColors}
+                      onSelect={setSelectedId}
                       options={mobileAssetOptions}
                       selectedAsset={selectedAsset}
                       selectedId={selectedId}
-                      onSelect={setSelectedId}
-                      iconColors={iconColors}
-                      className="md:hidden flex-1 min-w-0"
                     />
                     {/* Desktop: static title */}
-                    <div className="hidden md:flex items-center gap-3 flex-1 min-w-0">
+                    <div className="hidden min-w-0 flex-1 items-center gap-3 md:flex">
                       <FileIcon
-                        kind={selectedAsset.iconKind}
-                        color={iconColors[selectedAsset.iconKind]}
-                        size={32}
                         className="shrink-0"
+                        color={iconColors[selectedAsset.iconKind]}
+                        kind={selectedAsset.iconKind}
+                        size={32}
                       />
                       <div className="min-w-0">
-                        <h4 className="text-base font-medium text-charcoal truncate">{selectedAsset.title}</h4>
-                        <code className="text-xs text-charcoal/80 font-mono truncate block">{selectedAsset.filename}</code>
+                        <h4 className="truncate font-medium text-base text-charcoal">
+                          {selectedAsset.title}
+                        </h4>
+                        <code className="block truncate font-mono text-charcoal/80 text-xs">
+                          {selectedAsset.filename}
+                        </code>
                       </div>
                     </div>
                     {/* Desktop actions */}
-                    <div className="hidden md:flex items-center gap-2 shrink-0">
+                    <div className="hidden shrink-0 items-center gap-2 md:flex">
                       {selectedAsset.takesColorSpace && (
                         <Select
-                          value={colorSpace}
                           onValueChange={(v) => setColorSpace(v as ColorSpace)}
                           options={COLOR_SPACE_OPTIONS}
                           size="compact"
                           triggerClassName="!w-24 !py-1.5 !px-2.5 !text-xs !rounded-lg"
+                          value={colorSpace}
                         />
                       )}
                       <CopyButton
+                        className="inline-flex cursor-pointer items-center justify-center rounded-lg bg-charcoal/5 px-3 py-1.5 font-medium text-charcoal text-xs transition-colors hover:bg-charcoal/10"
                         copied={isCopied}
-                        onClick={() => handleCopy(selectedAsset)}
-                        className="inline-flex items-center justify-center px-3 py-1.5 text-xs font-medium bg-charcoal/5 hover:bg-charcoal/10 text-charcoal rounded-lg transition-colors cursor-pointer"
-                        idleIcon={<Copy size={13} />}
                         copiedIcon={<Check size={13} strokeWidth={2.5} />}
-                        idleLabel="Copy"
                         copiedLabel="Copied"
+                        idleIcon={<Copy size={13} />}
+                        idleLabel="Copy"
+                        onClick={() => handleCopy(selectedAsset)}
                       />
                       <button
-                        type="button"
+                        className="flex cursor-pointer items-center gap-1.5 rounded-lg bg-charcoal/5 px-3 py-1.5 font-medium text-charcoal text-xs transition-colors hover:bg-charcoal/10"
                         onClick={() => handleDownload(selectedAsset)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-charcoal/5 hover:bg-charcoal/10 text-charcoal rounded-lg transition-colors cursor-pointer"
+                        type="button"
                       >
                         <Download size={13} /> Download
                       </button>
                     </div>
                   </div>
                   {/* Mobile actions row — each item fills the available width */}
-                  <div className="flex md:hidden items-center gap-2 mt-3 pt-3 border-t border-charcoal/8">
+                  <div className="mt-3 flex items-center gap-2 border-charcoal/8 border-t pt-3 md:hidden">
                     {selectedAsset.takesColorSpace && (
                       <div className="flex-1">
                         <Select
-                          value={colorSpace}
                           onValueChange={(v) => setColorSpace(v as ColorSpace)}
                           options={COLOR_SPACE_OPTIONS}
                           size="compact"
                           triggerClassName="!py-1.5 !px-2.5 !text-xs !rounded-lg"
+                          value={colorSpace}
                         />
                       </div>
                     )}
                     <CopyButton
+                      className="flex flex-1 cursor-pointer items-center justify-center rounded-lg bg-charcoal/5 px-3 py-1.5 font-medium text-charcoal text-xs transition-colors hover:bg-charcoal/10"
                       copied={isCopied}
-                      onClick={() => handleCopy(selectedAsset)}
-                      className="flex flex-1 items-center justify-center px-3 py-1.5 text-xs font-medium bg-charcoal/5 hover:bg-charcoal/10 text-charcoal rounded-lg transition-colors cursor-pointer"
-                      idleIcon={<Copy size={13} />}
                       copiedIcon={<Check size={13} strokeWidth={2.5} />}
-                      idleLabel="Copy"
                       copiedLabel="Copied"
+                      idleIcon={<Copy size={13} />}
+                      idleLabel="Copy"
+                      onClick={() => handleCopy(selectedAsset)}
                     />
                     <button
-                      type="button"
+                      className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-charcoal/5 px-3 py-1.5 font-medium text-charcoal text-xs transition-colors hover:bg-charcoal/10"
                       onClick={() => handleDownload(selectedAsset)}
-                      className="flex flex-1 items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-charcoal/5 hover:bg-charcoal/10 text-charcoal rounded-lg transition-colors cursor-pointer"
+                      type="button"
                     >
                       <Download size={13} /> Download
                     </button>
                   </div>
                 </header>
 
-                <div className="p-4 md:p-5 -mt-4">
-                  <pre className="text-[12px] leading-[1.65] font-mono whitespace-pre bg-gray rounded-xl p-4 max-h-[72vh] overflow-auto">
+                <div className="-mt-4 p-4 md:p-5">
+                  <pre className="max-h-[72vh] overflow-auto whitespace-pre rounded-xl bg-gray p-4 font-mono text-[12px] leading-[1.65]">
                     {highlighted}
                   </pre>
                 </div>
@@ -533,36 +617,41 @@ const ExportPage: React.FC = () => {
 // ---------------------------------------------------------------------------
 
 interface CopyButtonProps {
-  copied: boolean;
-  onClick: () => void;
   className?: string;
-  idleIcon: React.ReactNode;
+  copied: boolean;
   copiedIcon: React.ReactNode;
-  idleLabel: string;
   copiedLabel: string;
+  idleIcon: React.ReactNode;
+  idleLabel: string;
+  onClick: () => void;
 }
 
 const CopyButton: React.FC<CopyButtonProps> = ({
   copied,
   onClick,
-  className = '',
+  className = "",
   idleIcon,
   copiedIcon,
   idleLabel,
   copiedLabel,
 }) => (
-  <button type="button" onClick={onClick} aria-live="polite" className={className}>
+  <button
+    aria-live="polite"
+    className={className}
+    onClick={onClick}
+    type="button"
+  >
     <span className="copy-btn-stack">
       <span
-        className={`copy-btn-face ${copied ? 'copy-btn-face--out' : 'copy-btn-face--in'}`}
         aria-hidden={copied}
+        className={`copy-btn-face ${copied ? "copy-btn-face--out" : "copy-btn-face--in"}`}
       >
         {idleIcon}
         {idleLabel}
       </span>
       <span
-        className={`copy-btn-face ${copied ? 'copy-btn-face--in' : 'copy-btn-face--out'}`}
         aria-hidden={!copied}
+        className={`copy-btn-face ${copied ? "copy-btn-face--in" : "copy-btn-face--out"}`}
       >
         {copiedIcon}
         {copiedLabel}
@@ -576,19 +665,28 @@ const CopyButton: React.FC<CopyButtonProps> = ({
 // ---------------------------------------------------------------------------
 
 interface NavGroupProps {
-  label: string;
   assets: AssetDescriptor[];
-  selectedId: AssetId;
-  onSelect: (id: AssetId) => void;
-  iconColors: Record<FileIconKind, string>;
   className?: string;
+  iconColors: Record<FileIconKind, string>;
+  label: string;
+  onSelect: (id: AssetId) => void;
+  selectedId: AssetId;
 }
 
-const NavGroup: React.FC<NavGroupProps> = ({ label, assets, selectedId, onSelect, iconColors, className = '' }) => {
-  if (assets.length === 0) return null;
+const NavGroup: React.FC<NavGroupProps> = ({
+  label,
+  assets,
+  selectedId,
+  onSelect,
+  iconColors,
+  className = "",
+}) => {
+  if (assets.length === 0) {
+    return null;
+  }
   return (
     <div className={className}>
-      <p className="text-[12px] text-charcoal/80 font-medium mb-2 px-3">
+      <p className="mb-2 px-3 font-medium text-[12px] text-charcoal/80">
         {label}
       </p>
       <ul className="flex flex-col gap-0.5">
@@ -597,22 +695,29 @@ const NavGroup: React.FC<NavGroupProps> = ({ label, assets, selectedId, onSelect
           return (
             <li key={asset.id}>
               <button
-                type="button"
-                onClick={() => onSelect(asset.id)}
-                aria-current={isSelected ? 'true' : undefined}
+                aria-current={isSelected ? "true" : undefined}
                 className={[
-                  'w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-colors cursor-pointer',
+                  "flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-colors",
                   isSelected
-                    ? 'bg-charcoal/[0.06] text-charcoal'
-                    : 'text-charcoal/80 hover:text-charcoal hover:bg-charcoal/[0.03]',
-                ].join(' ')}
+                    ? "bg-charcoal/[0.06] text-charcoal"
+                    : "text-charcoal/80 hover:bg-charcoal/[0.03] hover:text-charcoal",
+                ].join(" ")}
+                onClick={() => onSelect(asset.id)}
+                type="button"
               >
-                <FileIcon kind={asset.iconKind} color={iconColors[asset.iconKind]} size={22} className="shrink-0" />
+                <FileIcon
+                  className="shrink-0"
+                  color={iconColors[asset.iconKind]}
+                  kind={asset.iconKind}
+                  size={22}
+                />
                 <div className="min-w-0 flex-1">
-                  <p className={`text-sm leading-tight truncate ${isSelected ? 'font-medium' : ''}`}>
+                  <p
+                    className={`truncate text-sm leading-tight ${isSelected ? "font-medium" : ""}`}
+                  >
                     {asset.title}
                   </p>
-                  <code className="text-[10px] text-charcoal/80 font-mono truncate block leading-tight mt-0.5">
+                  <code className="mt-0.5 block truncate font-mono text-[10px] text-charcoal/80 leading-tight">
                     {asset.filename}
                   </code>
                 </div>
@@ -630,12 +735,12 @@ const NavGroup: React.FC<NavGroupProps> = ({ label, assets, selectedId, onSelect
 // ---------------------------------------------------------------------------
 
 interface MobileTitleDropdownProps {
+  className?: string;
+  iconColors: Record<FileIconKind, string>;
+  onSelect: (id: AssetId) => void;
   options: Array<{ value: string; label: string; icon: React.ReactNode }>;
   selectedAsset: AssetDescriptor;
   selectedId: AssetId;
-  onSelect: (id: AssetId) => void;
-  iconColors: Record<FileIconKind, string>;
-  className?: string;
 }
 
 const MobileTitleDropdown: React.FC<MobileTitleDropdownProps> = ({
@@ -644,54 +749,64 @@ const MobileTitleDropdown: React.FC<MobileTitleDropdownProps> = ({
   selectedId,
   onSelect,
   iconColors,
-  className = '',
+  className = "",
 }) => {
-  const items = options.map((o) => ({ value: o.value, label: o.label }));
+  const items = options.map((o) => ({ label: o.label, value: o.value }));
 
   return (
     <div className={className}>
       <BaseSelect.Root
-        value={selectedId}
-        onValueChange={(v) => { if (v) onSelect(v as AssetId); }}
         items={items}
         modal={false}
+        onValueChange={(v) => {
+          if (v) {
+            onSelect(v as AssetId);
+          }
+        }}
+        value={selectedId}
       >
-        <BaseSelect.Trigger className="flex w-full items-center gap-3 cursor-pointer text-left">
+        <BaseSelect.Trigger className="flex w-full cursor-pointer items-center gap-3 text-left">
           <FileIcon
-            kind={selectedAsset.iconKind}
-            color={iconColors[selectedAsset.iconKind]}
-            size={32}
             className="shrink-0"
+            color={iconColors[selectedAsset.iconKind]}
+            kind={selectedAsset.iconKind}
+            size={32}
           />
           <div className="min-w-0 flex-1">
-            <h4 className="text-base font-medium text-charcoal truncate">{selectedAsset.title}</h4>
-            <code className="text-xs text-charcoal/80 font-mono truncate block">{selectedAsset.filename}</code>
+            <h4 className="truncate font-medium text-base text-charcoal">
+              {selectedAsset.title}
+            </h4>
+            <code className="block truncate font-mono text-charcoal/80 text-xs">
+              {selectedAsset.filename}
+            </code>
           </div>
-          <BaseSelect.Icon className="text-charcoal/50 shrink-0 transition-transform data-popup-open:rotate-180">
+          <BaseSelect.Icon className="shrink-0 text-charcoal/50 transition-transform data-popup-open:rotate-180">
             <ChevronDown size={16} />
           </BaseSelect.Icon>
         </BaseSelect.Trigger>
 
         <BaseSelect.Portal>
           <BaseSelect.Positioner
-            side="bottom"
-            sideOffset={8}
             alignItemWithTrigger={false}
             className="z-60"
-            style={{ width: 'var(--trigger-width)' }}
+            side="bottom"
+            sideOffset={8}
+            style={{ width: "var(--trigger-width)" }}
           >
             <BaseSelect.Popup
+              className="max-h-60 origin-top touch-pan-y overflow-y-auto overscroll-contain rounded-xl border border-charcoal/10 bg-white p-1.5 shadow-lg outline-none transition-[transform,opacity] duration-150 ease-out data-ending-style:scale-[0.95] data-starting-style:scale-[0.95] data-ending-style:opacity-0 data-starting-style:opacity-0"
               data-lenis-prevent
-              className="bg-white border border-charcoal/10 shadow-lg rounded-xl p-1.5 outline-none max-h-60 overflow-y-auto overscroll-contain touch-pan-y origin-top transition-[transform,opacity] duration-150 ease-out data-starting-style:opacity-0 data-starting-style:scale-[0.95] data-ending-style:opacity-0 data-ending-style:scale-[0.95]"
             >
               {options.map((option) => (
                 <BaseSelect.Item
+                  className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-charcoal/5 data-highlighted:bg-charcoal/5 data-selected:font-medium data-selected:text-forest-green"
                   key={option.value}
                   value={option.value}
-                  className="flex items-center gap-2 w-full text-left hover:bg-charcoal/5 transition-colors cursor-pointer data-highlighted:bg-charcoal/5 data-selected:text-forest-green data-selected:font-medium px-3 py-2 rounded-lg text-sm"
                 >
                   {option.icon}
-                  <BaseSelect.ItemText className="flex-1">{option.label}</BaseSelect.ItemText>
+                  <BaseSelect.ItemText className="flex-1">
+                    {option.label}
+                  </BaseSelect.ItemText>
                   <BaseSelect.ItemIndicator>
                     <Check size={14} strokeWidth={2.5} />
                   </BaseSelect.ItemIndicator>

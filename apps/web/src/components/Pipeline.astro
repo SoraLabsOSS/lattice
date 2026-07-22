@@ -1,46 +1,49 @@
 ---
 const steps = [
   {
-    number: "01",
-    title: "Generate your tokens",
     description:
       "Select your brand colors, define your typography, and set your system's style – all while previewing your tokens in real-time.",
+    number: "01",
+    title: "Generate your tokens",
   },
   {
-    number: "02",
-    title: "Drop them in your project",
     description:
       "Generate CSS custom properties, export tokens as DTCG compliant JSON, wire up your Tailwind config, or even create a shadcn/ui theme.",
+    number: "02",
+    title: "Drop them in your project",
   },
   {
-    number: "03",
-    title: "Start building",
     description:
       "Your design decisions are embedded in the tokens, so your layouts are built on a foundation that's consistent by default and fully overridable when you need it.",
+    number: "03",
+    title: "Start building",
   },
 ];
 ---
 
-<section id="how-it-works" class="section-spacing mb-16 bg-gray/80">
+<section class="section-spacing mb-16 bg-gray/80" id="how-it-works">
   <div class="container-custom">
     <!-- Section Header -->
     <div class="mb-12 flex flex-col gap-4">
       <h3>Brand to tokens in 5&nbsp;minutes</h3>
       <p class="text-base md:text-lg text-charcoal/80 max-w-3xl">
-        Your tokens are generated from your brand and designed to drop into any stack — no build plugins, no config merging, no lock-in.
+        Your tokens are generated from your brand and designed to drop into any
+        stack — no build plugins, no config merging, no lock-in.
       </p>
     </div>
 
     <!-- Pipeline Cards -->
     <div class="pipeline-grid">
-
       <!-- Card 1: Generate your tokens -->
       <div class="pipeline-card flex flex-col">
         <div class="anim-container aspect-4/3 rounded-3xl bg-white mb-6">
           <div class="anim1" data-anim="color-swatch">
             <div class="anim1-header">
               <div class="anim1-swatch"></div>
-              <div class="anim1-hex"><span class="anim1-hex-hash">#</span><span class="anim1-hex-val"></span></div>
+              <div class="anim1-hex">
+                <span class="anim1-hex-hash">#</span
+                ><span class="anim1-hex-val"></span>
+              </div>
             </div>
             <div class="anim1-ramps">
               {[0,1,2].map(r => (
@@ -51,17 +54,51 @@ const steps = [
                 </div>
               ))}
             </div>
-            <svg class="anim1-ptr" enable-background="new 0 0 32 32" viewBox="0 0 32 32" width="48" height="48" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><clipPath id="a"><path d="m0 0h32v32h-32z"/></clipPath><path clip-path="url(#a)" d="m11.3 20.4c-.3-.4-.6-1.1-1.2-2-.3-.5-1.2-1.5-1.5-1.9-.2-.4-.2-.6-.1-1 .1-.6.7-1.1 1.4-1.1.5 0 1 .4 1.4.7.2.2.5.6.7.8s.2.3.4.5c.2.3.3.5.2.1-.1-.5-.2-1.3-.4-2.1-.1-.6-.2-.7-.3-1.1-.1-.5-.2-.8-.3-1.3-.1-.3-.2-1.1-.3-1.5-.1-.5-.1-1.4.3-1.8.3-.3.9-.4 1.3-.2.5.3.8 1 .9 1.3.2.5.4 1.2.5 2 .2 1 .5 2.5.5 2.8 0-.4-.1-1.1 0-1.5.1-.3.3-.7.7-.8.3-.1.6-.1.9-.1.3.1.6.3.8.5.4.6.4 1.9.4 1.8.1-.4.1-1.2.3-1.6.1-.2.5-.4.7-.5.3-.1.7-.1 1 0 .2 0 .6.3.7.5.2.3.3 1.3.4 1.7 0 .1.1-.4.3-.7.4-.6 1.8-.8 1.9.6v1.1 1.2c0 .4-.1 1.3-.2 1.7-.1.3-.4 1-.7 1.4 0 0-1.1 1.2-1.2 1.8s-.1.6-.1 1 .1.9.1.9-.8.1-1.2 0-.9-.8-1-1.1c-.2-.3-.5-.3-.7 0-.2.4-.7 1.1-1.1 1.1-.7.1-2.1 0-3.1 0 0 0 .2-1-.2-1.4-.3-.3-.8-.8-1.1-1.1z" fill="#fff"/><g fill="none" stroke="#000" stroke-linecap="round" stroke-width=".75"><path clip-path="url(#a)" d="m11.3 20.4c-.3-.4-.6-1.1-1.2-2-.3-.5-1.2-1.5-1.5-1.9-.2-.4-.2-.6-.1-1 .1-.6.7-1.1 1.4-1.1.5 0 1 .4 1.4.7.2.2.5.6.7.8s.2.3.4.5c.2.3.3.5.2.1-.1-.5-.2-1.3-.4-2.1-.1-.6-.2-.7-.3-1.1-.1-.5-.2-.8-.3-1.3-.1-.3-.2-1.1-.3-1.5-.1-.5-.1-1.4.3-1.8.3-.3.9-.4 1.3-.2.5.3.8 1 .9 1.3.2.5.4 1.2.5 2 .2 1 .5 2.5.5 2.8 0-.4-.1-1.1 0-1.5.1-.3.3-.7.7-.8.3-.1.6-.1.9-.1.3.1.6.3.8.5.4.6.4 1.9.4 1.8.1-.4.1-1.2.3-1.6.1-.2.5-.4.7-.5.3-.1.7-.1 1 0 .2 0 .6.3.7.5.2.3.3 1.3.4 1.7 0 .1.1-.4.3-.7.4-.6 1.8-.8 1.9.6v1.1 1.2c0 .4-.1 1.3-.2 1.7-.1.3-.4 1-.7 1.4 0 0-1.1 1.2-1.2 1.8s-.1.6-.1 1 .1.9.1.9-.8.1-1.2 0-.9-.8-1-1.1c-.2-.3-.5-.3-.7 0-.2.4-.7 1.1-1.1 1.1-.7.1-2.1 0-3.1 0 0 0 .2-1-.2-1.4-.3-.3-.8-.8-1.1-1.1z" stroke-linejoin="round"/><path clip-path="url(#a)" d="m19.6 20.7v-3.4"/><path clip-path="url(#a)" d="m17.6 20.7-.1-3.4"/><path clip-path="url(#a)" d="m15.6 17.3v3.4"/></g></svg>
+            <svg
+              class="anim1-ptr"
+              enable-background="new 0 0 32 32"
+              height="48"
+              viewBox="0 0 32 32"
+              width="48"
+              xmlns="http://www.w3.org/2000/svg"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+            >
+              <clipPath id="a"><path d="m0 0h32v32h-32z" /></clipPath>
+              <path
+                clip-path="url(#a)"
+                d="m11.3 20.4c-.3-.4-.6-1.1-1.2-2-.3-.5-1.2-1.5-1.5-1.9-.2-.4-.2-.6-.1-1 .1-.6.7-1.1 1.4-1.1.5 0 1 .4 1.4.7.2.2.5.6.7.8s.2.3.4.5c.2.3.3.5.2.1-.1-.5-.2-1.3-.4-2.1-.1-.6-.2-.7-.3-1.1-.1-.5-.2-.8-.3-1.3-.1-.3-.2-1.1-.3-1.5-.1-.5-.1-1.4.3-1.8.3-.3.9-.4 1.3-.2.5.3.8 1 .9 1.3.2.5.4 1.2.5 2 .2 1 .5 2.5.5 2.8 0-.4-.1-1.1 0-1.5.1-.3.3-.7.7-.8.3-.1.6-.1.9-.1.3.1.6.3.8.5.4.6.4 1.9.4 1.8.1-.4.1-1.2.3-1.6.1-.2.5-.4.7-.5.3-.1.7-.1 1 0 .2 0 .6.3.7.5.2.3.3 1.3.4 1.7 0 .1.1-.4.3-.7.4-.6 1.8-.8 1.9.6v1.1 1.2c0 .4-.1 1.3-.2 1.7-.1.3-.4 1-.7 1.4 0 0-1.1 1.2-1.2 1.8s-.1.6-.1 1 .1.9.1.9-.8.1-1.2 0-.9-.8-1-1.1c-.2-.3-.5-.3-.7 0-.2.4-.7 1.1-1.1 1.1-.7.1-2.1 0-3.1 0 0 0 .2-1-.2-1.4-.3-.3-.8-.8-1.1-1.1z"
+                fill="#fff"
+              />
+              <g
+                fill="none"
+                stroke="#000"
+                stroke-linecap="round"
+                stroke-width=".75"
+              >
+                <path
+                  clip-path="url(#a)"
+                  d="m11.3 20.4c-.3-.4-.6-1.1-1.2-2-.3-.5-1.2-1.5-1.5-1.9-.2-.4-.2-.6-.1-1 .1-.6.7-1.1 1.4-1.1.5 0 1 .4 1.4.7.2.2.5.6.7.8s.2.3.4.5c.2.3.3.5.2.1-.1-.5-.2-1.3-.4-2.1-.1-.6-.2-.7-.3-1.1-.1-.5-.2-.8-.3-1.3-.1-.3-.2-1.1-.3-1.5-.1-.5-.1-1.4.3-1.8.3-.3.9-.4 1.3-.2.5.3.8 1 .9 1.3.2.5.4 1.2.5 2 .2 1 .5 2.5.5 2.8 0-.4-.1-1.1 0-1.5.1-.3.3-.7.7-.8.3-.1.6-.1.9-.1.3.1.6.3.8.5.4.6.4 1.9.4 1.8.1-.4.1-1.2.3-1.6.1-.2.5-.4.7-.5.3-.1.7-.1 1 0 .2 0 .6.3.7.5.2.3.3 1.3.4 1.7 0 .1.1-.4.3-.7.4-.6 1.8-.8 1.9.6v1.1 1.2c0 .4-.1 1.3-.2 1.7-.1.3-.4 1-.7 1.4 0 0-1.1 1.2-1.2 1.8s-.1.6-.1 1 .1.9.1.9-.8.1-1.2 0-.9-.8-1-1.1c-.2-.3-.5-.3-.7 0-.2.4-.7 1.1-1.1 1.1-.7.1-2.1 0-3.1 0 0 0 .2-1-.2-1.4-.3-.3-.8-.8-1.1-1.1z"
+                  stroke-linejoin="round"
+                />
+                <path clip-path="url(#a)" d="m19.6 20.7v-3.4" />
+                <path clip-path="url(#a)" d="m17.6 20.7-.1-3.4" />
+                <path clip-path="url(#a)" d="m15.6 17.3v3.4" />
+              </g>
+            </svg>
           </div>
         </div>
         <span class="text-sm font-mono text-charcoal/40 mb-2 block">01</span>
         <h5 class="mb-2">Configure your system</h5>
-        <p class="text-sm md:text-base text-charcoal/80">{steps[0].description}</p>
+        <p class="text-sm md:text-base text-charcoal/80">
+          {steps[0].description}
+        </p>
       </div>
 
       <!-- Card 2: Drop them in your project -->
       <div class="pipeline-card flex flex-col">
-        <div class="anim-container anim-container-ide aspect-4/3 rounded-3xl bg-white mb-6">
+        <div
+          class="anim-container anim-container-ide aspect-4/3 rounded-3xl bg-white mb-6"
+        >
           <div class="anim2" data-anim="ide-typing">
             <div class="anim2-editor">
               <div class="anim2-editor-inner">
@@ -78,7 +115,9 @@ const steps = [
         </div>
         <span class="text-sm font-mono text-charcoal/40 mb-2 block">02</span>
         <h5 class="mb-2">Generate your theme</h5>
-        <p class="text-sm md:text-base text-charcoal/80">{steps[1].description}</p>
+        <p class="text-sm md:text-base text-charcoal/80">
+          {steps[1].description}
+        </p>
       </div>
 
       <!-- Card 3: Start building -->
@@ -88,7 +127,7 @@ const steps = [
             <!-- Browser frame -->
             <div class="anim3-frame">
               <div class="anim3-nav">
-                <div class="anim3-traffic" aria-hidden="true">
+                <div aria-hidden="true" class="anim3-traffic">
                   <span class="anim3-dot anim3-dot-close"></span>
                   <span class="anim3-dot anim3-dot-min"></span>
                   <span class="anim3-dot anim3-dot-max"></span>
@@ -116,15 +155,16 @@ const steps = [
         </div>
         <span class="text-sm font-mono text-charcoal/40 mb-2 block">03</span>
         <h5 class="mb-2">Start building</h5>
-        <p class="text-sm md:text-base text-charcoal/80">{steps[2].description}</p>
+        <p class="text-sm md:text-base text-charcoal/80">
+          {steps[2].description}
+        </p>
       </div>
-
     </div>
   </div>
 </section>
 
 <style>
-    /* ---- Layout ---- */
+  /* ---- Layout ---- */
   .pipeline-grid {
     display: grid;
     grid-template-columns: 1fr;
@@ -150,57 +190,68 @@ const steps = [
   }
 
   /* ============================================
-     ANIMATION 1 — Color swatch + ramp cascade
-     Loop: ~8s (JS-driven clicks; cursor fixed on swatch)
-     ============================================ */
+         ANIMATION 1 — Color swatch + ramp cascade
+         Loop: ~8s (JS-driven clicks; cursor fixed on swatch)
+         ============================================ */
   .anim1 {
     position: absolute;
     inset: 0;
     display: flex;
     flex-direction: column;
+    gap: 8%;
     align-items: stretch;
     justify-content: center;
     padding: 10% 12%;
-    gap: 8%;
   }
 
   /* Swatch + hex row */
   .anim1-header {
     display: flex;
-    align-items: center;
     gap: 1rem;
+    align-items: center;
   }
 
   .anim1-swatch {
+    flex-shrink: 0;
     width: 18%;
     aspect-ratio: 1;
     border-radius: 24%;
-    box-shadow: 0 3px 14px oklch(24.3% 0 0 / 0.10), 0 1px 3px oklch(24.3% 0 0 / 0.06);
-    transition: background-color 0.35s var(--ease-anim), transform 0.22s var(--ease-anim), box-shadow 0.22s var(--ease-anim);
-    flex-shrink: 0;
+    box-shadow:
+      0 3px 14px oklch(24.3% 0 0 / 0.1),
+      0 1px 3px oklch(24.3% 0 0 / 0.06);
+    transition:
+      background-color 0.35s var(--ease-anim),
+      transform 0.22s var(--ease-anim),
+      box-shadow 0.22s var(--ease-anim);
     will-change: background-color, transform;
   }
 
   .anim1-swatch.is-pressed {
+    box-shadow:
+      0 2px 10px oklch(24.3% 0 0 / 0.09),
+      0 1px 2px oklch(24.3% 0 0 / 0.06);
     transform: scale(0.94);
-    box-shadow: 0 2px 10px oklch(24.3% 0 0 / 0.09), 0 1px 2px oklch(24.3% 0 0 / 0.06);
   }
 
   /* Hex input display */
   .anim1-hex {
-    font-family: IBM Plex Mono, SFMono-Regular, Menlo, monospace;
-    font-size: 14px;
-    color: oklch(24.3% 0 0 / 0.65);
-    background: white;
-    border: 1px solid oklch(24.3% 0 0 / 0.10);
-    border-radius: 10px;
     padding: 12px 10px;
+    font-family:
+      IBM Plex Mono,
+      SFMono-Regular,
+      Menlo,
+      monospace;
+    font-size: 14px;
     line-height: 1;
+    color: oklch(24.3% 0 0 / 0.65);
     white-space: nowrap;
+    background: white;
+    border: 1px solid oklch(24.3% 0 0 / 0.1);
+    border-radius: 10px;
   }
 
   .anim1-hex-hash {
-    color: oklch(24.3% 0 0 / 0.30);
+    color: oklch(24.3% 0 0 / 0.3);
   }
 
   .anim1-hex-val {
@@ -232,9 +283,15 @@ const steps = [
   }
 
   @keyframes a1-pop {
-    0%   { transform: scaleY(1); }
-    45%  { transform: scaleY(1.10); }
-    100% { transform: scaleY(1); }
+    0% {
+      transform: scaleY(1);
+    }
+    45% {
+      transform: scaleY(1.1);
+    }
+    100% {
+      transform: scaleY(1);
+    }
   }
 
   /* Hand pointer — fixed over swatch; only click motion loops */
@@ -242,29 +299,28 @@ const steps = [
     position: absolute;
     top: 28%;
     left: 18%;
-    opacity: 1;
-    transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1);
-    pointer-events: none;
     z-index: 10;
+    pointer-events: none;
+    opacity: 1;
     filter: drop-shadow(0 1px 3px oklch(24.3% 0 0 / 0.22));
+    transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .anim1-ptr.is-clicking {
     transform: translateY(4px);
   }
 
-
   /* ============================================
-     ANIMATION 2 — IDE token typing
-     Total loop: ~6.5s (JS-driven)
-     ============================================ */
+         ANIMATION 2 — IDE token typing
+         Total loop: ~6.5s (JS-driven)
+         ============================================ */
 
   /* The IDE window extends past the card's bottom edge; the card's
-     rounded `overflow: hidden` clips the extension into its bottom curve.
-     Container queries let the inner font size scale with the card width. */
+         rounded `overflow: hidden` clips the extension into its bottom curve.
+         Container queries let the inner font size scale with the card width. */
   .anim-container-ide {
-    overflow: hidden;
     container-type: inline-size;
+    overflow: hidden;
   }
 
   .anim2 {
@@ -274,15 +330,15 @@ const steps = [
 
   .anim2-editor {
     position: absolute;
-    left: 6%;
-    right: 6%;
     top: 16%;
+    right: 6%;
     bottom: 16%;
+    left: 6%;
+    overflow: hidden;
     background: oklch(22% 0.01 240);
     border: 1px solid oklch(100% 0 0 / 0.9);
     border-radius: 12px;
     box-shadow: 0 3px 6px oklch(0% 0 0 / 0.12);
-    overflow: hidden;
   }
 
   .anim2-editor-inner {
@@ -293,18 +349,22 @@ const steps = [
   }
 
   .anim2-code {
-    font-family: IBM Plex Mono, SFMono-Regular, Menlo, monospace;
+    font-family:
+      IBM Plex Mono,
+      SFMono-Regular,
+      Menlo,
+      monospace;
     font-size: clamp(8px, 2.6cqi, 13px);
     line-height: 1.75;
-    letter-spacing: -0.01em;
     color: oklch(80% 0.005 240);
+    letter-spacing: -0.01em;
     transform: translateY(0);
     will-change: transform;
   }
 
   .anim2-code.is-scrolling {
-    transition: transform 650ms cubic-bezier(0.65, 0, 0.35, 1);
     transform: translateY(-120%);
+    transition: transform 650ms cubic-bezier(0.65, 0, 0.35, 1);
   }
 
   .anim2-line {
@@ -314,11 +374,11 @@ const steps = [
   }
 
   .anim2-gutter {
-    color: oklch(55% 0 0 / 0.55);
-    user-select: none;
-    min-width: 1ch;
-    text-align: right;
     flex-shrink: 0;
+    min-width: 1ch;
+    color: oklch(55% 0 0 / 0.55);
+    text-align: right;
+    user-select: none;
     opacity: 1;
     transform: translateX(0);
     transition:
@@ -332,7 +392,7 @@ const steps = [
   }
 
   /* Disables gutter transitions so we can instantly reset state between
-     cycles without any visible fade-out. */
+         cycles without any visible fade-out. */
   .anim2-code.is-resetting .anim2-gutter {
     transition: none;
   }
@@ -344,39 +404,38 @@ const steps = [
 
   /* Token colors are applied inline in JS to keep styles scoped. */
 
-
   /* ============================================
-     ANIMATION 3 — UI assembly (staggered reveal)
-     Total loop: 5.8s — static hold, then unravel (no frame highlight)
-     ============================================ */
+         ANIMATION 3 — UI assembly (staggered reveal)
+         Total loop: 5.8s — static hold, then unravel (no frame highlight)
+         ============================================ */
   .anim3 {
+    --a3-dur: 5.8s;
+    --a3-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --a3-ease-snap: cubic-bezier(0.34, 1.15, 0.64, 1);
     position: absolute;
     inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 10%;
-    --a3-dur: 5.8s;
-    --a3-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-    --a3-ease-snap: cubic-bezier(0.34, 1.15, 0.64, 1);
   }
 
   .anim3-frame {
-    width: 100%;
-    height: 100%;
-    border: 1px solid oklch(24.3% 0 0 / 0.1);
-    border-radius: 10px;
-    overflow: hidden;
     display: flex;
     flex-direction: column;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
     background: oklch(99.2% 0.002 151);
+    border: 1px solid oklch(24.3% 0 0 / 0.1);
+    border-radius: 10px;
     box-shadow: 0 1px 2px oklch(24.3% 0 0 / 0.04);
   }
 
   .anim3-nav {
     display: flex;
-    align-items: center;
     gap: 8px;
+    align-items: center;
     min-height: 13%;
     padding: 0 10px;
     background: linear-gradient(
@@ -392,8 +451,8 @@ const steps = [
 
   .anim3-traffic {
     display: flex;
-    gap: 5px;
     flex-shrink: 0;
+    gap: 5px;
   }
 
   .anim3-dot {
@@ -403,17 +462,23 @@ const steps = [
     opacity: 0.85;
   }
 
-  .anim3-dot-close { background: oklch(72% 0.17 25); }
-  .anim3-dot-min   { background: oklch(82% 0.14 85); }
-  .anim3-dot-max   { background: oklch(72% 0.14 151); }
+  .anim3-dot-close {
+    background: oklch(72% 0.17 25);
+  }
+  .anim3-dot-min {
+    background: oklch(82% 0.14 85);
+  }
+  .anim3-dot-max {
+    background: oklch(72% 0.14 151);
+  }
 
   .anim3-url {
     flex: 1;
     height: 52%;
     max-height: 22px;
-    border-radius: 5px;
     background: oklch(100% 0 0 / 0.75);
     border: 1px solid oklch(24.3% 0 0 / 0.06);
+    border-radius: 5px;
     opacity: 0;
     transform: scaleX(0.92);
     transform-origin: left center;
@@ -422,18 +487,18 @@ const steps = [
   }
 
   .anim3-body {
-    flex: 1;
     display: flex;
+    flex: 1;
     min-height: 0;
   }
 
   .anim3-sidebar {
-    width: 22%;
-    background: oklch(97.5% 0.003 151);
-    padding: 10% 8%;
     display: flex;
     flex-direction: column;
     gap: 10%;
+    width: 22%;
+    padding: 10% 8%;
+    background: oklch(97.5% 0.003 151);
     opacity: 0;
     transform: translateX(-14px);
     animation: a3-sidebar-in var(--a3-dur) var(--a3-ease-out) infinite;
@@ -442,28 +507,34 @@ const steps = [
 
   .anim3-nav-item {
     height: 8px;
-    border-radius: 4px;
     background: oklch(24.3% 0 0 / 0.07);
+    border-radius: 4px;
     opacity: 0;
     transform: translateX(-6px);
     animation: a3-nav-item-in var(--a3-dur) var(--a3-ease-out) infinite;
   }
 
-  .anim3-nav-item:nth-child(1) { animation-delay: 0.14s; }
-  .anim3-nav-item:nth-child(2) { animation-delay: 0.18s; }
-  .anim3-nav-item:nth-child(3) { animation-delay: 0.22s; }
+  .anim3-nav-item:nth-child(1) {
+    animation-delay: 0.14s;
+  }
+  .anim3-nav-item:nth-child(2) {
+    animation-delay: 0.18s;
+  }
+  .anim3-nav-item:nth-child(3) {
+    animation-delay: 0.22s;
+  }
 
   .anim3-nav-item-active {
     background: oklch(51.88% 0.109 151.87 / 0.22);
   }
 
   .anim3-main {
-    flex: 1;
     display: flex;
+    flex: 1;
     flex-direction: column;
-    padding: 8%;
     gap: 5%;
     min-width: 0;
+    padding: 8%;
   }
 
   .anim3-block {
@@ -493,20 +564,20 @@ const steps = [
 
   .anim3-btn-row {
     display: flex;
-    justify-content: flex-end;
-    align-items: center;
     gap: 3%;
-    margin-top: auto;
+    align-items: center;
+    justify-content: flex-end;
     padding-top: 5%;
+    margin-top: auto;
     opacity: 0;
     animation: a3-btn-row-in var(--a3-dur) var(--a3-ease-out) infinite;
     animation-delay: 0.34s;
   }
 
   .anim3-btn {
+    flex-shrink: 0;
     height: 22px;
     border-radius: 99px;
-    flex-shrink: 0;
   }
 
   .anim3-btn-ghost {
@@ -531,76 +602,206 @@ const steps = [
 
   /* Timeline (5.8s): build → long static hold → unravel → short gap */
   @keyframes a3-nav-in {
-    0%, 3%   { opacity: 0; transform: translateY(-100%); }
-    12%      { opacity: 1; transform: translateY(0); }
-    84%      { opacity: 1; transform: translateY(0); }
-    91%      { opacity: 0; transform: translateY(-6px); }
-    100%     { opacity: 0; transform: translateY(-100%); }
+    0%,
+    3% {
+      opacity: 0;
+      transform: translateY(-100%);
+    }
+    12% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    84% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    91% {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-100%);
+    }
   }
 
   @keyframes a3-url-in {
-    0%, 4%   { opacity: 0; transform: scaleX(0.92); }
-    13%      { opacity: 1; transform: scaleX(1); }
-    84%      { opacity: 1; transform: scaleX(1); }
-    91%      { opacity: 0; transform: scaleX(0.96); }
-    100%     { opacity: 0; transform: scaleX(0.92); }
+    0%,
+    4% {
+      opacity: 0;
+      transform: scaleX(0.92);
+    }
+    13% {
+      opacity: 1;
+      transform: scaleX(1);
+    }
+    84% {
+      opacity: 1;
+      transform: scaleX(1);
+    }
+    91% {
+      opacity: 0;
+      transform: scaleX(0.96);
+    }
+    100% {
+      opacity: 0;
+      transform: scaleX(0.92);
+    }
   }
 
   @keyframes a3-sidebar-in {
-    0%, 5%   { opacity: 0; transform: translateX(-14px); }
-    14%      { opacity: 1; transform: translateX(0); }
-    84%      { opacity: 1; transform: translateX(0); }
-    91%      { opacity: 0; transform: translateX(-8px); }
-    100%     { opacity: 0; transform: translateX(-14px); }
+    0%,
+    5% {
+      opacity: 0;
+      transform: translateX(-14px);
+    }
+    14% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    84% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    91% {
+      opacity: 0;
+      transform: translateX(-8px);
+    }
+    100% {
+      opacity: 0;
+      transform: translateX(-14px);
+    }
   }
 
   @keyframes a3-nav-item-in {
-    0%, 7%   { opacity: 0; transform: translateX(-6px); }
-    16%      { opacity: 1; transform: translateX(0); }
-    84%      { opacity: 1; transform: translateX(0); }
-    91%      { opacity: 0; }
-    100%     { opacity: 0; transform: translateX(-6px); }
+    0%,
+    7% {
+      opacity: 0;
+      transform: translateX(-6px);
+    }
+    16% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    84% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    91% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 0;
+      transform: translateX(-6px);
+    }
   }
 
   @keyframes a3-block-in {
-    0%, 6%   { opacity: 0; transform: translateY(12px); }
-    16%      { opacity: 1; transform: translateY(0); }
-    84%      { opacity: 1; transform: translateY(0); }
-    90%      { opacity: 0; transform: translateY(6px); }
-    100%     { opacity: 0; transform: translateY(12px); }
+    0%,
+    6% {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    16% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    84% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    90% {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(12px);
+    }
   }
 
   @keyframes a3-btn-row-in {
-    0%, 10%  { opacity: 0; }
-    18%      { opacity: 1; }
-    84%      { opacity: 1; }
-    91%      { opacity: 0; }
-    100%     { opacity: 0; }
+    0%,
+    10% {
+      opacity: 0;
+    }
+    18% {
+      opacity: 1;
+    }
+    84% {
+      opacity: 1;
+    }
+    91% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 0;
+    }
   }
 
   @keyframes a3-btn-ghost-in {
-    0%, 11%  { opacity: 0; transform: scale(0.92); }
-    20%      { opacity: 1; transform: scale(1); }
-    84%      { opacity: 1; transform: scale(1); }
-    90%      { opacity: 0; transform: scale(0.96); }
-    100%     { opacity: 0; transform: scale(0.92); }
+    0%,
+    11% {
+      opacity: 0;
+      transform: scale(0.92);
+    }
+    20% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    84% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    90% {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(0.92);
+    }
   }
 
   @keyframes a3-btn-primary-in {
-    0%, 12%  { opacity: 0; transform: scale(0.88); }
-    22%      { opacity: 1; transform: scale(1); }
-    48%      { opacity: 1; transform: scale(1); }
-    52%      { opacity: 1; transform: scale(1.04); }
-    56%      { opacity: 1; transform: scale(1); }
-    84%      { opacity: 1; transform: scale(1); }
-    90%      { opacity: 0; transform: scale(0.94); }
-    100%     { opacity: 0; transform: scale(0.88); }
+    0%,
+    12% {
+      opacity: 0;
+      transform: scale(0.88);
+    }
+    22% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    48% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    52% {
+      opacity: 1;
+      transform: scale(1.04);
+    }
+    56% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    84% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    90% {
+      opacity: 0;
+      transform: scale(0.94);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(0.88);
+    }
   }
 
-
   /* ============================================
-     Reduced motion — show final state, no animation
-     ============================================ */
+         Reduced motion — show final state, no animation
+         ============================================ */
   @media (prefers-reduced-motion: reduce) {
     .anim1-swatch,
     .anim1-cell,
@@ -615,45 +816,90 @@ const steps = [
     .anim3-block,
     .anim3-btn-row,
     .anim3-btn {
-      animation: none !important;
+      box-shadow: none !important;
       opacity: 1 !important;
       transform: none !important;
       transition: none !important;
-      box-shadow: none !important;
+      animation: none !important;
     }
 
     .anim3-frame {
       box-shadow: 0 1px 2px oklch(24.3% 0 0 / 0.06) !important;
     }
 
-    .anim1-ptr { display: none; }
-
+    .anim1-ptr {
+      display: none;
+    }
   }
 </style>
 
 <script>
   (function initColorSwatchAnim() {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
 
     const container = document.querySelector('[data-anim="color-swatch"]');
-    if (!container) return;
+    if (!container) {
+      return;
+    }
 
-    const swatch = container.querySelector('.anim1-swatch') as HTMLElement;
-    const hexVal = container.querySelector('.anim1-hex-val') as HTMLElement;
-    const cursor = container.querySelector('.anim1-ptr') as HTMLElement;
-    const rows = Array.from(container.querySelectorAll('.anim1-row'));
+    const swatch = container.querySelector(".anim1-swatch") as HTMLElement;
+    const hexVal = container.querySelector(".anim1-hex-val") as HTMLElement;
+    const cursor = container.querySelector(".anim1-ptr") as HTMLElement;
+    const rows = Array.from(container.querySelectorAll(".anim1-row"));
 
     // 4 color palettes with hex approximations for the display
     const PALETTES = [
-      { hue: 152, chroma: 0.11, swatchL: 0.55, hex: '2B8B6A', rows: [{ h: 152, c: 0.11 }, { h: 185, c: 0.09 }, { h: 120, c: 0.085 }] },
-      { hue: 255, chroma: 0.15, swatchL: 0.52, hex: '2A5FC2', rows: [{ h: 255, c: 0.15 }, { h: 290, c: 0.11 }, { h: 225, c: 0.10 }] },
-      { hue: 25,  chroma: 0.18, swatchL: 0.63, hex: 'CC5C3A', rows: [{ h: 25,  c: 0.18 }, { h: 55,  c: 0.14 }, { h: 355, c: 0.13 }] },
-      { hue: 152, chroma: 0.11, swatchL: 0.55, hex: '2B8B6A', rows: [{ h: 152, c: 0.11 }, { h: 185, c: 0.09 }, { h: 120, c: 0.085 }] },
+      {
+        chroma: 0.11,
+        hex: "2B8B6A",
+        hue: 152,
+        rows: [
+          { c: 0.11, h: 152 },
+          { c: 0.09, h: 185 },
+          { c: 0.085, h: 120 },
+        ],
+        swatchL: 0.55,
+      },
+      {
+        chroma: 0.15,
+        hex: "2A5FC2",
+        hue: 255,
+        rows: [
+          { c: 0.15, h: 255 },
+          { c: 0.11, h: 290 },
+          { c: 0.1, h: 225 },
+        ],
+        swatchL: 0.52,
+      },
+      {
+        chroma: 0.18,
+        hex: "CC5C3A",
+        hue: 25,
+        rows: [
+          { c: 0.18, h: 25 },
+          { c: 0.14, h: 55 },
+          { c: 0.13, h: 355 },
+        ],
+        swatchL: 0.63,
+      },
+      {
+        chroma: 0.11,
+        hex: "2B8B6A",
+        hue: 152,
+        rows: [
+          { c: 0.11, h: 152 },
+          { c: 0.09, h: 185 },
+          { c: 0.085, h: 120 },
+        ],
+        swatchL: 0.55,
+      },
     ];
 
     // 8 lightness steps (light → dark) with chroma multipliers (bell curve)
-    const L_STEPS = [0.95, 0.87, 0.78, 0.68, 0.57, 0.48, 0.40, 0.34];
-    const C_MULT  = [0.28, 0.52, 0.78, 1.00, 0.95, 0.80, 0.62, 0.42];
+    const L_STEPS = [0.95, 0.87, 0.78, 0.68, 0.57, 0.48, 0.4, 0.34];
+    const C_MULT = [0.28, 0.52, 0.78, 1.0, 0.95, 0.8, 0.62, 0.42];
 
     function cellColor(ci: number, c: number, h: number): string {
       return `oklch(${L_STEPS[ci]} ${(c * C_MULT[ci]).toFixed(4)} ${h})`;
@@ -666,15 +912,17 @@ const steps = [
 
       rows.forEach((row, ri) => {
         const rc = p.rows[ri];
-        const cells = row.querySelectorAll('.anim1-cell') as NodeListOf<HTMLElement>;
+        const cells = row.querySelectorAll(
+          ".anim1-cell"
+        ) as NodeListOf<HTMLElement>;
         cells.forEach((cell, ci) => {
           const delay = stagger ? ci * 35 : 0;
           schedule(() => {
             cell.style.backgroundColor = cellColor(ci, rc.c, rc.h);
             if (stagger) {
-              cell.classList.remove('is-popping');
+              cell.classList.remove("is-popping");
               void cell.offsetWidth;
-              cell.classList.add('is-popping');
+              cell.classList.add("is-popping");
             }
           }, delay);
         });
@@ -682,11 +930,11 @@ const steps = [
     }
 
     function doClick(pi: number) {
-      swatch.classList.add('is-pressed');
-      cursor.classList.add('is-clicking');
+      swatch.classList.add("is-pressed");
+      cursor.classList.add("is-clicking");
       schedule(() => {
-        swatch.classList.remove('is-pressed');
-        cursor.classList.remove('is-clicking');
+        swatch.classList.remove("is-pressed");
+        cursor.classList.remove("is-clicking");
         applyPalette(pi, true);
       }, 150);
     }
@@ -705,7 +953,7 @@ const steps = [
     function runCycle() {
       clearAll();
       applyPalette(0, false);
-      cursor.classList.remove('is-clicking');
+      cursor.classList.remove("is-clicking");
 
       schedule(() => doClick(1), 1200);
       schedule(() => doClick(2), 3800);
@@ -718,113 +966,126 @@ const steps = [
 
   (function initIdeTypingAnim() {
     const container = document.querySelector('[data-anim="ide-typing"]');
-    if (!container) return;
+    if (!container) {
+      return;
+    }
 
-    const codeEl = container.querySelector('.anim2-code') as HTMLElement;
-    const lines = Array.from(container.querySelectorAll('.anim2-line')) as HTMLElement[];
+    const codeEl = container.querySelector(".anim2-code") as HTMLElement;
+    const lines = Array.from(
+      container.querySelectorAll(".anim2-line")
+    ) as HTMLElement[];
     const lineContents = lines.map(
-      (l) => l.querySelector('.anim2-line-content') as HTMLElement,
+      (l) => l.querySelector(".anim2-line-content") as HTMLElement
     );
 
     type Tok = { text: string; cls: string };
-    const TOKEN_STYLES: Record<string, { color?: string; whiteSpace?: 'pre' }> = {
-      prop: { color: 'oklch(76% 0.10 200)' },  // custom property names — teal
-      var: { color: 'oklch(79% 0.09 215)' },   // var(--...) references — light cyan
-      fn: { color: 'oklch(70% 0.16 25)' },     // function names (oklch, var) — coral red
-      num: { color: 'oklch(82% 0.11 75)' },    // numbers — warm amber
-      punct: { color: 'oklch(62% 0 0)' },      // punctuation — muted gray
-      ws: { whiteSpace: 'pre' },               // preserve typed spacing
-    };
+    const TOKEN_STYLES: Record<string, { color?: string; whiteSpace?: "pre" }> =
+      {
+        fn: { color: "oklch(70% 0.16 25)" }, // function names (oklch, var) — coral red
+        num: { color: "oklch(82% 0.11 75)" }, // numbers — warm amber
+        prop: { color: "oklch(76% 0.10 200)" }, // custom property names — teal
+        punct: { color: "oklch(62% 0 0)" }, // punctuation — muted gray
+        var: { color: "oklch(79% 0.09 215)" }, // var(--...) references — light cyan
+        ws: { whiteSpace: "pre" }, // preserve typed spacing
+      };
 
     function applyTokenStyle(el: HTMLSpanElement, cls: string) {
       const style = TOKEN_STYLES[cls];
-      if (!style) return;
-      if (style.color) el.style.color = style.color;
-      if (style.whiteSpace) el.style.whiteSpace = style.whiteSpace;
+      if (!style) {
+        return;
+      }
+      if (style.color) {
+        el.style.color = style.color;
+      }
+      if (style.whiteSpace) {
+        el.style.whiteSpace = style.whiteSpace;
+      }
     }
 
     const LINES: Tok[][] = [
       [
-        { text: '--color-primary-50', cls: 'prop' },
-        { text: ':', cls: 'punct' },
-        { text: ' ', cls: 'ws' },
-        { text: 'oklch', cls: 'fn' },
-        { text: '(', cls: 'punct' },
-        { text: '0.9749', cls: 'num' },
-        { text: ' ', cls: 'ws' },
-        { text: '0.0117', cls: 'num' },
-        { text: ' ', cls: 'ws' },
-        { text: '239.9027', cls: 'num' },
-        { text: ')', cls: 'punct' },
-        { text: ';', cls: 'punct' },
+        { cls: "prop", text: "--color-primary-50" },
+        { cls: "punct", text: ":" },
+        { cls: "ws", text: " " },
+        { cls: "fn", text: "oklch" },
+        { cls: "punct", text: "(" },
+        { cls: "num", text: "0.9749" },
+        { cls: "ws", text: " " },
+        { cls: "num", text: "0.0117" },
+        { cls: "ws", text: " " },
+        { cls: "num", text: "239.9027" },
+        { cls: "punct", text: ")" },
+        { cls: "punct", text: ";" },
       ],
       [
-        { text: '--color-border-neutral', cls: 'prop' },
-        { text: ':', cls: 'punct' },
-        { text: ' ', cls: 'ws' },
-        { text: 'var', cls: 'fn' },
-        { text: '(', cls: 'punct' },
-        { text: '--color-neutral-50', cls: 'var' },
-        { text: ')', cls: 'punct' },
-        { text: ';', cls: 'punct' },
+        { cls: "prop", text: "--color-border-neutral" },
+        { cls: "punct", text: ":" },
+        { cls: "ws", text: " " },
+        { cls: "fn", text: "var" },
+        { cls: "punct", text: "(" },
+        { cls: "var", text: "--color-neutral-50" },
+        { cls: "punct", text: ")" },
+        { cls: "punct", text: ";" },
       ],
       [
-        { text: '--space-sm', cls: 'prop' },
-        { text: ':', cls: 'punct' },
-        { text: ' ', cls: 'ws' },
-        { text: 'var', cls: 'fn' },
-        { text: '(', cls: 'punct' },
-        { text: '--dimension-100', cls: 'var' },
-        { text: ')', cls: 'punct' },
-        { text: ';', cls: 'punct' },
+        { cls: "prop", text: "--space-sm" },
+        { cls: "punct", text: ":" },
+        { cls: "ws", text: " " },
+        { cls: "fn", text: "var" },
+        { cls: "punct", text: "(" },
+        { cls: "var", text: "--dimension-100" },
+        { cls: "punct", text: ")" },
+        { cls: "punct", text: ";" },
       ],
       [
-        { text: '--shape-radius-badge', cls: 'prop' },
-        { text: ':', cls: 'punct' },
-        { text: ' ', cls: 'ws' },
-        { text: 'var', cls: 'fn' },
-        { text: '(', cls: 'punct' },
-        { text: '--dimension-75', cls: 'var' },
-        { text: ')', cls: 'punct' },
-        { text: ';', cls: 'punct' },
+        { cls: "prop", text: "--shape-radius-badge" },
+        { cls: "punct", text: ":" },
+        { cls: "ws", text: " " },
+        { cls: "fn", text: "var" },
+        { cls: "punct", text: "(" },
+        { cls: "var", text: "--dimension-75" },
+        { cls: "punct", text: ")" },
+        { cls: "punct", text: ";" },
       ],
       [
-        { text: '--color-background-primary', cls: 'prop' },
-        { text: ':', cls: 'punct' },
-        { text: ' ', cls: 'ws' },
-        { text: 'var', cls: 'fn' },
-        { text: '(', cls: 'punct' },
-        { text: '--color-cyan-700', cls: 'var' },
-        { text: ')', cls: 'punct' },
-        { text: ';', cls: 'punct' },
+        { cls: "prop", text: "--color-background-primary" },
+        { cls: "punct", text: ":" },
+        { cls: "ws", text: " " },
+        { cls: "fn", text: "var" },
+        { cls: "punct", text: "(" },
+        { cls: "var", text: "--color-cyan-700" },
+        { cls: "punct", text: ")" },
+        { cls: "punct", text: ";" },
       ],
       [
-        { text: '--font-body-md-size', cls: 'prop' },
-        { text: ':', cls: 'punct' },
-        { text: ' ', cls: 'ws' },
-        { text: 'var', cls: 'fn' },
-        { text: '(', cls: 'punct' },
-        { text: '--font-size-200', cls: 'var' },
-        { text: ')', cls: 'punct' },
-        { text: ';', cls: 'punct' },
+        { cls: "prop", text: "--font-body-md-size" },
+        { cls: "punct", text: ":" },
+        { cls: "ws", text: " " },
+        { cls: "fn", text: "var" },
+        { cls: "punct", text: "(" },
+        { cls: "var", text: "--font-size-200" },
+        { cls: "punct", text: ")" },
+        { cls: "punct", text: ";" },
       ],
     ];
 
-    const INITIAL_PAUSE = 1200;      // empty-editor pause on first cycle
-    const TYPE_SPEED = 14;          // ms per character
-    const LINE_GAP = 140;           // pause between lines
-    const END_PAUSE = 1200;          // pause after last line, before scroll
-    const SCROLL_DUR = 650;         // scroll-up duration (matches CSS transition)
-    const GUTTER_STAGGER = 75;      // delay between each gutter's animate-in
-    const GUTTER_DURATION = 350;    // matches CSS gutter transition duration
+    const INITIAL_PAUSE = 1200; // empty-editor pause on first cycle
+    const TYPE_SPEED = 14; // ms per character
+    const LINE_GAP = 140; // pause between lines
+    const END_PAUSE = 1200; // pause after last line, before scroll
+    const SCROLL_DUR = 650; // scroll-up duration (matches CSS transition)
+    const GUTTER_STAGGER = 75; // delay between each gutter's animate-in
+    const GUTTER_DURATION = 350; // matches CSS gutter transition duration
 
     function renderStatic() {
       LINES.forEach((tokens, idx) => {
         const target = lineContents[idx];
-        if (!target) return;
-        target.innerHTML = '';
+        if (!target) {
+          return;
+        }
+        target.innerHTML = "";
         tokens.forEach((tok) => {
-          const span = document.createElement('span');
+          const span = document.createElement("span");
           applyTokenStyle(span, tok.cls);
           span.textContent = tok.text;
           target.appendChild(span);
@@ -832,7 +1093,7 @@ const steps = [
       });
     }
 
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       renderStatic();
       return;
     }
@@ -850,29 +1111,29 @@ const steps = [
 
     function resetLines() {
       lineContents.forEach((lc) => {
-        lc.innerHTML = '';
+        lc.innerHTML = "";
       });
-      lines.forEach((l) => l.classList.remove('is-typing'));
+      lines.forEach((l) => l.classList.remove("is-typing"));
     }
 
     const gutters = lines
-      .map((l) => l.querySelector('.anim2-gutter') as HTMLElement)
+      .map((l) => l.querySelector(".anim2-gutter") as HTMLElement)
       .filter(Boolean);
 
     /** Hide gutters instantly (no transition) so they can animate back in. */
     function hideGuttersInstantly() {
-      codeEl.classList.add('is-resetting');
-      gutters.forEach((g) => g.classList.add('is-hidden'));
+      codeEl.classList.add("is-resetting");
+      gutters.forEach((g) => g.classList.add("is-hidden"));
       // Force a reflow so the "hidden" state is committed before we
       // re-enable transitions.
       void codeEl.offsetWidth;
-      codeEl.classList.remove('is-resetting');
+      codeEl.classList.remove("is-resetting");
     }
 
     /** Stagger-fade the gutters back in and call `done` once finished. */
     function animateGuttersIn(done: () => void) {
       gutters.forEach((g, i) => {
-        schedule(() => g.classList.remove('is-hidden'), i * GUTTER_STAGGER);
+        schedule(() => g.classList.remove("is-hidden"), i * GUTTER_STAGGER);
       });
       const total = (gutters.length - 1) * GUTTER_STAGGER + GUTTER_DURATION;
       schedule(done, total);
@@ -881,30 +1142,32 @@ const steps = [
     function typeLine(idx: number, onComplete: () => void) {
       const target = lineContents[idx];
       const tokens = LINES[idx];
-      lines[idx].classList.add('is-typing');
+      lines[idx].classList.add("is-typing");
 
       const flat: { ch: string; cls: string }[] = [];
       for (const tok of tokens) {
-        for (const ch of tok.text) flat.push({ ch, cls: tok.cls });
+        for (const ch of tok.text) {
+          flat.push({ ch, cls: tok.cls });
+        }
       }
 
       let i = 0;
 
       function appendFadingChar(ch: string, cls: string) {
-        const span = document.createElement('span');
+        const span = document.createElement("span");
         applyTokenStyle(span, cls);
         span.textContent = ch;
-        span.style.opacity = '0';
-        span.style.transition = 'opacity 180ms var(--ease-anim)';
+        span.style.opacity = "0";
+        span.style.transition = "opacity 180ms var(--ease-anim)";
         target.appendChild(span);
         requestAnimationFrame(() => {
-          span.style.opacity = '1';
+          span.style.opacity = "1";
         });
       }
 
       function tick() {
         if (i >= flat.length) {
-          lines[idx].classList.remove('is-typing');
+          lines[idx].classList.remove("is-typing");
           onComplete();
           return;
         }
@@ -921,12 +1184,12 @@ const steps = [
       function typeNext(idx: number) {
         if (idx >= LINES.length) {
           schedule(() => {
-            codeEl.classList.add('is-scrolling');
+            codeEl.classList.add("is-scrolling");
             schedule(() => {
               // Scroll finished: reset content + gutters off-screen, then
               // animate the next iteration's gutters in as the tail of
               // this iteration before looping.
-              codeEl.classList.remove('is-scrolling');
+              codeEl.classList.remove("is-scrolling");
               resetLines();
               hideGuttersInstantly();
               animateGuttersIn(() => runCycle(false));

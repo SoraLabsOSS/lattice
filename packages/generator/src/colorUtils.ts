@@ -1,10 +1,12 @@
-import { converter, formatHex } from 'culori';
+import { converter, formatHex } from "culori";
 
-const toOklch = converter('oklch');
+const toOklch = converter("oklch");
 
 export const STEPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900] as const;
 
-export const NEUTRAL_STEPS = [0, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1050] as const;
+export const NEUTRAL_STEPS = [
+  0, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1050,
+] as const;
 
 export interface ColorRamp {
   50: string;
@@ -48,10 +50,10 @@ export function generateRamp(
     }
 
     const color = {
-      mode: 'oklch' as const,
-      l: lightness,
       c: chroma,
       h: base?.h || 0,
+      l: lightness,
+      mode: "oklch" as const,
     };
 
     ramp[step as keyof ColorRamp] = formatHex(color) || baseHex;
@@ -74,7 +76,8 @@ export function flipRamp(ramp: ColorRamp): ColorRamp {
   const out: Partial<ColorRamp> = {};
   const n = STEPS.length;
   for (let i = 0; i < n; i++) {
-    out[STEPS[i] as keyof ColorRamp] = ramp[STEPS[n - 1 - i] as keyof ColorRamp];
+    out[STEPS[i] as keyof ColorRamp] =
+      ramp[STEPS[n - 1 - i] as keyof ColorRamp];
   }
   return out as ColorRamp;
 }
@@ -93,39 +96,43 @@ export function invertForDarkMode(ramp: ColorRamp): ColorRamp {
 
     inverted[step as keyof ColorRamp] =
       formatHex({
-        mode: 'oklch',
-        l: newLightness,
         c: (originalColor.c || 0) * 0.95,
         h: originalColor.h || 0,
+        l: newLightness,
+        mode: "oklch",
       }) || ramp[step as keyof ColorRamp];
   });
 
   return inverted as ColorRamp;
 }
 
-const toLrgb = converter('lrgb');
+const toLrgb = converter("lrgb");
 
 export function getContrastColor(hex: string): string {
   const c = toLrgb(hex);
-  if (!c) return '#000000';
+  if (!c) {
+    return "#000000";
+  }
   // WCAG relative luminance
   const L = 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
   // Compare contrast against white vs black
-  const contrastWhite = (1.05) / (L + 0.05);
-  const contrastBlack = (L + 0.05) / (0.05);
-  return contrastWhite >= contrastBlack ? '#ffffff' : '#000000';
+  const contrastWhite = 1.05 / (L + 0.05);
+  const contrastBlack = (L + 0.05) / 0.05;
+  return contrastWhite >= contrastBlack ? "#ffffff" : "#000000";
 }
 
 export function adjustLightness(hex: string, amount: number): string {
   const color = toOklch(hex);
-  if (!color) return hex;
+  if (!color) {
+    return hex;
+  }
 
   return (
     formatHex({
-      mode: 'oklch',
-      l: Math.max(0, Math.min(1, color.l + amount)),
       c: color.c || 0,
       h: color.h || 0,
+      l: Math.max(0, Math.min(1, color.l + amount)),
+      mode: "oklch",
     }) || hex
   );
 }

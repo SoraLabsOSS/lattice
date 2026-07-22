@@ -1,39 +1,46 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
-import { useStore } from '@nanostores/react';
-import { Sun, Moon, Download } from 'lucide-react';
-
-import { $brandConfig, updateConfig, resetConfig, type TabId } from './store';
-import { siteImages } from '../../lib/siteImages';
-import { generateDesignTokens } from '@sora-lattice/generator';
-import BrandHeader from './BrandHeader';
-import TabBar from './TabBar';
-import TabColor from './TabColor';
-import TabTypography from './TabTypography';
-import TabStyle from './TabStyle';
-import PlaygroundDashboard from '../LivePlayground/PlaygroundDashboard';
-import type { PlaygroundConfig } from '../LivePlayground/types';
+import { useStore } from "@nanostores/react";
+import { generateDesignTokens } from "@sora-lattice/generator";
+import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
+import { Download, Moon, Sun } from "lucide-react";
+import type React from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { siteImages } from "../../lib/siteImages";
+import PlaygroundDashboard from "../LivePlayground/PlaygroundDashboard";
+import type { PlaygroundConfig } from "../LivePlayground/types";
+import BrandHeader from "./BrandHeader";
+import { $brandConfig, resetConfig, type TabId, updateConfig } from "./store";
+import TabBar from "./TabBar";
+import TabColor from "./TabColor";
+import TabStyle from "./TabStyle";
+import TabTypography from "./TabTypography";
 
 // ---------------------------------------------------------------------------
 // Preview tab bar (Dashboard / Components)
 // ---------------------------------------------------------------------------
 
-type PreviewTab = 'dashboard' | 'components';
+type PreviewTab = "dashboard" | "components";
 
-const PreviewTabBar: React.FC<{ active: PreviewTab; onChange: (t: PreviewTab) => void }> = ({ active, onChange }) => (
-  <div className="flex gap-1 bg-charcoal/5 rounded-lg p-0.5" role="tablist" aria-label="Preview type">
-    {(['dashboard', 'components'] as const).map((tab) => (
+const PreviewTabBar: React.FC<{
+  active: PreviewTab;
+  onChange: (t: PreviewTab) => void;
+}> = ({ active, onChange }) => (
+  <div
+    aria-label="Preview type"
+    className="flex gap-1 rounded-lg bg-charcoal/5 p-0.5"
+    role="tablist"
+  >
+    {(["dashboard", "components"] as const).map((tab) => (
       <button
-        key={tab}
-        type="button"
-        role="tab"
         aria-selected={active === tab}
-        onClick={() => onChange(tab)}
-        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer capitalize ${
+        className={`cursor-pointer rounded-md px-3 py-1.5 font-medium text-xs capitalize transition-all ${
           active === tab
-            ? 'bg-white text-charcoal shadow-sm'
-            : 'text-charcoal/50 hover:text-charcoal/80'
+            ? "bg-white text-charcoal shadow-sm"
+            : "text-charcoal/50 hover:text-charcoal/80"
         }`}
+        key={tab}
+        onClick={() => onChange(tab)}
+        role="tab"
+        type="button"
       >
         {tab}
       </button>
@@ -45,24 +52,31 @@ const PreviewTabBar: React.FC<{ active: PreviewTab; onChange: (t: PreviewTab) =>
 // Dark mode toggle
 // ---------------------------------------------------------------------------
 
-const DarkModeToggle: React.FC<{ isDark: boolean; onToggle: () => void }> = ({ isDark, onToggle }) => (
+const DarkModeToggle: React.FC<{ isDark: boolean; onToggle: () => void }> = ({
+  isDark,
+  onToggle,
+}) => (
   <button
-    type="button"
-    role="switch"
     aria-checked={isDark}
+    aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+    className="relative h-7 w-12 cursor-pointer rounded-full p-0.5 transition-all duration-200 hover:scale-105 active:scale-95"
     onClick={onToggle}
-    className="relative w-12 h-7 rounded-full p-0.5 hover:scale-105 active:scale-95 cursor-pointer transition-all duration-200"
-    style={{ backgroundColor: isDark ? '#374151' : '#e5e7eb' }}
-    aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+    role="switch"
+    style={{ backgroundColor: isDark ? "#374151" : "#e5e7eb" }}
+    type="button"
   >
     <div
-      className="w-6 h-6 rounded-full bg-white shadow-sm flex items-center justify-center"
+      className="flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm"
       style={{
         transform: `translateX(${isDark ? 20 : 0}px)`,
-        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
       }}
     >
-      {isDark ? <Moon size={11} className="text-gray-600" /> : <Sun size={11} className="text-amber-500" />}
+      {isDark ? (
+        <Moon className="text-gray-600" size={11} />
+      ) : (
+        <Sun className="text-amber-500" size={11} />
+      )}
     </div>
   </button>
 );
@@ -78,27 +92,34 @@ const BrandIntake: React.FC = () => {
   const config = useStore($brandConfig);
 
   // Local UI state
-  const [activeTab, setActiveTab] = useState<TabId>('color');
+  const [activeTab, setActiveTab] = useState<TabId>("color");
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [previewTab, setPreviewTab] = useState<PreviewTab>('dashboard');
+  const [previewTab, setPreviewTab] = useState<PreviewTab>("dashboard");
 
   // Scroll preservation per tab
-  const scrollRefs = useRef<Record<TabId, number>>({ color: 0, typography: 0, style: 0 });
+  const scrollRefs = useRef<Record<TabId, number>>({
+    color: 0,
+    style: 0,
+    typography: 0,
+  });
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const handleTabChange = useCallback((tab: TabId) => {
-    // Save current scroll position
-    if (scrollContainerRef.current) {
-      scrollRefs.current[activeTab] = scrollContainerRef.current.scrollTop;
-    }
-    setActiveTab(tab);
-    // Restore scroll position for new tab
-    requestAnimationFrame(() => {
+  const handleTabChange = useCallback(
+    (tab: TabId) => {
+      // Save current scroll position
       if (scrollContainerRef.current) {
-        scrollContainerRef.current.scrollTop = scrollRefs.current[tab] || 0;
+        scrollRefs.current[activeTab] = scrollContainerRef.current.scrollTop;
       }
-    });
-  }, [activeTab]);
+      setActiveTab(tab);
+      // Restore scroll position for new tab
+      requestAnimationFrame(() => {
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollTop = scrollRefs.current[tab] || 0;
+        }
+      });
+    },
+    [activeTab]
+  );
 
   // Generate design tokens as CSS custom properties
   const { tokens: designTokens } = useMemo(
@@ -108,138 +129,180 @@ const BrandIntake: React.FC = () => {
 
   // Bridge: BrandConfig → PlaygroundConfig
   const playgroundConfig: PlaygroundConfig = {
-    primaryColor: config.primaryColor,
-    secondaryColor: config.secondaryColor || '#8B5CF6',
-    saturation: 100,
-    lightness: 100,
-    fontFamily: config.primaryFont,
-    roundness: config.roundness === 'subtle' ? 'rounded' : config.roundness,
     density: config.density,
     expressiveness: config.expressiveness,
-    shadows: config.shadows,
+    fontFamily: config.primaryFont,
     isDarkMode,
+    lightness: 100,
+    primaryColor: config.primaryColor,
+    roundness: config.roundness === "subtle" ? "rounded" : config.roundness,
+    saturation: 100,
+    secondaryColor: config.secondaryColor || "#8B5CF6",
+    shadows: config.shadows,
   };
 
-  const handlePlaygroundChange = useCallback((updates: Partial<PlaygroundConfig>) => {
-    const brandUpdates: Record<string, unknown> = {};
-    if (updates.primaryColor !== undefined) brandUpdates.primaryColor = updates.primaryColor;
-    if (updates.secondaryColor !== undefined) {
-      brandUpdates.secondaryColor = updates.secondaryColor;
-      brandUpdates.useCustomSecondary = true;
-    }
-    // playground saturation is a different concept (scales base chroma); don't map to chromaFalloff
+  const handlePlaygroundChange = useCallback(
+    (updates: Partial<PlaygroundConfig>) => {
+      const brandUpdates: Record<string, unknown> = {};
+      if (updates.primaryColor !== undefined) {
+        brandUpdates.primaryColor = updates.primaryColor;
+      }
+      if (updates.secondaryColor !== undefined) {
+        brandUpdates.secondaryColor = updates.secondaryColor;
+        brandUpdates.useCustomSecondary = true;
+      }
+      // playground saturation is a different concept (scales base chroma); don't map to chromaFalloff
 
-    if (updates.fontFamily !== undefined) {
-      brandUpdates.primaryFont = updates.fontFamily;
-    }
-    if (updates.roundness !== undefined) brandUpdates.roundness = updates.roundness;
-    if (updates.density !== undefined) brandUpdates.density = updates.density;
-    if (updates.expressiveness !== undefined) brandUpdates.expressiveness = updates.expressiveness;
-    if (updates.shadows !== undefined) brandUpdates.shadows = updates.shadows;
-    if (updates.isDarkMode !== undefined) setIsDarkMode(updates.isDarkMode);
+      if (updates.fontFamily !== undefined) {
+        brandUpdates.primaryFont = updates.fontFamily;
+      }
+      if (updates.roundness !== undefined) {
+        brandUpdates.roundness = updates.roundness;
+      }
+      if (updates.density !== undefined) {
+        brandUpdates.density = updates.density;
+      }
+      if (updates.expressiveness !== undefined) {
+        brandUpdates.expressiveness = updates.expressiveness;
+      }
+      if (updates.shadows !== undefined) {
+        brandUpdates.shadows = updates.shadows;
+      }
+      if (updates.isDarkMode !== undefined) {
+        setIsDarkMode(updates.isDarkMode);
+      }
 
-    if (Object.keys(brandUpdates).length > 0) updateConfig(brandUpdates);
-  }, []);
+      if (Object.keys(brandUpdates).length > 0) {
+        updateConfig(brandUpdates);
+      }
+    },
+    []
+  );
 
   // Open/close handlers
   useEffect(() => {
     const handleOpen = () => {
       setIsOpen(true);
-      document.body.classList.add('modal-open');
+      document.body.classList.add("modal-open");
       (window as any).lenis?.stop();
     };
-    window.addEventListener('openBrandIntake', handleOpen);
-    return () => window.removeEventListener('openBrandIntake', handleOpen);
+    window.addEventListener("openBrandIntake", handleOpen);
+    return () => window.removeEventListener("openBrandIntake", handleOpen);
   }, []);
 
-  useEffect(() => {
-    return () => {
-      if (isOpen) (window as any).lenis?.start();
-    };
-  }, [isOpen]);
+  useEffect(
+    () => () => {
+      if (isOpen) {
+        (window as any).lenis?.start();
+      }
+    },
+    [isOpen]
+  );
 
   const handleClose = () => {
     setIsOpen(false);
-    document.body.classList.remove('modal-open');
+    document.body.classList.remove("modal-open");
     (window as any).lenis?.start();
   };
 
   // ESC to close
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      return;
+    }
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') handleClose();
+      if (e.key === "Escape") {
+        handleClose();
+      }
     };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
   }, [isOpen]);
 
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed z-50 inset-0 flex flex-col bg-white overflow-hidden"
-          initial={{ y: '100%' }}
           animate={{ y: 0 }}
-          exit={{ y: '100%' }}
-          transition={{ type: 'tween', duration: 1, ease: [0.32, 0.72, 0, 1] }}
+          className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-white"
           data-lenis-prevent="true"
+          exit={{ y: "100%" }}
+          initial={{ y: "100%" }}
+          transition={{ duration: 1, ease: [0.32, 0.72, 0, 1], type: "tween" }}
         >
           {/* Header */}
-          <header className="flex items-center justify-between px-4 md:px-6 py-3 border-b border-charcoal/5 shrink-0">
+          <header className="flex shrink-0 items-center justify-between border-charcoal/5 border-b px-4 py-3 md:px-6">
             <div className="flex items-center gap-3">
-              <img src={siteImages.logoIcon} alt="Sora Lattice" className="w-7 h-7" />
+              <img
+                alt="Sora Lattice"
+                className="h-7 w-7"
+                src={siteImages.logoIcon}
+              />
               {isDev && (
                 <button
+                  className="cursor-pointer font-mono text-[10px] text-red-500/60 transition-colors hover:text-red-500"
+                  onClick={() => {
+                    if (confirm("Reset all config?")) {
+                      resetConfig();
+                    }
+                  }}
                   type="button"
-                  onClick={() => { if (confirm('Reset all config?')) resetConfig(); }}
-                  className="text-[10px] font-mono text-red-500/60 hover:text-red-500 transition-colors cursor-pointer"
                 >
                   [DEV] Reset
                 </button>
               )}
             </div>
             <button
-              type="button"
-              onClick={handleClose}
-              className="p-2 hover:bg-gray-200 cursor-pointer flex items-center justify-center rounded-lg bg-gray transition-colors"
               aria-label="Close"
+              className="flex cursor-pointer items-center justify-center rounded-lg bg-gray p-2 transition-colors hover:bg-gray-200"
+              onClick={handleClose}
+              type="button"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M6 18L18 6M6 6l12 12"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                />
               </svg>
             </button>
           </header>
 
           {/* Two-panel layout */}
-          <div className="flex flex-col md:flex-row flex-1 min-h-0">
+          <div className="flex min-h-0 flex-1 flex-col md:flex-row">
             {/* Left Panel — Configuration */}
-            <aside className="w-full md:w-[400px] shrink-0 flex flex-col border-r border-charcoal/5 min-h-0 md:max-h-full max-h-[50vh]">
+            <aside className="flex max-h-[50vh] min-h-0 w-full shrink-0 flex-col border-charcoal/5 border-r md:max-h-full md:w-[400px]">
               <BrandHeader />
               <LayoutGroup>
                 <TabBar activeTab={activeTab} onTabChange={handleTabChange} />
               </LayoutGroup>
 
               <div
-                ref={scrollContainerRef}
-                className="flex-1 overflow-y-auto px-6 py-5 min-h-0"
-                role="tabpanel"
-                id={`theme-tab-panel-${activeTab}`}
                 aria-labelledby={`theme-tab-${activeTab}`}
+                className="min-h-0 flex-1 overflow-y-auto px-6 py-5"
+                id={`theme-tab-panel-${activeTab}`}
+                ref={scrollContainerRef}
+                role="tabpanel"
               >
-                {activeTab === 'color' && <TabColor isDarkMode={isDarkMode} />}
-                {activeTab === 'typography' && <TabTypography />}
-                {activeTab === 'style' && <TabStyle />}
+                {activeTab === "color" && <TabColor isDarkMode={isDarkMode} />}
+                {activeTab === "typography" && <TabTypography />}
+                {activeTab === "style" && <TabStyle />}
               </div>
 
               {/* Sticky download button */}
-              <div className="shrink-0 px-4 py-3 border-t border-charcoal/5 bg-white">
+              <div className="shrink-0 border-charcoal/5 border-t bg-white px-4 py-3">
                 <button
-                  type="button"
+                  className="btn btn-primary flex w-full items-center justify-center gap-2"
                   onClick={() => {
                     // No-op for now — export pipeline not yet built
                   }}
-                  className="w-full btn btn-primary flex items-center justify-center gap-2"
+                  type="button"
                 >
                   <Download size={16} />
                   Download tokens
@@ -248,8 +311,8 @@ const BrandIntake: React.FC = () => {
             </aside>
 
             {/* Right Panel — Live Preview */}
-            <main className="flex-1 flex flex-col min-h-0 bg-gray overflow-hidden">
-              <div className="flex items-center justify-between px-4 md:px-6 py-3 shrink-0">
+            <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-gray">
+              <div className="flex shrink-0 items-center justify-between px-4 py-3 md:px-6">
                 <PreviewTabBar active={previewTab} onChange={setPreviewTab} />
                 <DarkModeToggle
                   isDark={isDarkMode}
@@ -257,19 +320,22 @@ const BrandIntake: React.FC = () => {
                 />
               </div>
 
-              <div className="flex-1 min-h-0 overflow-y-auto px-3 md:px-5 pb-4">
-                <div className="rounded-2xl overflow-hidden shadow-sm h-full min-h-[500px]" style={designTokens as React.CSSProperties}>
-                  {previewTab === 'dashboard' ? (
+              <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-4 md:px-5">
+                <div
+                  className="h-full min-h-[500px] overflow-hidden rounded-2xl shadow-sm"
+                  style={designTokens as React.CSSProperties}
+                >
+                  {previewTab === "dashboard" ? (
                     <PlaygroundDashboard
                       config={playgroundConfig}
                       onChange={handlePlaygroundChange}
                     />
                   ) : (
                     <div
-                      className="h-full flex items-center justify-center"
+                      className="flex h-full items-center justify-center"
                       style={{
-                        backgroundColor: isDarkMode ? '#0f172a' : '#ffffff',
-                        color: isDarkMode ? '#94a3b8' : '#64748b',
+                        backgroundColor: isDarkMode ? "#0f172a" : "#ffffff",
+                        color: isDarkMode ? "#94a3b8" : "#64748b",
                         fontFamily: `'${config.primaryFont}', system-ui, sans-serif`,
                       }}
                     >

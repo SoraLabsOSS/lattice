@@ -1,8 +1,9 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Dialog } from '@base-ui/react/dialog';
-import { AnimatePresence, motion } from 'framer-motion';
-import { X, Check } from 'lucide-react';
-import { Input } from './ui/Input';
+import { Dialog } from "@base-ui/react/dialog";
+import { AnimatePresence, motion } from "framer-motion";
+import { Check, X } from "lucide-react";
+import type React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Input } from "./ui/Input";
 
 const backdropVariants = {
   hidden: { opacity: 0 },
@@ -10,72 +11,78 @@ const backdropVariants = {
 };
 
 const popupVariants = {
-  hidden: { opacity: 0, scale: 0.95, y: 16 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    transition: {
-      type: 'spring' as const,
-      damping: 28,
-      stiffness: 400,
-      mass: 0.8,
-    },
-  },
   exit: {
     opacity: 0,
     scale: 0.97,
-    y: 8,
     transition: {
       duration: 0.15,
       ease: [0.4, 0, 1, 1] as [number, number, number, number],
     },
+    y: 8,
+  },
+  hidden: { opacity: 0, scale: 0.95, y: 16 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      damping: 28,
+      mass: 0.8,
+      stiffness: 400,
+      type: "spring" as const,
+    },
+    y: 0,
   },
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-type Status = 'idle' | 'submitting' | 'success' | 'error';
+type Status = "idle" | "submitting" | "success" | "error";
 
-const STORAGE_KEY = 'sora-lattice:waitlist:email';
+const STORAGE_KEY = "sora-lattice:waitlist:email";
 
 export const WaitlistModal: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const [email, setEmail] = useState('');
-  const [status, setStatus] = useState<Status>('idle');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<Status>("idle");
+  const [errorMessage, setErrorMessage] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const handleOpen = () => {
-      setStatus('idle');
-      setErrorMessage('');
+      setStatus("idle");
+      setErrorMessage("");
       setOpen(true);
-      document.body.classList.add('modal-open');
+      document.body.classList.add("modal-open");
       (window as { lenis?: { stop?: () => void } }).lenis?.stop?.();
     };
-    window.addEventListener('openWaitlist', handleOpen);
-    return () => window.removeEventListener('openWaitlist', handleOpen);
+    window.addEventListener("openWaitlist", handleOpen);
+    return () => window.removeEventListener("openWaitlist", handleOpen);
   }, []);
 
   const handleClose = useCallback(() => {
     setOpen(false);
-    document.body.classList.remove('modal-open');
+    document.body.classList.remove("modal-open");
     (window as { lenis?: { start?: () => void } }).lenis?.start?.();
   }, []);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      return;
+    }
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') handleClose();
+      if (e.key === "Escape") {
+        handleClose();
+      }
     };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
   }, [open, handleClose]);
 
   // Focus the email field once the popup mounts
   useEffect(() => {
-    if (!open || status !== 'idle') return;
+    if (!open || status !== "idle") {
+      return;
+    }
     const id = window.setTimeout(() => inputRef.current?.focus(), 80);
     return () => window.clearTimeout(id);
   }, [open, status]);
@@ -85,33 +92,36 @@ export const WaitlistModal: React.FC = () => {
       e.preventDefault();
       const trimmed = email.trim();
       if (!EMAIL_RE.test(trimmed)) {
-        setStatus('error');
-        setErrorMessage('Please enter a valid email address.');
+        setStatus("error");
+        setErrorMessage("Please enter a valid email address.");
         return;
       }
 
-      setStatus('submitting');
-      setErrorMessage('');
+      setStatus("submitting");
+      setErrorMessage("");
 
       try {
         // Persist locally so the email isn't lost before the backend exists.
         // Wire up a real endpoint here when the beta API is ready.
         window.localStorage.setItem(STORAGE_KEY, trimmed);
         window.dispatchEvent(
-          new CustomEvent('waitlistSignup', { detail: { email: trimmed } }),
+          new CustomEvent("waitlistSignup", { detail: { email: trimmed } })
         );
         await new Promise((resolve) => setTimeout(resolve, 450));
-        setStatus('success');
+        setStatus("success");
       } catch {
-        setStatus('error');
-        setErrorMessage('Something went wrong. Please try again.');
+        setStatus("error");
+        setErrorMessage("Something went wrong. Please try again.");
       }
     },
-    [email],
+    [email]
   );
 
   return (
-    <Dialog.Root open={open} onOpenChange={(next) => (next ? setOpen(true) : handleClose())}>
+    <Dialog.Root
+      onOpenChange={(next) => (next ? setOpen(true) : handleClose())}
+      open={open}
+    >
       <AnimatePresence>
         {open && (
           <Dialog.Portal keepMounted>
@@ -119,28 +129,28 @@ export const WaitlistModal: React.FC = () => {
               className="fixed inset-0 z-50"
               render={
                 <motion.div
-                  variants={backdropVariants}
-                  initial="hidden"
                   animate="visible"
                   exit="hidden"
+                  initial="hidden"
                   transition={{ duration: 0.2 }}
+                  variants={backdropVariants}
                 />
               }
-              style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
+              style={{ backgroundColor: "rgba(0,0,0,0.4)" }}
             />
             <Dialog.Popup
-              className="fixed z-50 top-0 left-0 w-screen h-screen flex items-center justify-center p-4"
+              className="fixed top-0 left-0 z-50 flex h-screen w-screen items-center justify-center p-4"
               render={
                 <motion.div
-                  variants={popupVariants}
-                  initial="hidden"
                   animate="visible"
                   exit="exit"
+                  initial="hidden"
+                  variants={popupVariants}
                 />
               }
             >
-              <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md flex flex-col p-6 md:p-8">
-                <div className="flex items-start justify-between mb-6">
+              <div className="flex w-full max-w-md flex-col rounded-3xl bg-white p-6 shadow-2xl md:p-8">
+                <div className="mb-6 flex items-start justify-between">
                   <div className="flex flex-col gap-2 pr-6">
                     <Dialog.Title
                       render={() => (
@@ -149,24 +159,24 @@ export const WaitlistModal: React.FC = () => {
                         </h4>
                       )}
                     />
-                    <p className="text-sm md:text-base text-charcoal/80">
+                    <p className="text-charcoal/80 text-sm md:text-base">
                       We'll email you when the paid beta launches, with a
                       first-100-customer discount included.
                     </p>
                   </div>
                   <Dialog.Close
                     aria-label="Close waitlist dialog"
-                    className="text-charcoal/40 hover:text-charcoal/70 transition-colors cursor-pointer p-1 rounded-lg hover:bg-charcoal/5 shrink-0"
+                    className="shrink-0 cursor-pointer rounded-lg p-1 text-charcoal/40 transition-colors hover:bg-charcoal/5 hover:text-charcoal/70"
                   >
                     <X size={18} />
                   </Dialog.Close>
                 </div>
 
-                {status === 'success' ? (
+                {status === "success" ? (
                   <div className="flex flex-col items-start gap-3 py-2">
                     <div
-                      className="flex items-center justify-center w-10 h-10 rounded-full bg-forest-green-50 text-forest-green"
                       aria-hidden="true"
+                      className="flex h-10 w-10 items-center justify-center rounded-full bg-forest-green-50 text-forest-green"
                     >
                       <Check className="h-5 w-5" strokeWidth={2} />
                     </div>
@@ -174,62 +184,62 @@ export const WaitlistModal: React.FC = () => {
                       You're on the list. We'll be in touch.
                     </p>
                     <button
-                      type="button"
-                      onClick={handleClose}
                       className="btn btn-secondary btn-sm mt-2"
+                      onClick={handleClose}
+                      type="button"
                     >
                       Close
                     </button>
                   </div>
                 ) : (
                   <form
-                    onSubmit={handleSubmit}
                     className="flex flex-col gap-4"
                     noValidate
+                    onSubmit={handleSubmit}
                   >
                     <label
+                      className="font-medium text-base text-charcoal"
                       htmlFor="waitlist-email"
-                      className="text-base text-charcoal font-medium"
                     >
                       Email address
                     </label>
                     <Input
-                      id="waitlist-email"
-                      ref={inputRef as React.Ref<HTMLElement>}
-                      type="email"
-                      size="compact"
+                      aria-describedby={
+                        status === "error" ? "waitlist-email-error" : undefined
+                      }
+                      aria-invalid={status === "error"}
                       autoComplete="email"
-                      placeholder="you@studio.com"
-                      value={email}
-                      disabled={status === 'submitting'}
+                      disabled={status === "submitting"}
+                      id="waitlist-email"
                       onChange={(e) => {
                         setEmail(e.currentTarget.value);
-                        if (status === 'error') {
-                          setStatus('idle');
-                          setErrorMessage('');
+                        if (status === "error") {
+                          setStatus("idle");
+                          setErrorMessage("");
                         }
                       }}
-                      aria-invalid={status === 'error'}
-                      aria-describedby={
-                        status === 'error' ? 'waitlist-email-error' : undefined
-                      }
+                      placeholder="you@studio.com"
+                      ref={inputRef as React.Ref<HTMLElement>}
+                      size="compact"
+                      type="email"
+                      value={email}
                     />
-                    {status === 'error' && (
+                    {status === "error" && (
                       <p
+                        className="text-red-600 text-sm"
                         id="waitlist-email-error"
-                        className="text-sm text-red-600"
                       >
                         {errorMessage}
                       </p>
                     )}
                     <button
+                      className="btn btn-primary btn-sm w-full disabled:cursor-not-allowed disabled:opacity-60"
+                      disabled={status === "submitting"}
                       type="submit"
-                      disabled={status === 'submitting'}
-                      className="btn btn-primary btn-sm w-full disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      {status === 'submitting' ? 'Joining…' : 'Join waitlist'}
+                      {status === "submitting" ? "Joining…" : "Join waitlist"}
                     </button>
-                    <p className="text-xs text-charcoal/80">
+                    <p className="text-charcoal/80 text-xs">
                       No spam. We'll only email you about the beta launch.
                     </p>
                   </form>

@@ -1,20 +1,20 @@
 /* Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @font-face {
-  font-family: 'GT Sectra';
-  src: url('/fonts/GT-Sectra-Display-Medium.woff') format('woff');
+  font-family: "GT Sectra";
+  src: url("/fonts/GT-Sectra-Display-Medium.woff") format("woff");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'GT Sectra';
-  src: url('/fonts/GT-Sectra-Display-Medium-Italic.woff') format('woff');
+  font-family: "GT Sectra";
+  src: url("/fonts/GT-Sectra-Display-Medium-Italic.woff") format("woff");
   font-weight: normal;
   font-style: italic;
   font-display: swap;
@@ -37,12 +37,12 @@
   --color-forest-green: oklch(51.88% 0.109 151.87);
   --color-cream: oklch(98.5% 0.006 85.7);
   --color-charcoal: oklch(24.3% 0 0);
-  --color-gray: oklch(97.02% 0.000 0);
+  --color-gray: oklch(97.02% 0 0);
 
   /* Custom Fonts */
-  --font-serif: 'GT Sectra', Georgia, serif;
-  --font-sans: 'Nunito Sans', system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', monospace;
+  --font-serif: "GT Sectra", Georgia, serif;
+  --font-sans: "Nunito Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
 
   /* Custom Spacing */
   --spacing-18: 4.5rem;
@@ -58,11 +58,11 @@
 
 /* CSS Custom Properties for animations and fallback colors */
 :root {
-  --color-forest-green: #2E7A48;
-  --color-cream: #FDFBF7;
+  --color-forest-green: #2e7a48;
+  --color-cream: #fdfbf7;
   --color-charcoal: #444444;
   --color-black: #111111;
-  --color-white: #FFFFFF;
+  --color-white: #ffffff;
   --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -76,8 +76,8 @@ html {
 }
 
 body {
-  @apply text-charcoal;
   overflow-x: hidden;
+  @apply text-charcoal;
 }
 
 /* Prevent body scroll when modal is open */
@@ -86,7 +86,12 @@ body.modal-open {
 }
 
 /* Headings */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-serif);
   line-height: 1.2;
   @apply text-black;
@@ -123,19 +128,28 @@ a {
   @apply transition-colors duration-200;
 }
 
-:where(a, button, input, select, textarea, [role='button'], [role='tab'], [role='switch']):focus-visible {
+:where(
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  [role="button"],
+  [role="tab"],
+  [role="switch"]
+):focus-visible {
   outline: 2px solid var(--color-forest-green);
   outline-offset: 3px;
 }
 
-:where(button, [role='button'], [role='tab'], [role='switch']) {
+:where(button, [role="button"], [role="tab"], [role="switch"]) {
   -webkit-tap-highlight-color: transparent;
 }
 
 /* Button Styles */
 .btn {
-  @apply inline-flex items-center justify-center rounded-full font-sans font-medium transition-all duration-300 will-change-transform px-6 py-3 md:px-8 md:py-4 text-base md:text-lg;
   cursor: pointer;
+  @apply inline-flex items-center justify-center rounded-full font-sans font-medium transition-all duration-300 will-change-transform px-6 py-3 md:px-8 md:py-4 text-base md:text-lg;
 }
 
 .btn-sm {
@@ -176,8 +190,8 @@ a {
 
 /* Backdrop Blur */
 .backdrop-blur-custom {
-  backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
 }
 
 /* Smooth Transitions */
@@ -271,7 +285,7 @@ html.lenis {
     transform 0.45s cubic-bezier(0.32, 0.72, 0, 1) var(--floral-delay-in, 0s);
 }
 
-[data-floral-past='true'] .floral-hide {
+[data-floral-past="true"] .floral-hide {
   opacity: 0;
   transform: scale(0.5);
   transition-delay: var(--floral-delay-out, 0s);
@@ -319,7 +333,8 @@ html.lenis {
 .floral-sway-rotate {
   width: 100%;
   height: 100%;
-  animation: floral-sway-rotate var(--floral-sway-duration, 4s) ease-in-out infinite;
+  animation: floral-sway-rotate var(--floral-sway-duration, 4s) ease-in-out
+    infinite;
   animation-delay: var(--floral-sway-rotate-delay, 0s);
 }
 
@@ -331,10 +346,10 @@ html.lenis {
   animation-delay: var(--floral-sway-translate-delay, 0s);
 }
 
-[data-floral-scrolling='true'] .floral-sway-rotate,
-[data-floral-scrolling='true'] .floral-sway-translate,
-[data-floral-past='true'] .floral-sway-rotate,
-[data-floral-past='true'] .floral-sway-translate {
+[data-floral-scrolling="true"] .floral-sway-rotate,
+[data-floral-scrolling="true"] .floral-sway-translate,
+[data-floral-past="true"] .floral-sway-rotate,
+[data-floral-past="true"] .floral-sway-translate {
   animation-play-state: paused;
 }
 

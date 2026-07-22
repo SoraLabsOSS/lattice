@@ -2,26 +2,26 @@
 // Inspect-mode utilities — token extraction & semantic-to-primitive mapping
 // ---------------------------------------------------------------------------
 
-import type { PrimitiveMapping } from '@sora-lattice/generator';
+import type { PrimitiveMapping } from "@sora-lattice/generator";
 
 export type TokenCategory =
-  | 'color'
-  | 'spacing'
-  | 'radius'
-  | 'typography'
-  | 'shadow'
-  | 'transition'
-  | 'gradient';
+  | "color"
+  | "spacing"
+  | "radius"
+  | "typography"
+  | "shadow"
+  | "transition"
+  | "gradient";
 
 export interface TokenInfo {
-  /** Full token name without leading `--`, e.g. "color-background-primary" */
-  tokenName: string;
+  /** High-level category for grouping in the flyout */
+  category: TokenCategory;
   /** CSS property that references this token, e.g. "backgroundColor" */
   cssProperty: string;
   /** Resolved (computed) value, e.g. "#2d5016" */
   resolvedValue: string;
-  /** High-level category for grouping in the flyout */
-  category: TokenCategory;
+  /** Full token name without leading `--`, e.g. "color-background-primary" */
+  tokenName: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -31,14 +31,28 @@ export interface TokenInfo {
 const VAR_RE = /var\(--([^)]+)\)/g;
 
 function categorize(tokenName: string): TokenCategory {
-  if (tokenName.startsWith('color-')) return 'color';
-  if (tokenName.startsWith('spacing-')) return 'spacing';
-  if (tokenName.startsWith('radius-')) return 'radius';
-  if (tokenName.startsWith('font-')) return 'typography';
-  if (tokenName.startsWith('shadow-')) return 'shadow';
-  if (tokenName.startsWith('transition-')) return 'transition';
-  if (tokenName.startsWith('gradient-')) return 'gradient';
-  return 'color'; // fallback
+  if (tokenName.startsWith("color-")) {
+    return "color";
+  }
+  if (tokenName.startsWith("spacing-")) {
+    return "spacing";
+  }
+  if (tokenName.startsWith("radius-")) {
+    return "radius";
+  }
+  if (tokenName.startsWith("font-")) {
+    return "typography";
+  }
+  if (tokenName.startsWith("shadow-")) {
+    return "shadow";
+  }
+  if (tokenName.startsWith("transition-")) {
+    return "transition";
+  }
+  if (tokenName.startsWith("gradient-")) {
+    return "gradient";
+  }
+  return "color"; // fallback
 }
 
 /**
@@ -47,17 +61,21 @@ function categorize(tokenName: string): TokenCategory {
  */
 export function extractTokensFromElement(el: HTMLElement): TokenInfo[] {
   const cssText = el.style.cssText;
-  if (!cssText) return [];
+  if (!cssText) {
+    return [];
+  }
 
   const computed = getComputedStyle(el);
   const seen = new Set<string>();
   const tokens: TokenInfo[] = [];
 
   // Parse each inline style declaration
-  const declarations = cssText.split(';');
+  const declarations = cssText.split(";");
   for (const decl of declarations) {
-    const colonIdx = decl.indexOf(':');
-    if (colonIdx === -1) continue;
+    const colonIdx = decl.indexOf(":");
+    if (colonIdx === -1) {
+      continue;
+    }
     const prop = decl.slice(0, colonIdx).trim();
     const value = decl.slice(colonIdx + 1).trim();
 
@@ -65,14 +83,16 @@ export function extractTokensFromElement(el: HTMLElement): TokenInfo[] {
     let match: RegExpExecArray | null;
     while ((match = VAR_RE.exec(value)) !== null) {
       const tokenName = match[1];
-      if (seen.has(tokenName)) continue;
+      if (seen.has(tokenName)) {
+        continue;
+      }
       seen.add(tokenName);
 
       tokens.push({
-        tokenName,
+        category: categorize(tokenName),
         cssProperty: prop,
         resolvedValue: computed.getPropertyValue(`--${tokenName}`).trim(),
-        category: categorize(tokenName),
+        tokenName,
       });
     }
   }
@@ -87,7 +107,7 @@ export function extractTokensFromElement(el: HTMLElement): TokenInfo[] {
 export function findStyledAncestor(
   el: HTMLElement,
   boundary: HTMLElement,
-  predicate?: (el: HTMLElement) => boolean,
+  predicate?: (el: HTMLElement) => boolean
 ): HTMLElement | null {
   let current: HTMLElement | null = el;
   while (current && current !== boundary) {
@@ -122,25 +142,29 @@ export function findStyledAncestor(
  * `displayRamp` is the hue name displayed to the user (e.g. "blue", "teal").
  */
 export type TokenEditInfo =
-  | { kind: 'ramp'; rampKey: string; displayRamp: string; step: number }
-  | { kind: 'primaryColor'; displayRamp: string };
+  | { kind: "ramp"; rampKey: string; displayRamp: string; step: number }
+  | { kind: "primaryColor"; displayRamp: string };
 
 export function getTokenEditInfo(
   tokenName: string,
   isDarkMode: boolean,
-  semanticMap: Record<string, PrimitiveMapping>,
+  semanticMap: Record<string, PrimitiveMapping>
 ): TokenEditInfo | null {
   const mapping = semanticMap[tokenName];
-  if (!mapping) return null;
+  if (!mapping) {
+    return null;
+  }
 
-  if (mapping.target === 'primaryColor') {
-    return { kind: 'primaryColor', displayRamp: mapping.ramp ?? 'primary' };
+  if (mapping.target === "primaryColor") {
+    return { displayRamp: mapping.ramp ?? "primary", kind: "primaryColor" };
   }
 
   const step = isDarkMode ? mapping.darkStep : mapping.lightStep;
-  if (!mapping.ramp || step == null) return null;
+  if (!mapping.ramp || step == null) {
+    return null;
+  }
   const rampKey = mapping.role ?? mapping.ramp;
-  return { kind: 'ramp', rampKey, displayRamp: mapping.ramp, step };
+  return { displayRamp: mapping.ramp, kind: "ramp", rampKey, step };
 }
 
 /**
@@ -149,7 +173,7 @@ export function getTokenEditInfo(
 export function isEditableToken(
   tokenName: string,
   isDarkMode: boolean,
-  semanticMap: Record<string, PrimitiveMapping>,
+  semanticMap: Record<string, PrimitiveMapping>
 ): boolean {
   return getTokenEditInfo(tokenName, isDarkMode, semanticMap) !== null;
 }
@@ -158,21 +182,25 @@ export function isEditableToken(
 export function getEditLabel(
   tokenName: string,
   isDarkMode: boolean,
-  semanticMap: Record<string, PrimitiveMapping>,
+  semanticMap: Record<string, PrimitiveMapping>
 ): string | null {
   const info = getTokenEditInfo(tokenName, isDarkMode, semanticMap);
-  if (!info) return null;
-  if (info.kind === 'primaryColor') return `${info.displayRamp} \u00b7 base`;
+  if (!info) {
+    return null;
+  }
+  if (info.kind === "primaryColor") {
+    return `${info.displayRamp} \u00b7 base`;
+  }
   return `${info.displayRamp} \u00b7 ${info.step}`;
 }
 
 /** Category display name */
 export const CATEGORY_LABELS: Record<TokenCategory, string> = {
-  color: 'Color',
-  spacing: 'Space',
-  radius: 'Radius',
-  typography: 'Typography',
-  shadow: 'Shadow',
-  transition: 'Transition',
-  gradient: 'Gradient',
+  color: "Color",
+  gradient: "Gradient",
+  radius: "Radius",
+  shadow: "Shadow",
+  spacing: "Space",
+  transition: "Transition",
+  typography: "Typography",
 };

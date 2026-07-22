@@ -1,25 +1,26 @@
-import React, { useId, useState, useRef, useEffect, useLayoutEffect } from 'react';
-import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { HexColorPicker, HexColorInput } from 'react-colorful';
+import { AnimatePresence, motion } from "framer-motion";
+import type React from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import { HexColorInput, HexColorPicker } from "react-colorful";
+import { createPortal } from "react-dom";
 
 export interface ColorPickerPopoverProps {
-  color: string;
-  onChange: (color: string) => void;
-  /** Optional label rendered above the swatch */
-  label?: string;
   /** aria-label for the swatch button (defaults to label or "Pick color") */
   ariaLabel?: string;
+  color: string;
+  /** Optional label rendered above the swatch */
+  label?: string;
+  onChange: (color: string) => void;
+  /** Fixed width for the HexColorPicker (e.g. '200px') */
+  pickerWidth?: string;
   /** Show hex input inside the popover */
   showHexInput?: boolean;
   /** CSS class for the swatch button (defaults to a sensible size) */
   swatchClassName?: string;
-  /** Fixed width for the HexColorPicker (e.g. '200px') */
-  pickerWidth?: string;
 }
 
 const DEFAULT_SWATCH_CLASS =
-  'w-12 h-12 rounded-xl shadow-sm border-2 border-white cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95 shrink-0';
+  "w-12 h-12 rounded-xl shadow-sm border-2 border-white cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95 shrink-0";
 
 export const ColorPickerPopover: React.FC<ColorPickerPopoverProps> = ({
   color,
@@ -31,7 +32,7 @@ export const ColorPickerPopover: React.FC<ColorPickerPopoverProps> = ({
   pickerWidth,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [position, setPosition] = useState({ top: 0, left: 0 });
+  const [position, setPosition] = useState({ left: 0, top: 0 });
   const popoverId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -41,20 +42,22 @@ export const ColorPickerPopover: React.FC<ColorPickerPopoverProps> = ({
     if (triggerRef.current && isOpen) {
       const rect = triggerRef.current.getBoundingClientRect();
       setPosition({
-        top: rect.bottom + 8,
         left: rect.left,
+        top: rect.bottom + 8,
       });
     }
   };
 
   useLayoutEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      return;
+    }
     updatePosition();
-    window.addEventListener('scroll', updatePosition, true);
-    window.addEventListener('resize', updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    window.addEventListener("resize", updatePosition);
     return () => {
-      window.removeEventListener('scroll', updatePosition, true);
-      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
     };
   }, [isOpen]);
 
@@ -72,68 +75,68 @@ export const ColorPickerPopover: React.FC<ColorPickerPopoverProps> = ({
       }
     };
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      return;
+    }
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         e.preventDefault();
         setIsOpen(false);
         triggerRef.current?.focus();
       }
     };
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
     requestAnimationFrame(() => {
       popoverRef.current?.focus();
     });
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen]);
 
   return (
-    <div className={label ? 'flex flex-col gap-2' : ''}>
-      {label && (
-        <label className="text-[12px] text-charcoal/80">{label}</label>
-      )}
+    <div className={label ? "flex flex-col gap-2" : ""}>
+      {label && <label className="text-[12px] text-charcoal/80">{label}</label>}
       <button
-        ref={triggerRef}
-        type="button"
+        aria-controls={isOpen ? popoverId : undefined}
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
+        aria-label={ariaLabel || label || "Pick color"}
+        className={swatchClassName}
         onClick={() => {
           if (!isOpen && triggerRef.current) {
             const rect = triggerRef.current.getBoundingClientRect();
-            setPosition({ top: rect.bottom + 8, left: rect.left });
+            setPosition({ left: rect.left, top: rect.bottom + 8 });
           }
           setIsOpen(!isOpen);
         }}
-        className={swatchClassName}
+        ref={triggerRef}
         style={{ backgroundColor: color }}
-        aria-label={ariaLabel || label || 'Pick color'}
-        aria-haspopup="dialog"
-        aria-expanded={isOpen}
-        aria-controls={isOpen ? popoverId : undefined}
+        type="button"
       />
-      {typeof document !== 'undefined' &&
+      {typeof document !== "undefined" &&
         createPortal(
           <AnimatePresence>
             {isOpen && (
               <motion.div
-                ref={popoverRef}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                aria-label={ariaLabel || label || "Color picker"}
+                className="fixed z-[9999] rounded-xl border border-charcoal/10 bg-white p-3 shadow-xl"
+                exit={{ opacity: 0, scale: 0.95, y: -10 }}
                 id={popoverId}
+                initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                ref={popoverRef}
                 role="dialog"
-                aria-label={ariaLabel || label || 'Color picker'}
-                tabIndex={-1}
-                initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-                className="fixed z-[9999] bg-white rounded-xl shadow-xl p-3 border border-charcoal/10"
                 style={{
-                  top: position.top,
                   left: position.left,
+                  top: position.top,
                 }}
+                tabIndex={-1}
+                transition={{ duration: 0.2 }}
               >
                 <HexColorPicker
                   color={color}
@@ -142,20 +145,22 @@ export const ColorPickerPopover: React.FC<ColorPickerPopoverProps> = ({
                 />
                 {showHexInput && (
                   <div className="mt-3 flex items-center gap-2">
-                    <span className="text-xs font-mono text-charcoal/40">#</span>
+                    <span className="font-mono text-charcoal/40 text-xs">
+                      #
+                    </span>
                     <HexColorInput
+                      aria-label={`${ariaLabel || label || "Color"} hex value`}
+                      className="flex-1 rounded-md border border-charcoal/10 bg-charcoal/5 px-2 py-1.5 font-mono text-charcoal/80 text-xs uppercase outline-none focus:border-forest-green/40"
                       color={color}
                       onChange={onChange}
                       prefixed={false}
-                      aria-label={`${ariaLabel || label || 'Color'} hex value`}
-                      className="flex-1 text-xs font-mono text-charcoal/80 bg-charcoal/5 rounded-md px-2 py-1.5 border border-charcoal/10 outline-none focus:border-forest-green/40 uppercase"
                     />
                   </div>
                 )}
               </motion.div>
             )}
           </AnimatePresence>,
-          document.body,
+          document.body
         )}
     </div>
   );

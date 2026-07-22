@@ -1,7 +1,8 @@
-import React, { useRef } from 'react';
-import { useStore } from '@nanostores/react';
-import { Upload } from 'lucide-react';
-import { $brandConfig, updateConfig } from './store';
+import { useStore } from "@nanostores/react";
+import { Upload } from "lucide-react";
+import type React from "react";
+import { useRef } from "react";
+import { $brandConfig, updateConfig } from "./store";
 
 const BrandHeader: React.FC = () => {
   const config = useStore($brandConfig);
@@ -9,31 +10,40 @@ const BrandHeader: React.FC = () => {
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      return;
+    }
     const url = URL.createObjectURL(file);
     updateConfig({ logoUrl: url });
   };
 
   return (
-    <div className="flex items-center gap-3 px-6 py-4 border-b border-charcoal/10 shrink-0">
+    <div className="flex shrink-0 items-center gap-3 border-charcoal/10 border-b px-6 py-4">
       {/* Logo upload - compact avatar */}
       <button
-        onClick={() => fileInputRef.current?.click()}
-        className="relative w-10 h-10 rounded-xl border-2 border-dashed border-charcoal/15 flex items-center justify-center shrink-0 hover:border-forest-green/30 hover:bg-forest-green/5 transition-colors cursor-pointer overflow-hidden group"
         aria-label="Upload logo"
+        className="group relative flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-xl border-2 border-charcoal/15 border-dashed transition-colors hover:border-forest-green/30 hover:bg-forest-green/5"
+        onClick={() => fileInputRef.current?.click()}
       >
         {config.logoUrl ? (
-          <img src={config.logoUrl} alt="Logo" className="w-full h-full object-cover" />
+          <img
+            alt="Logo"
+            className="h-full w-full object-cover"
+            src={config.logoUrl}
+          />
         ) : (
-          <Upload size={16} className="text-charcoal/30 group-hover:text-forest-green transition-colors" />
+          <Upload
+            className="text-charcoal/30 transition-colors group-hover:text-forest-green"
+            size={16}
+          />
         )}
       </button>
       <input
+        accept="image/svg+xml,image/png,image/jpeg"
+        className="hidden"
+        onChange={handleLogoUpload}
         ref={fileInputRef}
         type="file"
-        accept="image/svg+xml,image/png,image/jpeg"
-        onChange={handleLogoUpload}
-        className="hidden"
       />
     </div>
   );

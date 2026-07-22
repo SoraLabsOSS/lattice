@@ -1,15 +1,20 @@
-import { generateDesignTokens } from './generateTokens.js';
-import { createBrandConfig, type BrandConfigInput } from './types.js';
-import { exportTokens, type ColorSpace, type ExportFormat, type TokenSet } from './exportTokens.js';
+import {
+  type ColorSpace,
+  type ExportFormat,
+  exportTokens,
+  type TokenSet,
+} from "./exportTokens.js";
+import { generateDesignTokens } from "./generateTokens.js";
+import { type BrandConfigInput, createBrandConfig } from "./types.js";
 
-export * from './colorGeneration.js';
-export * from './colorUtils.js';
-export * from './contrastUtils.js';
-export * from './accessibility.js';
-export * from './exportTokens.js';
-export * from './generateTokens.js';
-export * from './skills.js';
-export * from './types.js';
+export * from "./accessibility.js";
+export * from "./colorGeneration.js";
+export * from "./colorUtils.js";
+export * from "./contrastUtils.js";
+export * from "./exportTokens.js";
+export * from "./generateTokens.js";
+export * from "./skills.js";
+export * from "./types.js";
 
 export interface GenerateThemeOptions {
   colorSpace?: ColorSpace;
@@ -18,33 +23,33 @@ export interface GenerateThemeOptions {
 }
 
 export interface ThemeArtifact {
-  format: ExportFormat;
   content: string;
+  format: ExportFormat;
 }
 
 export interface GeneratedTheme {
+  artifacts: ThemeArtifact[];
   config: ReturnType<typeof createBrandConfig>;
   tokens: TokenSet;
-  artifacts: ThemeArtifact[];
 }
 
 export function generateTheme(
   input: BrandConfigInput = {},
-  options: GenerateThemeOptions = {},
+  options: GenerateThemeOptions = {}
 ): GeneratedTheme {
   const config = createBrandConfig(input);
   const tokens: TokenSet = {
-    light: generateDesignTokens(config, false).tokens,
     dark: generateDesignTokens(config, true).tokens,
+    light: generateDesignTokens(config, false).tokens,
   };
-  const colorSpace = options.colorSpace ?? 'oklch';
+  const colorSpace = options.colorSpace ?? "oklch";
   const formats = options.formats ?? [];
   const artifacts = formats.map((format) => ({
-    format,
     content: exportTokens(tokens, format, colorSpace, {
       includeSemantic: options.includeSemantic,
     }),
+    format,
   }));
 
-  return { config, tokens, artifacts };
+  return { artifacts, config, tokens };
 }

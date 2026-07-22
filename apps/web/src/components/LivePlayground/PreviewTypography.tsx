@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from "react";
 
 // ---------------------------------------------------------------------------
 // Helpers — mirrors PlaygroundDashboard token accessors
@@ -7,68 +7,68 @@ import React from 'react';
 const t = (token: string) => `var(--${token})`;
 
 const bg = {
-  base: t('color-background-base'),
-  sunken: t('color-background-sunken'),
-  raised: t('color-background-raised'),
-  primarySubtle: t('color-background-primarySubtle'),
-  primary: t('color-background-primary'),
-  accent: t('color-background-accent'),
-  accentSubtle: t('color-background-accentSubtle'),
+  accent: t("color-background-accent"),
+  accentSubtle: t("color-background-accentSubtle"),
+  base: t("color-background-base"),
+  primary: t("color-background-primary"),
+  primarySubtle: t("color-background-primarySubtle"),
+  raised: t("color-background-raised"),
+  sunken: t("color-background-sunken"),
 };
 const fg = {
-  onBase: t('color-foreground-onBase'),
-  onBaseMuted: t('color-foreground-onBaseMuted'),
-  onPrimary: t('color-foreground-onPrimary'),
-  primary: t('color-foreground-primary'),
-  onGradient: t('color-foreground-onGradient'),
-  onAccent: t('color-foreground-onAccent'),
-  onAccentSubtle: t('color-foreground-onAccentSubtle'),
+  onAccent: t("color-foreground-onAccent"),
+  onAccentSubtle: t("color-foreground-onAccentSubtle"),
+  onBase: t("color-foreground-onBase"),
+  onBaseMuted: t("color-foreground-onBaseMuted"),
+  onGradient: t("color-foreground-onGradient"),
+  onPrimary: t("color-foreground-onPrimary"),
+  primary: t("color-foreground-primary"),
 };
 const border = {
-  neutral: t('color-border-neutral'),
-  primary: t('color-border-primary'),
+  neutral: t("color-border-neutral"),
+  primary: t("color-border-primary"),
 };
 const radius = {
-  container: t('shape-radius-container'),
-  action: t('shape-radius-action'),
-  badge: t('shape-radius-badge'),
+  action: t("shape-radius-action"),
+  badge: t("shape-radius-badge"),
+  container: t("shape-radius-container"),
 };
 const space = {
-  xs: t('space-xs'),
-  sm: t('space-sm'),
-  md: t('space-md'),
-  lg: t('space-lg'),
-  xl: t('space-xl'),
-  '2xl': t('space-2xl'),
-  '3xl': t('space-3xl'),
-  '4xl': t('space-4xl'),
-  '5xl': t('space-5xl'),
-  '6xl': t('space-6xl'),
+  "2xl": t("space-2xl"),
+  "3xl": t("space-3xl"),
+  "4xl": t("space-4xl"),
+  "5xl": t("space-5xl"),
+  "6xl": t("space-6xl"),
+  lg: t("space-lg"),
+  md: t("space-md"),
+  sm: t("space-sm"),
+  xl: t("space-xl"),
+  xs: t("space-xs"),
 };
 const transition = {
-  theme: t('transition-theme'),
-  interactive: t('transition-interactive'),
+  interactive: t("transition-interactive"),
+  theme: t("transition-theme"),
 };
 const font = {
-  primary: t('font-body-family'),
-  secondary: t('font-heading-family'),
+  primary: t("font-body-family"),
+  secondary: t("font-heading-family"),
 };
 const weight = {
-  heading: t('font-heading-weight'),
-  bodyLight: t('font-body-weight-light'),
-  bodyRegular: t('font-body-weight-regular'),
-  bodyBold: t('font-body-weight-bold'),
+  bodyBold: t("font-body-weight-bold"),
+  bodyLight: t("font-body-weight-light"),
+  bodyRegular: t("font-body-weight-regular"),
+  heading: t("font-heading-weight"),
 };
-const gradient = t('gradient-primary');
+const gradient = t("gradient-primary");
 
 // ---------------------------------------------------------------------------
 // Article Preview — styled like an editorial blog post
 // ---------------------------------------------------------------------------
 
 interface PreviewTypographyProps {
+  bodyFont: string;
   fontScale: number;
   headingFont: string;
-  bodyFont: string;
 }
 
 const PreviewTypography: React.FC<PreviewTypographyProps> = ({
@@ -96,39 +96,42 @@ const PreviewTypography: React.FC<PreviewTypographyProps> = ({
       >
         <div className="flex items-center gap-2">
           <div
-            className="w-7 h-7 flex items-center justify-center text-xs font-bold"
+            className="flex h-7 w-7 items-center justify-center font-bold text-xs"
             style={{
               background: bg.accent,
-              color: fg.onAccent,
               borderRadius: radius.badge,
+              color: fg.onAccent,
               transition: transition.theme,
             }}
           >
             A
           </div>
           <span
-            className="text-sm font-semibold tracking-tight"
-            style={{ fontFamily: font.secondary, color: fg.onBase }}
+            className="font-semibold text-sm tracking-tight"
+            style={{ color: fg.onBase, fontFamily: font.secondary }}
           >
             Acme
           </span>
         </div>
         <div className="flex items-center" style={{ gap: space.md }}>
-          {['Design', 'Technology', 'Culture'].map((item) => (
+          {["Design", "Technology", "Culture"].map((item) => (
             <span
+              className="hidden cursor-pointer font-medium text-xs hover:opacity-70 sm:inline"
               key={item}
-              className="text-xs font-medium cursor-pointer hover:opacity-70 hidden sm:inline"
-              style={{ color: fg.onBaseMuted, transition: transition.interactive }}
+              style={{
+                color: fg.onBaseMuted,
+                transition: transition.interactive,
+              }}
             >
               {item}
             </span>
           ))}
           <button
-            className="text-xs font-semibold cursor-pointer"
+            className="cursor-pointer font-semibold text-xs"
             style={{
               backgroundColor: bg.primary,
-              color: fg.onPrimary,
               borderRadius: radius.action,
+              color: fg.onPrimary,
               padding: `${space.sm} ${space.lg}`,
               transition: transition.interactive,
             }}
@@ -140,27 +143,27 @@ const PreviewTypography: React.FC<PreviewTypographyProps> = ({
 
       {/* ── Article ── */}
       <article
-        className="max-w-3xl mx-auto"
-        style={{ padding: space.lg, marginTop: `calc(${space.lg} + 24px)` }}
+        className="mx-auto max-w-3xl"
+        style={{ marginTop: `calc(${space.lg} + 24px)`, padding: space.lg }}
       >
         {/* Tags / Eyebrow */}
-        <div className="flex items-center" style={{ gap: space.md, marginBottom: space.lg }}>
+        <div
+          className="flex items-center"
+          style={{ gap: space.md, marginBottom: space.lg }}
+        >
           <span
-            className="text-[11px] font-semibold"
+            className="font-semibold text-[11px]"
             style={{
               backgroundColor: bg.primarySubtle,
-              color: fg.primary,
               borderRadius: radius.badge,
+              color: fg.primary,
               padding: `${space.sm} ${space.lg}`,
               transition: transition.theme,
             }}
           >
             Design Systems
           </span>
-          <span
-            className="text-[11px]"
-            style={{ color: fg.onBaseMuted }}
-          >
+          <span className="text-[11px]" style={{ color: fg.onBaseMuted }}>
             8 min read
           </span>
         </div>
@@ -168,13 +171,13 @@ const PreviewTypography: React.FC<PreviewTypographyProps> = ({
         {/* Title */}
         <h1
           style={{
-            fontFamily: font.secondary,
-            fontSize: '2.25rem',
-            fontWeight: weight.heading as unknown as number,
-            lineHeight: 1.15,
             color: fg.onBase,
+            fontFamily: font.secondary,
+            fontSize: "2.25rem",
+            fontWeight: weight.heading as unknown as number,
+            letterSpacing: "-0.02em",
+            lineHeight: 1.15,
             margin: 0,
-            letterSpacing: '-0.02em',
           }}
         >
           The Quiet Power of Typography in Digital Interfaces
@@ -183,16 +186,17 @@ const PreviewTypography: React.FC<PreviewTypographyProps> = ({
         {/* Subtitle */}
         <p
           style={{
-            fontFamily: font.primary,
-            fontSize: '1.125rem',
-            lineHeight: 1.5,
             color: fg.onBaseMuted,
+            fontFamily: font.primary,
+            fontSize: "1.125rem",
             fontWeight: weight.bodyLight as unknown as number,
+            lineHeight: 1.5,
             margin: 0,
             marginTop: space.md,
           }}
         >
-          How thoughtful type choices shape perception, guide attention, and build trust — often without anyone noticing.
+          How thoughtful type choices shape perception, guide attention, and
+          build trust — often without anyone noticing.
         </p>
 
         {/* Author row */}
@@ -207,11 +211,11 @@ const PreviewTypography: React.FC<PreviewTypographyProps> = ({
           }}
         >
           <div
-            className="w-9 h-9 flex items-center justify-center text-xs font-bold shrink-0"
+            className="flex h-9 w-9 shrink-0 items-center justify-center font-bold text-xs"
             style={{
               background: bg.accentSubtle,
-              color: fg.onAccentSubtle,
               borderRadius: radius.container,
+              color: fg.onAccentSubtle,
               transition: transition.theme,
             }}
           >
@@ -219,15 +223,12 @@ const PreviewTypography: React.FC<PreviewTypographyProps> = ({
           </div>
           <div className="flex flex-col">
             <span
-              className="text-sm font-semibold"
-              style={{ fontFamily: font.primary, color: fg.onBase }}
+              className="font-semibold text-sm"
+              style={{ color: fg.onBase, fontFamily: font.primary }}
             >
               Elena Kim
             </span>
-            <span
-              className="text-xs"
-              style={{ color: fg.onBaseMuted }}
-            >
+            <span className="text-xs" style={{ color: fg.onBaseMuted }}>
               Mar 18, 2026
             </span>
           </div>
@@ -238,27 +239,29 @@ const PreviewTypography: React.FC<PreviewTypographyProps> = ({
           <div className="flex flex-col" style={{ gap: space.lg }}>
             <p
               style={{
-                fontFamily: font.primary,
-                fontSize: '1rem',
-                lineHeight: 1.75,
                 color: fg.onBase,
+                fontFamily: font.primary,
+                fontSize: "1rem",
+                lineHeight: 1.75,
                 margin: 0,
               }}
             >
-              When we talk about visual design, color and layout tend to steal the spotlight. But typography is the real
-              workhorse — it carries meaning, establishes hierarchy, and sets the emotional register of an entire product.
-              The best type systems feel invisible precisely because they work so well.
+              When we talk about visual design, color and layout tend to steal
+              the spotlight. But typography is the real workhorse — it carries
+              meaning, establishes hierarchy, and sets the emotional register of
+              an entire product. The best type systems feel invisible precisely
+              because they work so well.
             </p>
 
             <h2
               style={{
-                fontFamily: font.secondary,
-                fontSize: '1.375rem',
-                fontWeight: weight.heading as unknown as number,
-                lineHeight: 1.3,
                 color: fg.onBase,
+                fontFamily: font.secondary,
+                fontSize: "1.375rem",
+                fontWeight: weight.heading as unknown as number,
+                letterSpacing: "-0.01em",
+                lineHeight: 1.3,
                 margin: 0,
-                letterSpacing: '-0.01em',
               }}
             >
               Hierarchy Is Orientation
@@ -266,58 +269,63 @@ const PreviewTypography: React.FC<PreviewTypographyProps> = ({
 
             <p
               style={{
-                fontFamily: font.primary,
-                fontSize: '1rem',
-                lineHeight: 1.75,
                 color: fg.onBase,
+                fontFamily: font.primary,
+                fontSize: "1rem",
+                lineHeight: 1.75,
                 margin: 0,
               }}
             >
-              A clear typographic hierarchy isn't decoration — it's wayfinding. Readers unconsciously use size, weight, and
-              spacing to understand what's important, what's supporting context, and what they can skip. Without this
-              structure, even brilliant content becomes a wall of undifferentiated text.
+              A clear typographic hierarchy isn't decoration — it's wayfinding.
+              Readers unconsciously use size, weight, and spacing to understand
+              what's important, what's supporting context, and what they can
+              skip. Without this structure, even brilliant content becomes a
+              wall of undifferentiated text.
             </p>
 
             {/* Pull quote */}
             <blockquote
               style={{
                 borderLeft: `3px solid ${border.neutral}`,
-                fontFamily: font.secondary,
-                fontSize: '1.125rem',
-                fontWeight: weight.heading as unknown as number,
-                fontStyle: 'italic',
-                lineHeight: 1.5,
                 color: fg.onBaseMuted,
+                fontFamily: font.secondary,
+                fontSize: "1.125rem",
+                fontStyle: "italic",
+                fontWeight: weight.heading as unknown as number,
+                lineHeight: 1.5,
                 margin: 0,
                 padding: `${space.sm} ${space.lg}`,
               }}
             >
-              "Typography is the craft of endowing human language with a durable visual form."
+              "Typography is the craft of endowing human language with a durable
+              visual form."
             </blockquote>
 
             <p
               style={{
-                fontFamily: font.primary,
-                fontSize: '1rem',
-                lineHeight: 1.75,
                 color: fg.onBase,
+                fontFamily: font.primary,
+                fontSize: "1rem",
+                lineHeight: 1.75,
                 margin: 0,
               }}
             >
-              Consider the difference between a page set in a single weight and size versus one that uses a careful scale.
-              The scaled version feels intentional and professional — not because anything flashy happened, but because
-              the type is doing what readers need it to do.
+              Consider the difference between a page set in a single weight and
+              size versus one that uses a careful scale. The scaled version
+              feels intentional and professional — not because anything flashy
+              happened, but because the type is doing what readers need it to
+              do.
             </p>
 
             <h2
               style={{
-                fontFamily: font.secondary,
-                fontSize: '1.375rem',
-                fontWeight: weight.heading as unknown as number,
-                lineHeight: 1.3,
                 color: fg.onBase,
+                fontFamily: font.secondary,
+                fontSize: "1.375rem",
+                fontWeight: weight.heading as unknown as number,
+                letterSpacing: "-0.01em",
+                lineHeight: 1.3,
                 margin: 0,
-                letterSpacing: '-0.01em',
               }}
             >
               Choosing a Typeface Pairing
@@ -325,16 +333,18 @@ const PreviewTypography: React.FC<PreviewTypographyProps> = ({
 
             <p
               style={{
-                fontFamily: font.primary,
-                fontSize: '1rem',
-                lineHeight: 1.75,
                 color: fg.onBase,
+                fontFamily: font.primary,
+                fontSize: "1rem",
+                lineHeight: 1.75,
                 margin: 0,
               }}
             >
-              The classic approach pairs contrasting families: a geometric or high-contrast serif for headings alongside
-              a neutral, highly legible sans-serif for body text. Contrast creates energy, while shared proportions
-              maintain cohesion. The goal isn't novelty — it's clarity with character.
+              The classic approach pairs contrasting families: a geometric or
+              high-contrast serif for headings alongside a neutral, highly
+              legible sans-serif for body text. Contrast creates energy, while
+              shared proportions maintain cohesion. The goal isn't novelty —
+              it's clarity with character.
             </p>
 
             {/* Callout box */}
@@ -343,43 +353,61 @@ const PreviewTypography: React.FC<PreviewTypographyProps> = ({
               style={{
                 backgroundColor: bg.primarySubtle,
                 borderRadius: radius.container,
-                padding: space.lg,
                 gap: space.md,
+                padding: space.lg,
                 transition: transition.theme,
               }}
             >
-              <span style={{ fontSize: '1.25rem', lineHeight: 1, flexShrink: 0, marginTop: '2px' }}>
+              <span
+                style={{
+                  flexShrink: 0,
+                  fontSize: "1.25rem",
+                  lineHeight: 1,
+                  marginTop: "2px",
+                }}
+              >
                 &#x2728;
               </span>
               <div>
                 <span
-                  className="text-sm font-semibold block"
-                  style={{ fontFamily: font.secondary, color: fg.primary, marginBottom: space.md }}
+                  className="block font-semibold text-sm"
+                  style={{
+                    color: fg.primary,
+                    fontFamily: font.secondary,
+                    marginBottom: space.md,
+                  }}
                 >
                   Quick Tip
                 </span>
                 <span
                   className="text-sm"
-                  style={{ fontFamily: font.primary, color: fg.primary, lineHeight: 1.6 }}
+                  style={{
+                    color: fg.primary,
+                    fontFamily: font.primary,
+                    lineHeight: 1.6,
+                  }}
                 >
-                  Test your type pairing at real content lengths, not just "Lorem ipsum." Reading comfort only reveals
-                  itself after a few paragraphs.
+                  Test your type pairing at real content lengths, not just
+                  "Lorem ipsum." Reading comfort only reveals itself after a few
+                  paragraphs.
                 </span>
               </div>
             </div>
 
             <p
               style={{
-                fontFamily: font.primary,
-                fontSize: '1rem',
-                lineHeight: 1.75,
                 color: fg.onBase,
+                fontFamily: font.primary,
+                fontSize: "1rem",
+                lineHeight: 1.75,
                 margin: 0,
               }}
             >
-              Ultimately, great typography recedes. It doesn't demand attention for itself — it lends attention to
-              everything else. When the type is right, the content simply feels trustworthy, clear, and worth reading.
-              That's the quiet power at the heart of every design system.
+              Ultimately, great typography recedes. It doesn't demand attention
+              for itself — it lends attention to everything else. When the type
+              is right, the content simply feels trustworthy, clear, and worth
+              reading. That's the quiet power at the heart of every design
+              system.
             </p>
           </div>
         </div>
@@ -395,21 +423,23 @@ const PreviewTypography: React.FC<PreviewTypographyProps> = ({
             transition: transition.theme,
           }}
         >
-          {['Typography', 'Design Systems', 'UI Design', 'Accessibility'].map((tag) => (
-            <span
-              key={tag}
-              className="text-[11px] font-medium"
-              style={{
-                backgroundColor: bg.sunken,
-                color: fg.onBaseMuted,
-                borderRadius: radius.badge,
-                padding: `${space.sm} ${space.lg}`,
-                transition: transition.theme,
-              }}
-            >
-              {tag}
-            </span>
-          ))}
+          {["Typography", "Design Systems", "UI Design", "Accessibility"].map(
+            (tag) => (
+              <span
+                className="font-medium text-[11px]"
+                key={tag}
+                style={{
+                  backgroundColor: bg.sunken,
+                  borderRadius: radius.badge,
+                  color: fg.onBaseMuted,
+                  padding: `${space.sm} ${space.lg}`,
+                  transition: transition.theme,
+                }}
+              >
+                {tag}
+              </span>
+            )
+          )}
         </div>
       </article>
     </div>

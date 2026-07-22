@@ -1,7 +1,7 @@
-import { wcagContrast, converter } from 'culori';
-import { STEPS, type ColorRamp } from './colorUtils.js';
+import { converter, wcagContrast } from "culori";
+import { type ColorRamp, STEPS } from "./colorUtils.js";
 
-const toOklch = converter('oklch');
+const toOklch = converter("oklch");
 
 type StepKey = (typeof STEPS)[number];
 
@@ -11,7 +11,7 @@ type StepKey = (typeof STEPS)[number];
  */
 export function pickStep(ramp: ColorRamp, targetL: number): StepKey {
   let bestStep: StepKey = STEPS[0];
-  let bestDist = Infinity;
+  let bestDist = Number.POSITIVE_INFINITY;
 
   for (const step of STEPS) {
     const oklch = toOklch(ramp[step]);
@@ -39,7 +39,7 @@ export function pickContrastingFg(
   bgHex: string,
   fgRamp: ColorRamp,
   isDark: boolean,
-  minRatio: number = 4.5,
+  minRatio = 4.5
 ): { hex: string; step: StepKey | null } {
   const order: StepKey[] = isDark ? [...STEPS].reverse() : [...STEPS];
 
@@ -51,5 +51,5 @@ export function pickContrastingFg(
   }
 
   // No ramp step passes — fall back to pure white or black
-  return { hex: isDark ? '#000000' : '#ffffff', step: null };
+  return { hex: isDark ? "#000000" : "#ffffff", step: null };
 }

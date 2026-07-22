@@ -1,5 +1,5 @@
 ---
-import { AnimatedCTA } from './AnimatedCTA';
+import { AnimatedCTA } from "./AnimatedCTA";
 ---
 
 <section class="relative my-[20vh] flex items-center justify-center">
@@ -7,10 +7,7 @@ import { AnimatedCTA } from './AnimatedCTA';
     <!-- Main Content -->
     <div class="max-w-2xl lg:max-w-3xl xl:max-w-5xl mx-auto text-center">
       <!-- Headline -->
-      <h1
-        class="hero-headline mb-6 md:mb-8"
-        data-animate="headline"
-      >
+      <h1 class="hero-headline mb-6 md:mb-8" data-animate="headline">
         Ship faster. <i>Scale consistently.</i>
       </h1>
 
@@ -23,39 +20,38 @@ import { AnimatedCTA } from './AnimatedCTA';
       </p>
 
       <!-- CTA Button — navigates to /generate -->
-      <div data-animate="cta" class="flex flex-col items-center gap-4">
+      <div class="flex flex-col items-center gap-4" data-animate="cta">
         <AnimatedCTA
-          client:load
-          id="cta-bottom"
           href="/generate"
-          variant="primary"
+          id="cta-bottom"
           size="lg"
+          variant="primary"
+          client:load
         >
           Get started for free
         </AnimatedCTA>
       </div>
     </div>
   </div>
-
 </section>
 
 <style>
   /* Typography Animations */
-  [data-animate='headline'] {
+  [data-animate="headline"] {
     opacity: 0;
-    animation: fadeInUp 1.6s cubic-bezier(0.17,0.84,0.44,1) forwards;
+    animation: fadeInUp 1.6s cubic-bezier(0.17, 0.84, 0.44, 1) forwards;
     animation-delay: 0.4s;
   }
 
-  [data-animate='subheadline'] {
+  [data-animate="subheadline"] {
     opacity: 0;
-    animation: fadeInUp 1.6s cubic-bezier(0.17,0.84,0.44,1) forwards;
+    animation: fadeInUp 1.6s cubic-bezier(0.17, 0.84, 0.44, 1) forwards;
     animation-delay: 0.55s;
   }
 
-  [data-animate='cta'] {
+  [data-animate="cta"] {
     opacity: 0;
-    animation: fadeInUp 1.6s cubic-bezier(0.17,0.84,0.44,1) forwards;
+    animation: fadeInUp 1.6s cubic-bezier(0.17, 0.84, 0.44, 1) forwards;
     animation-delay: 0.7s;
   }
 </style>

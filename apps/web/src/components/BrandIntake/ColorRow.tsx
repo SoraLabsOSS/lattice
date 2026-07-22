@@ -1,22 +1,20 @@
-import React from 'react';
+import type { ColorRamp, GenerationMode } from "@sora-lattice/generator";
 import {
   ArrowLeftRight,
+  Circle,
+  Flame,
   GitFork,
+  Grid2x2,
+  Palette,
+  Snowflake,
   Triangle,
   Waves,
-  Grid2x2,
-  Circle,
-  Snowflake,
-  Flame,
-  Palette,
-} from 'lucide-react';
-
-import { Input } from '../ui/Input';
-import { Select, type SelectOption } from '../ui/Select';
-import { ColorPickerPopover } from '../ui/ColorPickerPopover';
-import { ColorRampView } from '../Showcase/ColorRampView';
-import { type GenerationMode } from '@sora-lattice/generator';
-import type { ColorRamp } from '@sora-lattice/generator';
+} from "lucide-react";
+import type React from "react";
+import { ColorRampView } from "../Showcase/ColorRampView";
+import { ColorPickerPopover } from "../ui/ColorPickerPopover";
+import { Input } from "../ui/Input";
+import { Select, type SelectOption } from "../ui/Select";
 
 // ---------------------------------------------------------------------------
 // Small reusable pieces
@@ -27,16 +25,16 @@ export const HexColorInput: React.FC<{
   onChange: (color: string) => void;
 }> = ({ color, onChange }) => (
   <div className="relative">
-    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal/70 font-mono text-sm">
+    <span className="absolute top-1/2 left-3 -translate-y-1/2 font-mono text-charcoal/70 text-sm">
       #
     </span>
     <Input
-      size="compact"
       aria-label="Hex color value"
-      value={color.replace('#', '')}
-      onChange={(e) => onChange(`#${(e.target as HTMLInputElement).value}`)}
       className="w-26 pl-6 font-mono"
       maxLength={6}
+      onChange={(e) => onChange(`#${(e.target as HTMLInputElement).value}`)}
+      size="compact"
+      value={color.replace("#", "")}
     />
   </div>
 );
@@ -46,11 +44,19 @@ export const HexColorInput: React.FC<{
 // ---------------------------------------------------------------------------
 
 const SECONDARY_MODE_OPTIONS: SelectOption[] = [
-  { value: 'complementary', label: 'Complementary', icon: <ArrowLeftRight size={14} /> },
-  { value: 'split-complementary', label: 'Split Complementary', icon: <GitFork size={14} /> },
-  { value: 'triadic', label: 'Triadic', icon: <Triangle size={14} /> },
-  { value: 'analogous', label: 'Analogous', icon: <Waves size={14} /> },
-  { value: 'tetradic', label: 'Tetradic', icon: <Grid2x2 size={14} /> },
+  {
+    icon: <ArrowLeftRight size={14} />,
+    label: "Complementary",
+    value: "complementary",
+  },
+  {
+    icon: <GitFork size={14} />,
+    label: "Split Complementary",
+    value: "split-complementary",
+  },
+  { icon: <Triangle size={14} />, label: "Triadic", value: "triadic" },
+  { icon: <Waves size={14} />, label: "Analogous", value: "analogous" },
+  { icon: <Grid2x2 size={14} />, label: "Tetradic", value: "tetradic" },
 ];
 
 export const GenerationModeSelector: React.FC<{
@@ -59,10 +65,10 @@ export const GenerationModeSelector: React.FC<{
 }> = ({ value, onChange }) => (
   <Select
     label="Generation Mode"
-    value={value ?? 'complementary'}
-    options={SECONDARY_MODE_OPTIONS}
     onValueChange={(v) => onChange(v as GenerationMode)}
+    options={SECONDARY_MODE_OPTIONS}
     size="compact"
+    value={value ?? "complementary"}
   />
 );
 
@@ -72,20 +78,23 @@ export const RampSliders: React.FC<{
 }> = ({ chromaFalloff, onChromaFalloffChange }) => (
   <div className="flex flex-col gap-4" data-step-animate-children="ignore">
     <div className="flex justify-between">
-      <label className="text-sm font-medium text-charcoal">Chroma Falloff</label>
-      <span className="text-xs font-mono text-charcoal">{chromaFalloff}%</span>
+      <label className="font-medium text-charcoal text-sm">
+        Chroma Falloff
+      </label>
+      <span className="font-mono text-charcoal text-xs">{chromaFalloff}%</span>
     </div>
     <input
-      type="range"
       aria-label="Chroma Falloff"
-      min="0"
+      className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-charcoal/10 accent-forest-green"
       max="100"
+      min="0"
+      onChange={(e) => onChromaFalloffChange(Number.parseInt(e.target.value))}
+      type="range"
       value={chromaFalloff}
-      onChange={(e) => onChromaFalloffChange(parseInt(e.target.value))}
-      className="w-full h-1.5 bg-charcoal/10 rounded-full appearance-none cursor-pointer accent-forest-green"
     />
-    <p className="text-xs text-charcoal/60">
-      How much color intensity fades in lighter and darker shades. Your chosen color is always preserved.
+    <p className="text-charcoal/60 text-xs">
+      How much color intensity fades in lighter and darker shades. Your chosen
+      color is always preserved.
     </p>
   </div>
 );
@@ -94,13 +103,13 @@ export const RampSliders: React.FC<{
 // Neutral tint options
 // ---------------------------------------------------------------------------
 
-type NeutralTint = 'pure' | 'cool' | 'warm' | 'brand-tinted';
+type NeutralTint = "pure" | "cool" | "warm" | "brand-tinted";
 
 const NEUTRAL_TINT_OPTIONS: SelectOption[] = [
-  { value: 'pure', label: 'Pure', icon: <Circle size={14} /> },
-  { value: 'cool', label: 'Cool', icon: <Snowflake size={14} /> },
-  { value: 'warm', label: 'Warm', icon: <Flame size={14} /> },
-  { value: 'brand-tinted', label: 'Brand Tinted', icon: <Palette size={14} /> },
+  { icon: <Circle size={14} />, label: "Pure", value: "pure" },
+  { icon: <Snowflake size={14} />, label: "Cool", value: "cool" },
+  { icon: <Flame size={14} />, label: "Warm", value: "warm" },
+  { icon: <Palette size={14} />, label: "Brand Tinted", value: "brand-tinted" },
 ];
 
 export const NeutralTintSelector: React.FC<{
@@ -109,10 +118,10 @@ export const NeutralTintSelector: React.FC<{
 }> = ({ value, onChange }) => (
   <Select
     label="Tint Strategy"
-    value={value}
-    options={NEUTRAL_TINT_OPTIONS}
     onValueChange={(v) => onChange(v as NeutralTint)}
+    options={NEUTRAL_TINT_OPTIONS}
     size="compact"
+    value={value}
   />
 );
 
@@ -121,12 +130,12 @@ export const NeutralTintSelector: React.FC<{
 // ---------------------------------------------------------------------------
 
 export interface PrimaryColorRowProps {
-  label: string;
-  description?: string;
+  advancedContent: React.ReactNode;
   color: string;
+  description?: string;
+  label: string;
   onChange: (color: string) => void;
   ramp: ColorRamp;
-  advancedContent: React.ReactNode;
 }
 
 export const PrimaryColorRow: React.FC<PrimaryColorRowProps> = ({
@@ -137,13 +146,13 @@ export const PrimaryColorRow: React.FC<PrimaryColorRowProps> = ({
   ramp,
   advancedContent,
 }) => (
-  <div className="flex flex-col md:flex-row gap-8 items-stretch w-full">
+  <div className="flex w-full flex-col items-stretch gap-8 md:flex-row">
     <div className="flex flex-1 flex-col gap-6">
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-1">
-          <label className="text-base text-charcoal font-bold">{label}</label>
+          <label className="font-bold text-base text-charcoal">{label}</label>
           {description && (
-            <p className="text-sm text-charcoal/80 mb-2">{description}</p>
+            <p className="mb-2 text-charcoal/80 text-sm">{description}</p>
           )}
         </div>
 
@@ -152,10 +161,10 @@ export const PrimaryColorRow: React.FC<PrimaryColorRowProps> = ({
           <HexColorInput color={color} onChange={onChange} />
         </div>
       </div>
-      <ColorRampView ramp={ramp} className="h-full min-h-[64px] rounded-xl" />
+      <ColorRampView className="h-full min-h-[64px] rounded-xl" ramp={ramp} />
     </div>
 
-    <div className="w-full md:w-72 shrink-0 bg-charcoal/5 rounded-xl p-6 flex flex-col justify-start">
+    <div className="flex w-full shrink-0 flex-col justify-start rounded-xl bg-charcoal/5 p-6 md:w-72">
       {advancedContent}
     </div>
   </div>
@@ -166,14 +175,14 @@ export const PrimaryColorRow: React.FC<PrimaryColorRowProps> = ({
 // ---------------------------------------------------------------------------
 
 export interface ColorRowProps {
-  label: string;
-  description?: string;
-  color: string;
-  onChange: (color: string) => void;
-  ramp: ColorRamp;
-  onGenerationChange?: (mode: GenerationMode) => void;
-  generationMode?: GenerationMode;
   advancedContent?: React.ReactNode;
+  color: string;
+  description?: string;
+  generationMode?: GenerationMode;
+  label: string;
+  onChange: (color: string) => void;
+  onGenerationChange?: (mode: GenerationMode) => void;
+  ramp: ColorRamp;
   showInput?: boolean;
 }
 
@@ -191,11 +200,11 @@ export const ColorRow: React.FC<ColorRowProps> = ({
   const hasSettings = Boolean(onGenerationChange || advancedContent);
 
   return (
-    <div className="flex flex-col gap-5 w-full">
+    <div className="flex w-full flex-col gap-5">
       <div className="flex flex-col gap-1">
-        <label className="text-base text-charcoal font-bold">{label}</label>
+        <label className="font-bold text-base text-charcoal">{label}</label>
         {description && (
-          <p className="text-sm text-charcoal/80">{description}</p>
+          <p className="text-charcoal/80 text-sm">{description}</p>
         )}
       </div>
 
@@ -204,18 +213,18 @@ export const ColorRow: React.FC<ColorRowProps> = ({
         {showInput && <HexColorInput color={color} onChange={onChange} />}
       </div>
 
-      <ColorRampView ramp={ramp} className="h-16 rounded-xl" />
+      <ColorRampView className="h-16 rounded-xl" ramp={ramp} />
 
       {hasSettings && (
         <div
-          className="p-4 bg-charcoal/5 rounded-xl space-y-4"
-          role="group"
           aria-label={`${label} settings`}
+          className="space-y-4 rounded-xl bg-charcoal/5 p-4"
+          role="group"
         >
           {onGenerationChange && (
             <GenerationModeSelector
-              value={generationMode}
               onChange={onGenerationChange}
+              value={generationMode}
             />
           )}
           {advancedContent}

@@ -1,17 +1,31 @@
-import React, { useState } from 'react';
+import type React from "react";
+import { useState } from "react";
 import {
-  bg, fg, border, radius, space, transition,
-  font, weight, action, interactive,
+  action,
+  bg,
+  border,
   type ControlSize,
-} from './tokens';
+  fg,
+  font,
+  interactive,
+  radius,
+  space,
+  transition,
+  weight,
+} from "./tokens";
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'outline' | 'critical';
+export type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "ghost"
+  | "outline"
+  | "critical";
 export type ButtonSize = ControlSize;
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: ButtonVariant;
-  size?: ButtonSize;
   children: React.ReactNode;
+  size?: ButtonSize;
+  variant?: ButtonVariant;
 }
 
 // Every variant carries a 1px border (even transparent ones) so all buttons —
@@ -19,30 +33,30 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 // same outer height at a given size. Drop the border and primary/critical would
 // render 2px shorter than outline/secondary/input at the same size.
 const VARIANT_STYLES: Record<ButtonVariant, React.CSSProperties> = {
-  primary: {
-    color: fg.onPrimary,
-    backgroundColor: bg.primary,
-    border: '1px solid transparent',
-  },
-  secondary: {
-    color: fg.onBase,
-    backgroundColor: bg.raised,
-    border: `1px solid ${border.neutral}`,
+  critical: {
+    backgroundColor: bg.critical,
+    border: "1px solid transparent",
+    color: fg.onCritical,
   },
   ghost: {
+    backgroundColor: "transparent",
+    border: "1px solid transparent",
     color: fg.onBaseMuted,
-    backgroundColor: 'transparent',
-    border: '1px solid transparent',
   },
   outline: {
-    color: fg.onBase,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     border: `1px solid ${border.neutral}`,
+    color: fg.onBase,
   },
-  critical: {
-    color: fg.onCritical,
-    backgroundColor: bg.critical,
-    border: '1px solid transparent',
+  primary: {
+    backgroundColor: bg.primary,
+    border: "1px solid transparent",
+    color: fg.onPrimary,
+  },
+  secondary: {
+    backgroundColor: bg.raised,
+    border: `1px solid ${border.neutral}`,
+    color: fg.onBase,
   },
 };
 
@@ -50,29 +64,29 @@ const VARIANT_STYLES: Record<ButtonVariant, React.CSSProperties> = {
 // control's inner height to the matching icon size (14/16/20/24px), so we
 // only need padding to breathe proportionally at each tier.
 const SIZE_STYLES: Record<ButtonSize, React.CSSProperties> = {
-  xs: {
-    fontSize:   action.xs.size,
-    lineHeight: action.xs.lineHeight,
-    padding:    `${space.xs} ${space.sm}`,
-    gap:        space.xs,
-  },
-  sm: {
-    fontSize:   action.sm.size,
-    lineHeight: action.sm.lineHeight,
-    padding:    `${space.sm} ${space.lg}`,
-    gap:        space.xs,
+  lg: {
+    fontSize: action.lg.size,
+    gap: space.sm,
+    lineHeight: action.lg.lineHeight,
+    padding: `${space.lg} ${space["2xl"]}`,
   },
   md: {
-    fontSize:   action.md.size,
+    fontSize: action.md.size,
+    gap: space.xs,
     lineHeight: action.md.lineHeight,
-    padding:    `${space.md} ${space.xl}`,
-    gap:        space.xs,
+    padding: `${space.md} ${space.xl}`,
   },
-  lg: {
-    fontSize:   action.lg.size,
-    lineHeight: action.lg.lineHeight,
-    padding:    `${space.lg} ${space['2xl']}`,
-    gap:        space.sm,
+  sm: {
+    fontSize: action.sm.size,
+    gap: space.xs,
+    lineHeight: action.sm.lineHeight,
+    padding: `${space.sm} ${space.lg}`,
+  },
+  xs: {
+    fontSize: action.xs.size,
+    gap: space.xs,
+    lineHeight: action.xs.lineHeight,
+    padding: `${space.xs} ${space.sm}`,
   },
 };
 
@@ -83,8 +97,8 @@ const SIZE_STYLES: Record<ButtonSize, React.CSSProperties> = {
 const scrimShadow = (token: string) => `inset 0 0 0 999px ${token}`;
 
 const Button: React.FC<ButtonProps> = ({
-  variant = 'primary',
-  size = 'md',
+  variant = "primary",
+  size = "md",
   children,
   style,
   onMouseEnter,
@@ -93,29 +107,45 @@ const Button: React.FC<ButtonProps> = ({
   onMouseUp,
   ...rest
 }) => {
-  const [scrim, setScrim] = useState<'none' | 'hover' | 'active'>('none');
+  const [scrim, setScrim] = useState<"none" | "hover" | "active">("none");
   return (
     <button
       {...rest}
-      onMouseEnter={(e) => { setScrim('hover'); onMouseEnter?.(e); }}
-      onMouseLeave={(e) => { setScrim('none'); onMouseLeave?.(e); }}
-      onMouseDown={(e) => { setScrim('active'); onMouseDown?.(e); }}
-      onMouseUp={(e) => { setScrim('hover'); onMouseUp?.(e); }}
+      onMouseDown={(e) => {
+        setScrim("active");
+        onMouseDown?.(e);
+      }}
+      onMouseEnter={(e) => {
+        setScrim("hover");
+        onMouseEnter?.(e);
+      }}
+      onMouseLeave={(e) => {
+        setScrim("none");
+        onMouseLeave?.(e);
+      }}
+      onMouseUp={(e) => {
+        setScrim("hover");
+        onMouseUp?.(e);
+      }}
       style={{
+        alignItems: "center",
+        borderRadius: radius.action,
+        cursor: "pointer",
+        display: "inline-flex",
         fontFamily: font.action,
         fontWeight: weight.action,
-        cursor: 'pointer',
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: radius.action,
+        justifyContent: "center",
         transition: transition.interactive,
         ...VARIANT_STYLES[variant],
         ...SIZE_STYLES[size],
         ...style,
-        ...(scrim !== 'none'
-          ? { boxShadow: scrimShadow(scrim === 'active' ? interactive.active : interactive.hover) }
-          : null),
+        ...(scrim === "none"
+          ? null
+          : {
+              boxShadow: scrimShadow(
+                scrim === "active" ? interactive.active : interactive.hover
+              ),
+            }),
       }}
     >
       {children}

@@ -1,19 +1,25 @@
-import { map } from 'nanostores';
 import {
+  type BodyFontWeights,
+  type BrandConfig,
+  type ColorRamp,
   DEFAULT_BODY_WEIGHTS,
   DEFAULT_HEADING_WEIGHT,
   FONT_WEIGHT_OPTIONS,
-  initialConfig,
-  type BrandConfig,
-  type BodyFontWeights,
-  type ColorRamp,
   type FontWeight,
+  initialConfig,
   type NeutralColorRamp,
-} from '@sora-lattice/generator';
+} from "@sora-lattice/generator";
+import { map } from "nanostores";
 
-export type TabId = 'color' | 'typography' | 'style';
+export type TabId = "color" | "typography" | "style";
 
-export type { BrandConfig, BodyFontWeights, ColorRamp, FontWeight, NeutralColorRamp };
+export type {
+  BodyFontWeights,
+  BrandConfig,
+  ColorRamp,
+  FontWeight,
+  NeutralColorRamp,
+};
 export {
   DEFAULT_BODY_WEIGHTS,
   DEFAULT_HEADING_WEIGHT,

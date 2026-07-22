@@ -1,47 +1,66 @@
-import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
-import { useStore } from '@nanostores/react';
-import { Sun, Moon, PanelLeftClose, PanelLeftOpen, MousePointerClick } from 'lucide-react';
-
-import { $brandConfig, updateConfig, FONT_WEIGHT_OPTIONS, type TabId } from '../BrandIntake/store';
-import TabBar from '../BrandIntake/TabBar';
-import TabColor from '../BrandIntake/TabColor';
-import TabTypography from '../BrandIntake/TabTypography';
-import TabStyle from '../BrandIntake/TabStyle';
-import PlaygroundDashboard from '../LivePlayground/PlaygroundDashboard';
-import PreviewTypography from '../LivePlayground/PreviewTypography';
-import PreviewComponents from '../ComponentSampler';
-import type { PlaygroundConfig } from '../LivePlayground/types';
-import { generateDesignTokens } from '@sora-lattice/generator';
-import { Tooltip } from '../ui/Tooltip';
-import InspectOverlay from './InspectOverlay';
-import { siteImages } from '../../lib/siteImages';
-import { decodeBrandConfig, encodeBrandConfig } from '../../lib/configUrl';
+import { useStore } from "@nanostores/react";
+import { generateDesignTokens } from "@sora-lattice/generator";
+import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
+import {
+  Moon,
+  MousePointerClick,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Sun,
+} from "lucide-react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { decodeBrandConfig, encodeBrandConfig } from "../../lib/configUrl";
+import { siteImages } from "../../lib/siteImages";
+import {
+  $brandConfig,
+  FONT_WEIGHT_OPTIONS,
+  type TabId,
+  updateConfig,
+} from "../BrandIntake/store";
+import TabBar from "../BrandIntake/TabBar";
+import TabColor from "../BrandIntake/TabColor";
+import TabStyle from "../BrandIntake/TabStyle";
+import TabTypography from "../BrandIntake/TabTypography";
+import PreviewComponents from "../ComponentSampler";
+import PlaygroundDashboard from "../LivePlayground/PlaygroundDashboard";
+import PreviewTypography from "../LivePlayground/PreviewTypography";
+import type { PlaygroundConfig } from "../LivePlayground/types";
+import { Tooltip } from "../ui/Tooltip";
+import InspectOverlay from "./InspectOverlay";
 
 // ---------------------------------------------------------------------------
 // Preview tab bar (Dashboard / Components)
 // ---------------------------------------------------------------------------
 
-type PreviewTab = 'dashboard' | 'components' | 'blog';
+type PreviewTab = "dashboard" | "components" | "blog";
 
-const PreviewTabBar: React.FC<{ active: PreviewTab; onChange: (t: PreviewTab) => void }> = ({ active, onChange }) => (
+const PreviewTabBar: React.FC<{
+  active: PreviewTab;
+  onChange: (t: PreviewTab) => void;
+}> = ({ active, onChange }) => (
   <div
-    className="flex gap-1 bg-charcoal/5 rounded-lg p-0.5 w-full md:w-auto justify-between md:justify-start"
-    role="tablist"
     aria-label="Preview type"
+    className="flex w-full justify-between gap-1 rounded-lg bg-charcoal/5 p-0.5 md:w-auto md:justify-start"
+    role="tablist"
   >
-    {(['dashboard', 'components', 'blog'] as const).map((tab) => (
+    {(["dashboard", "components", "blog"] as const).map((tab) => (
       <button
-        key={tab}
-        type="button"
-        role="tab"
         aria-selected={active === tab}
-        onClick={() => onChange(tab)}
-        className={`px-3 py-1.5 text-xs font-medium w-full md:w-auto rounded-md transition-all cursor-pointer capitalize ${
+        className={`w-full cursor-pointer rounded-md px-3 py-1.5 font-medium text-xs capitalize transition-all md:w-auto ${
           active === tab
-            ? 'bg-white text-charcoal shadow-sm'
-            : 'text-charcoal/80 hover:text-charcoal'
+            ? "bg-white text-charcoal shadow-sm"
+            : "text-charcoal/80 hover:text-charcoal"
         }`}
+        key={tab}
+        onClick={() => onChange(tab)}
+        role="tab"
+        type="button"
       >
         {tab}
       </button>
@@ -53,24 +72,31 @@ const PreviewTabBar: React.FC<{ active: PreviewTab; onChange: (t: PreviewTab) =>
 // Dark mode toggle
 // ---------------------------------------------------------------------------
 
-const DarkModeToggle: React.FC<{ isDark: boolean; onToggle: () => void }> = ({ isDark, onToggle }) => (
+const DarkModeToggle: React.FC<{ isDark: boolean; onToggle: () => void }> = ({
+  isDark,
+  onToggle,
+}) => (
   <button
-    type="button"
-    role="switch"
     aria-checked={isDark}
+    aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+    className="relative h-7 w-12 cursor-pointer rounded-full p-0.5 transition-all duration-200 hover:scale-105 active:scale-95"
     onClick={onToggle}
-    className="relative w-12 h-7 rounded-full p-0.5 hover:scale-105 active:scale-95 cursor-pointer transition-all duration-200"
-    style={{ backgroundColor: isDark ? '#374151' : '#d7d9dc' }}
-    aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+    role="switch"
+    style={{ backgroundColor: isDark ? "#374151" : "#d7d9dc" }}
+    type="button"
   >
     <div
-      className="w-6 h-6 rounded-full bg-white shadow-sm flex items-center justify-center"
+      className="flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm"
       style={{
         transform: `translateX(${isDark ? 20 : 0}px)`,
-        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
       }}
     >
-      {isDark ? <Moon size={11} className="text-gray-600" /> : <Sun size={11} className="text-amber-500" />}
+      {isDark ? (
+        <Moon className="text-gray-600" size={11} />
+      ) : (
+        <Sun className="text-amber-500" size={11} />
+      )}
     </div>
   </button>
 );
@@ -79,30 +105,30 @@ const DarkModeToggle: React.FC<{ isDark: boolean; onToggle: () => void }> = ({ i
 // Mobile segmented controller
 // ---------------------------------------------------------------------------
 
-type MobileSegment = 'configure' | 'preview';
+type MobileSegment = "configure" | "preview";
 
 const MobileSegmentedController: React.FC<{
   active: MobileSegment;
   onChange: (v: MobileSegment) => void;
 }> = ({ active, onChange }) => (
-  <div className="md:hidden fixed inset-x-0 bottom-0 z-40 border-t border-charcoal/5 bg-white/95 px-4 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-12px_40px_rgba(0,0,0,0.08)] backdrop-blur">
+  <div className="fixed inset-x-0 bottom-0 z-40 border-charcoal/5 border-t bg-white/95 px-4 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-12px_40px_rgba(0,0,0,0.08)] backdrop-blur md:hidden">
     <div
+      aria-label="Mobile workspace view"
       className="mx-auto flex max-w-md gap-1 rounded-lg bg-charcoal/5 p-0.5"
       role="tablist"
-      aria-label="Mobile workspace view"
     >
-      {(['configure', 'preview'] as const).map((segment) => (
+      {(["configure", "preview"] as const).map((segment) => (
         <button
-          key={segment}
-          type="button"
-          role="tab"
           aria-selected={active === segment}
-          onClick={() => onChange(segment)}
-          className={`flex-1 px-3 py-2 text-sm font-medium rounded-md transition-all cursor-pointer capitalize ${
+          className={`flex-1 cursor-pointer rounded-md px-3 py-2 font-medium text-sm capitalize transition-all ${
             active === segment
-              ? 'bg-white text-charcoal shadow-sm'
-              : 'text-charcoal/50 hover:text-charcoal/80'
+              ? "bg-white text-charcoal shadow-sm"
+              : "text-charcoal/50 hover:text-charcoal/80"
           }`}
+          key={segment}
+          onClick={() => onChange(segment)}
+          role="tab"
+          type="button"
         >
           {segment}
         </button>
@@ -117,13 +143,15 @@ const MobileSegmentedController: React.FC<{
 
 const useIsDesktop = () => {
   const [isDesktop, setIsDesktop] = useState(
-    typeof window !== 'undefined' ? window.matchMedia('(min-width: 768px)').matches : true
+    typeof window === "undefined"
+      ? true
+      : window.matchMedia("(min-width: 768px)").matches
   );
   React.useEffect(() => {
-    const mql = window.matchMedia('(min-width: 768px)');
+    const mql = window.matchMedia("(min-width: 768px)");
     const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
-    mql.addEventListener('change', handler);
-    return () => mql.removeEventListener('change', handler);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
   }, []);
   return isDesktop;
 };
@@ -137,14 +165,21 @@ const useIsDesktop = () => {
 // mismatches that React 19 refuses to patch up.
 const hydrateFromUrlIfPresent = () => {
   const params = new URLSearchParams(window.location.search);
-  const raw = params.get('c');
-  if (!raw) return;
+  const raw = params.get("c");
+  if (!raw) {
+    return;
+  }
   const decoded = decodeBrandConfig(raw);
-  if (decoded) $brandConfig.set(decoded);
-  params.delete('c');
+  if (decoded) {
+    $brandConfig.set(decoded);
+  }
+  params.delete("c");
   const search = params.toString();
-  const url = window.location.pathname + (search ? `?${search}` : '') + window.location.hash;
-  window.history.replaceState(null, '', url);
+  const url =
+    window.location.pathname +
+    (search ? `?${search}` : "") +
+    window.location.hash;
+  window.history.replaceState(null, "", url);
 };
 
 const Configurator: React.FC = () => {
@@ -156,49 +191,66 @@ const Configurator: React.FC = () => {
   }, []);
 
   // Local UI state
-  const [activeTab, setActiveTab] = useState<TabId>('color');
+  const [activeTab, setActiveTab] = useState<TabId>("color");
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [previewTab, setPreviewTab] = useState<PreviewTab>('dashboard');
-  const [mobileSegment, setMobileSegment] = useState<MobileSegment>('configure');
+  const [previewTab, setPreviewTab] = useState<PreviewTab>("dashboard");
+  const [mobileSegment, setMobileSegment] =
+    useState<MobileSegment>("configure");
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isInspecting, setIsInspecting] = useState(false);
 
   const previewContainerRef = useRef<HTMLDivElement>(null);
 
   // Scroll preservation per tab
-  const scrollRefs = useRef<Record<TabId, number>>({ color: 0, typography: 0, style: 0 });
+  const scrollRefs = useRef<Record<TabId, number>>({
+    color: 0,
+    style: 0,
+    typography: 0,
+  });
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const handleTabChange = useCallback((tab: TabId) => {
-    // Save current scroll position
-    if (scrollContainerRef.current) {
-      scrollRefs.current[activeTab] = scrollContainerRef.current.scrollTop;
-    }
-    setActiveTab(tab);
-    // Restore scroll position for new tab
-    requestAnimationFrame(() => {
+  const handleTabChange = useCallback(
+    (tab: TabId) => {
+      // Save current scroll position
       if (scrollContainerRef.current) {
-        scrollContainerRef.current.scrollTop = scrollRefs.current[tab] || 0;
+        scrollRefs.current[activeTab] = scrollContainerRef.current.scrollTop;
       }
-    });
-  }, [activeTab]);
+      setActiveTab(tab);
+      // Restore scroll position for new tab
+      requestAnimationFrame(() => {
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollTop = scrollRefs.current[tab] || 0;
+        }
+      });
+    },
+    [activeTab]
+  );
 
   // Load Google Fonts for both body and heading typefaces
   useEffect(() => {
-    const weightsQuery = `wght@${FONT_WEIGHT_OPTIONS.join(';')}`;
-    for (const [family, role] of [[config.headingFont, 'heading'], [config.primaryFont, 'body']] as const) {
-      const id = `playground-font-${role}-${family.replace(/\s+/g, '+')}`;
-      if (document.getElementById(id)) continue;
-      const link = document.createElement('link');
+    const weightsQuery = `wght@${FONT_WEIGHT_OPTIONS.join(";")}`;
+    for (const [family, role] of [
+      [config.headingFont, "heading"],
+      [config.primaryFont, "body"],
+    ] as const) {
+      const id = `playground-font-${role}-${family.replace(/\s+/g, "+")}`;
+      if (document.getElementById(id)) {
+        continue;
+      }
+      const link = document.createElement("link");
       link.id = id;
-      link.rel = 'stylesheet';
-      link.href = `https://fonts.googleapis.com/css2?family=${family.replace(/\s+/g, '+')}:${weightsQuery}&display=swap`;
+      link.rel = "stylesheet";
+      link.href = `https://fonts.googleapis.com/css2?family=${family.replace(/\s+/g, "+")}:${weightsQuery}&display=swap`;
       document.head.appendChild(link);
     }
   }, [config.primaryFont, config.headingFont]);
 
   // Generate design tokens as CSS custom properties
-  const { tokens: designTokens, semanticMap, swatches } = useMemo(
+  const {
+    tokens: designTokens,
+    semanticMap,
+    swatches,
+  } = useMemo(
     () => generateDesignTokens(config, isDarkMode),
     [config, isDarkMode]
   );
@@ -210,96 +262,129 @@ const Configurator: React.FC = () => {
   // `+`, which URLSearchParams would otherwise decode as a space on the way back.
   const exportHref = useMemo(
     () => `/generate/export?c=${encodeURIComponent(encodeBrandConfig(config))}`,
-    [config],
+    [config]
   );
 
   // Bridge: BrandConfig → PlaygroundConfig (kept for font-loading side effect)
   const playgroundConfig: PlaygroundConfig = {
-    primaryColor: config.primaryColor,
-    secondaryColor: config.secondaryColor || '#8B5CF6',
-    saturation: 100,
-    lightness: 100,
-    fontFamily: config.primaryFont,
-    roundness: config.roundness,
     density: config.density,
     expressiveness: config.expressiveness,
-    shadows: config.shadows,
+    fontFamily: config.primaryFont,
     isDarkMode,
+    lightness: 100,
+    primaryColor: config.primaryColor,
+    roundness: config.roundness,
+    saturation: 100,
+    secondaryColor: config.secondaryColor || "#8B5CF6",
+    shadows: config.shadows,
   };
 
-  const handlePlaygroundChange = useCallback((updates: Partial<PlaygroundConfig>) => {
-    const brandUpdates: Record<string, unknown> = {};
-    if (updates.primaryColor !== undefined) brandUpdates.primaryColor = updates.primaryColor;
-    if (updates.secondaryColor !== undefined) {
-      brandUpdates.secondaryColor = updates.secondaryColor;
-      brandUpdates.useCustomSecondary = true;
-    }
-    // playground saturation is a different concept (scales base chroma); don't map to chromaFalloff
+  const handlePlaygroundChange = useCallback(
+    (updates: Partial<PlaygroundConfig>) => {
+      const brandUpdates: Record<string, unknown> = {};
+      if (updates.primaryColor !== undefined) {
+        brandUpdates.primaryColor = updates.primaryColor;
+      }
+      if (updates.secondaryColor !== undefined) {
+        brandUpdates.secondaryColor = updates.secondaryColor;
+        brandUpdates.useCustomSecondary = true;
+      }
+      // playground saturation is a different concept (scales base chroma); don't map to chromaFalloff
 
-    if (updates.fontFamily !== undefined) {
-      brandUpdates.primaryFont = updates.fontFamily;
-    }
-    if (updates.roundness !== undefined) brandUpdates.roundness = updates.roundness;
-    if (updates.density !== undefined) brandUpdates.density = updates.density;
-    if (updates.expressiveness !== undefined) brandUpdates.expressiveness = updates.expressiveness;
-    if (updates.shadows !== undefined) brandUpdates.shadows = updates.shadows;
-    if (updates.isDarkMode !== undefined) setIsDarkMode(updates.isDarkMode);
+      if (updates.fontFamily !== undefined) {
+        brandUpdates.primaryFont = updates.fontFamily;
+      }
+      if (updates.roundness !== undefined) {
+        brandUpdates.roundness = updates.roundness;
+      }
+      if (updates.density !== undefined) {
+        brandUpdates.density = updates.density;
+      }
+      if (updates.expressiveness !== undefined) {
+        brandUpdates.expressiveness = updates.expressiveness;
+      }
+      if (updates.shadows !== undefined) {
+        brandUpdates.shadows = updates.shadows;
+      }
+      if (updates.isDarkMode !== undefined) {
+        setIsDarkMode(updates.isDarkMode);
+      }
 
-    if (Object.keys(brandUpdates).length > 0) updateConfig(brandUpdates);
-  }, []);
+      if (Object.keys(brandUpdates).length > 0) {
+        updateConfig(brandUpdates);
+      }
+    },
+    []
+  );
 
   return (
-    <div className="flex min-h-dvh flex-col md:h-full md:min-h-0" data-lenis-prevent="true">
+    <div
+      className="flex min-h-dvh flex-col md:h-full md:min-h-0"
+      data-lenis-prevent="true"
+    >
       {/* Two-panel layout */}
       <div className="flex flex-1 flex-col bg-gray pb-[calc(4rem+env(safe-area-inset-bottom))] md:min-h-0 md:flex-row md:pb-0">
         {/* Left Panel — Configuration */}
         <motion.aside
           animate={isDesktop ? { width: isCollapsed ? 72 : 360 } : undefined}
+          className={`flex min-h-0 shrink-0 flex-col md:p-4 md:pr-0 ${
+            mobileSegment === "preview" ? "hidden md:flex" : "flex"
+          } ${isCollapsed && isDesktop ? "" : "w-full md:w-[360px]"}`}
           transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-          className={`shrink-0 flex flex-col min-h-0 md:p-4 md:pr-0 ${
-            mobileSegment === 'preview' ? 'hidden md:flex' : 'flex'
-          } ${isCollapsed && isDesktop ? '' : 'w-full md:w-[360px]'}`}
         >
-          <div className="relative flex flex-col flex-1 min-h-0 bg-white md:rounded-3xl overflow-hidden">
-            <AnimatePresence mode="popLayout" initial={false}>
+          <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-white md:rounded-3xl">
+            <AnimatePresence initial={false} mode="popLayout">
               {isCollapsed ? (
                 /* ── Collapsed sidebar ── */
                 <motion.div
-                  key="collapsed"
-                  className="flex flex-col items-center gap-4 pt-6 pb-4 px-2"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1, transition: { duration: 0.2, delay: 0.25 } }}
+                  animate={{
+                    opacity: 1,
+                    transition: { delay: 0.25, duration: 0.2 },
+                  }}
+                  className="flex flex-col items-center gap-4 px-2 pt-6 pb-4"
                   exit={{ opacity: 0, transition: { duration: 0.1 } }}
+                  initial={{ opacity: 0 }}
+                  key="collapsed"
                 >
                   <Tooltip label="Back to home page" side="right">
-                    <a href="/" className="hover:opacity-70 transition-opacity">
-                      <img src={siteImages.logoIcon} alt="Sora Lattice" className="w-5 h-5" />
+                    <a className="transition-opacity hover:opacity-70" href="/">
+                      <img
+                        alt="Sora Lattice"
+                        className="h-5 w-5"
+                        src={siteImages.logoIcon}
+                      />
                     </a>
                   </Tooltip>
 
                   <Tooltip label="Expand" side="right">
                     <button
-                      onClick={() => setIsCollapsed(false)}
-                      className="text-charcoal/40 hover:text-charcoal/70 transition-colors cursor-pointer"
                       aria-label="Expand sidebar"
+                      className="cursor-pointer text-charcoal/40 transition-colors hover:text-charcoal/70"
+                      onClick={() => setIsCollapsed(false)}
                     >
                       <PanelLeftOpen size={18} />
                     </button>
                   </Tooltip>
 
-                  <div className="w-6 h-px bg-charcoal/10" />
+                  <div className="h-px w-6 bg-charcoal/10" />
 
                   {/* Color swatches */}
-                  {([
-                    ['Primary',   swatches.primary],
-                    ['Secondary', swatches.secondary],
-                    ['Neutral',   swatches.neutral],
-                  ] as const).map(([name, value]) => (
-                    <Tooltip key={name} label={`${name}: ${value}`} side="right">
+                  {(
+                    [
+                      ["Primary", swatches.primary],
+                      ["Secondary", swatches.secondary],
+                      ["Neutral", swatches.neutral],
+                    ] as const
+                  ).map(([name, value]) => (
+                    <Tooltip
+                      key={name}
+                      label={`${name}: ${value}`}
+                      side="right"
+                    >
                       <button
-                        className="w-6 h-6 rounded-md border border-charcoal/10 shadow-sm cursor-default transition-transform hover:scale-110"
-                        style={{ backgroundColor: value }}
                         aria-label={`${name}: ${value}`}
+                        className="h-6 w-6 cursor-default rounded-md border border-charcoal/10 shadow-sm transition-transform hover:scale-110"
+                        style={{ backgroundColor: value }}
                       />
                     </Tooltip>
                   ))}
@@ -307,50 +392,65 @@ const Configurator: React.FC = () => {
               ) : (
                 /* ── Expanded sidebar ── */
                 <motion.div
-                  key="expanded"
-                  className="flex flex-col flex-1 min-h-0"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1, transition: { duration: 0.2, delay: 0.25 } }}
+                  animate={{
+                    opacity: 1,
+                    transition: { delay: 0.25, duration: 0.2 },
+                  }}
+                  className="flex min-h-0 flex-1 flex-col"
                   exit={{ opacity: 0, transition: { duration: 0.1 } }}
+                  initial={{ opacity: 0 }}
+                  key="expanded"
                 >
                   {/* Header: logo + collapse */}
-                  <div className="flex items-center justify-between shrink-0 p-6">
+                  <div className="flex shrink-0 items-center justify-between p-6">
                     <Tooltip label="Back to home page" side="bottom">
-                      <a href="/" className="hover:opacity-70 transition-opacity">
-                        <img src={siteImages.logoIcon} alt="Sora Lattice" className="w-7 h-7" />
+                      <a
+                        className="transition-opacity hover:opacity-70"
+                        href="/"
+                      >
+                        <img
+                          alt="Sora Lattice"
+                          className="h-7 w-7"
+                          src={siteImages.logoIcon}
+                        />
                       </a>
                     </Tooltip>
                     <button
-                      onClick={() => setIsCollapsed(true)}
-                      className="hidden md:block text-charcoal/40 hover:text-charcoal/70 transition-colors cursor-pointer"
                       aria-label="Collapse sidebar"
+                      className="hidden cursor-pointer text-charcoal/40 transition-colors hover:text-charcoal/70 md:block"
+                      onClick={() => setIsCollapsed(true)}
                     >
                       <PanelLeftClose size={18} />
                     </button>
                   </div>
 
                   <LayoutGroup>
-                    <TabBar activeTab={activeTab} onTabChange={handleTabChange} />
+                    <TabBar
+                      activeTab={activeTab}
+                      onTabChange={handleTabChange}
+                    />
                   </LayoutGroup>
 
                   <div
+                    className="min-h-0 flex-1 overflow-y-auto px-6 py-5"
                     ref={scrollContainerRef}
-                    className="flex-1 overflow-y-auto px-6 py-5 min-h-0"
                   >
-                    <AnimatePresence mode="wait" initial={false}>
+                    <AnimatePresence initial={false} mode="wait">
                       <motion.div
-                        key={activeTab}
-                        id={`theme-tab-panel-${activeTab}`}
-                        role="tabpanel"
-                        aria-labelledby={`theme-tab-${activeTab}`}
-                        initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
+                        aria-labelledby={`theme-tab-${activeTab}`}
                         exit={{ opacity: 0 }}
+                        id={`theme-tab-panel-${activeTab}`}
+                        initial={{ opacity: 0 }}
+                        key={activeTab}
+                        role="tabpanel"
                         transition={{ duration: 0.15, ease: [0.4, 0, 0.2, 1] }}
                       >
-                        {activeTab === 'color' && <TabColor isDarkMode={isDarkMode} />}
-                        {activeTab === 'typography' && <TabTypography />}
-                        {activeTab === 'style' && <TabStyle />}
+                        {activeTab === "color" && (
+                          <TabColor isDarkMode={isDarkMode} />
+                        )}
+                        {activeTab === "typography" && <TabTypography />}
+                        {activeTab === "style" && <TabStyle />}
                       </motion.div>
                     </AnimatePresence>
                   </div>
@@ -361,48 +461,50 @@ const Configurator: React.FC = () => {
         </motion.aside>
 
         {/* Right Panel — Live Preview */}
-        <main className={`flex-1 flex flex-col min-h-0 overflow-hidden ${
-          mobileSegment === 'configure' ? 'hidden md:flex' : 'flex'
-        }`}>
-          <div className="flex flex-wrap items-center justify-between gap-4 px-4 md:px-8 py-4 shrink-0">
+        <main
+          className={`flex min-h-0 flex-1 flex-col overflow-hidden ${
+            mobileSegment === "configure" ? "hidden md:flex" : "flex"
+          }`}
+        >
+          <div className="flex shrink-0 flex-wrap items-center justify-between gap-4 px-4 py-4 md:px-8">
             <PreviewTabBar active={previewTab} onChange={setPreviewTab} />
-            <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-start">
+            <div className="flex w-full items-center justify-between gap-2 md:w-auto md:justify-start">
               <DarkModeToggle
                 isDark={isDarkMode}
                 onToggle={() => setIsDarkMode(!isDarkMode)}
               />
               <div className="flex items-center gap-2">
                 <button
-                  type="button"
-                  onClick={() => setIsInspecting(!isInspecting)}
                   aria-pressed={isInspecting}
-                  className={`flex items-center gap-1.5 text-xs font-medium border px-4 py-3 rounded-full active:scale-95  hover:scale-105 transition-all duration-250 cursor-pointer ${
+                  className={`flex cursor-pointer items-center gap-1.5 rounded-full border px-4 py-3 font-medium text-xs transition-all duration-250 hover:scale-105 active:scale-95 ${
                     isInspecting
-                      ? 'border-forest-green/50 bg-forest-green/10 text-forest-green'
-                      : 'border-transparent text-charcoal/80 hover:text-charcoal hover:bg-forest-green/10'
+                      ? "border-forest-green/50 bg-forest-green/10 text-forest-green"
+                      : "border-transparent text-charcoal/80 hover:bg-forest-green/10 hover:text-charcoal"
                   }`}
+                  onClick={() => setIsInspecting(!isInspecting)}
+                  type="button"
                 >
                   <MousePointerClick size={13} />
-                  Inspect{isInspecting && ': On'}
+                  Inspect{isInspecting && ": On"}
                 </button>
                 <a
+                  className="btn btn-primary btn-sm flex items-center gap-1.5 shadow-none"
                   href={exportHref}
-                  className="btn btn-primary shadow-none btn-sm flex items-center gap-1.5"
                 >
                   <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="13"
-                    height="13"
-                    viewBox="0 0 24 24"
                     fill="none"
+                    height="13"
                     stroke="currentColor"
-                    strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    width="13"
+                    xmlns="http://www.w3.org/2000/svg"
                   >
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                     <polyline points="17 8 12 3 7 8" />
-                    <line x1="12" y1="3" x2="12" y2="15" />
+                    <line x1="12" x2="12" y1="3" y2="15" />
                   </svg>
                   Export
                 </a>
@@ -410,25 +512,34 @@ const Configurator: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-4 md:px-8">
-            <div ref={previewContainerRef} className="relative rounded-3xl border-2 border-white overflow-hidden shadow-sm h-full min-h-[500px] max-w-[1600px] mx-auto max-h-[1200px]" style={designTokens as React.CSSProperties}>
-              {previewTab === 'dashboard' && (
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4 md:px-8">
+            <div
+              className="relative mx-auto h-full max-h-[1200px] min-h-[500px] max-w-[1600px] overflow-hidden rounded-3xl border-2 border-white shadow-sm"
+              ref={previewContainerRef}
+              style={designTokens as React.CSSProperties}
+            >
+              {previewTab === "dashboard" && (
                 <PlaygroundDashboard
                   config={playgroundConfig}
                   onChange={handlePlaygroundChange}
                 />
               )}
-              {previewTab === 'components' && <PreviewComponents />}
-              {previewTab === 'blog' && (
+              {previewTab === "components" && <PreviewComponents />}
+              {previewTab === "blog" && (
                 <PreviewTypography
+                  bodyFont={config.primaryFont}
                   fontScale={config.fontScale}
                   headingFont={config.headingFont}
-                  bodyFont={config.primaryFont}
                 />
               )}
               <InspectOverlay
-                isActive={isInspecting && (previewTab === 'dashboard' || previewTab === 'components' || previewTab === 'blog')}
                 containerRef={previewContainerRef}
+                isActive={
+                  isInspecting &&
+                  (previewTab === "dashboard" ||
+                    previewTab === "components" ||
+                    previewTab === "blog")
+                }
                 isDarkMode={isDarkMode}
                 semanticMap={semanticMap}
               />
@@ -437,7 +548,10 @@ const Configurator: React.FC = () => {
         </main>
       </div>
       {/* Mobile segmented controller */}
-      <MobileSegmentedController active={mobileSegment} onChange={setMobileSegment} />
+      <MobileSegmentedController
+        active={mobileSegment}
+        onChange={setMobileSegment}
+      />
     </div>
   );
 };

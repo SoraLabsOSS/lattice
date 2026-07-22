@@ -1,37 +1,48 @@
-import React, { useCallback, useEffect } from 'react';
-import { useStore } from '@nanostores/react';
+import { useStore } from "@nanostores/react";
+import type React from "react";
+import { useCallback, useEffect } from "react";
+import {
+  appendGoogleFontStylesheet,
+  GOOGLE_FONTS,
+} from "../../data/googleFonts";
+import { Combobox } from "../ui/Combobox";
 import {
   $brandConfig,
-  updateConfig,
+  type BodyFontWeights,
   FONT_WEIGHT_OPTIONS,
   type FontWeight,
-  type BodyFontWeights,
-} from './store';
-import { Combobox } from '../ui/Combobox';
-import { appendGoogleFontStylesheet, GOOGLE_FONTS } from '../../data/googleFonts';
+  updateConfig,
+} from "./store";
 
 export { GOOGLE_FONTS };
 
 interface WeightPillsProps {
-  selected: FontWeight;
-  onSelect: (w: FontWeight) => void;
   fontFamily: string;
+  onSelect: (w: FontWeight) => void;
+  selected: FontWeight;
 }
 
-const WeightPills: React.FC<WeightPillsProps> = ({ selected, onSelect, fontFamily }) => (
+const WeightPills: React.FC<WeightPillsProps> = ({
+  selected,
+  onSelect,
+  fontFamily,
+}) => (
   <div className="flex flex-wrap gap-1.5">
     {FONT_WEIGHT_OPTIONS.map((w) => {
       const active = selected === w;
       return (
         <button
+          className={`cursor-pointer rounded-lg border px-3 py-1.5 text-xs transition-all ${
+            active
+              ? "border-forest-green bg-forest-green/5 text-forest-green"
+              : "border-charcoal/10 text-charcoal/80 hover:border-charcoal/20"
+          }`}
           key={w}
           onClick={() => onSelect(w)}
-          style={{ fontFamily: `'${fontFamily}', system-ui, sans-serif`, fontWeight: w }}
-          className={`px-3 py-1.5 rounded-lg text-xs transition-all border cursor-pointer ${
-            active
-              ? 'border-forest-green bg-forest-green/5 text-forest-green'
-              : 'border-charcoal/10 text-charcoal/80 hover:border-charcoal/20'
-          }`}
+          style={{
+            fontFamily: `'${fontFamily}', system-ui, sans-serif`,
+            fontWeight: w,
+          }}
         >
           {w}
         </button>
@@ -44,27 +55,27 @@ const TabTypography: React.FC = () => {
   const config = useStore($brandConfig);
 
   useEffect(() => {
-    const loadFont = (family: string, role: 'heading' | 'body') => {
-      const id = `tab-typo-font-${role}-${family.replace(/\s+/g, '+')}`;
+    const loadFont = (family: string, role: "heading" | "body") => {
+      const id = `tab-typo-font-${role}-${family.replace(/\s+/g, "+")}`;
       appendGoogleFontStylesheet(family, id);
     };
-    loadFont(config.headingFont, 'heading');
-    loadFont(config.primaryFont, 'body');
+    loadFont(config.headingFont, "heading");
+    loadFont(config.primaryFont, "body");
   }, [config.headingFont, config.primaryFont]);
 
   const handleBodyFontChange = useCallback((font: string) => {
-    updateConfig({ primaryFont: font, customBodyFontName: undefined });
+    updateConfig({ customBodyFontName: undefined, primaryFont: font });
   }, []);
 
   const handleHeadingFontChange = useCallback((font: string) => {
-    updateConfig({ headingFont: font, customHeadingFontName: undefined });
+    updateConfig({ customHeadingFontName: undefined, headingFont: font });
   }, []);
 
   const setBodyWeight = useCallback(
     (slot: keyof BodyFontWeights, weight: FontWeight) => {
       updateConfig({ bodyWeights: { ...config.bodyWeights, [slot]: weight } });
     },
-    [config.bodyWeights],
+    [config.bodyWeights]
   );
 
   return (
@@ -72,43 +83,45 @@ const TabTypography: React.FC = () => {
       {/* Heading typeface + weight */}
       <div className="flex flex-col gap-6">
         <Combobox
+          displayValue={config.customHeadingFontName}
           label="Heading Typeface"
-          value={config.headingFont}
           onValueChange={handleHeadingFontChange}
           options={GOOGLE_FONTS}
           placeholder="Search Google Fonts..."
-          displayValue={config.customHeadingFontName}
           size="compact"
+          value={config.headingFont}
         />
         <div className="flex flex-col gap-2">
-          <span className="text-xs text-charcoal/80">Weight</span>
+          <span className="text-charcoal/80 text-xs">Weight</span>
           <WeightPills
-            selected={config.headingWeight}
-            onSelect={(w) => updateConfig({ headingWeight: w })}
             fontFamily={config.headingFont}
+            onSelect={(w) => updateConfig({ headingWeight: w })}
+            selected={config.headingWeight}
           />
         </div>
       </div>
 
       {/* Body typeface + weights */}
-      <div className="flex flex-col gap-6 pt-4 border-t border-charcoal/5">
+      <div className="flex flex-col gap-6 border-charcoal/5 border-t pt-4">
         <Combobox
+          displayValue={config.customBodyFontName}
           label="Body Typeface"
-          value={config.primaryFont}
           onValueChange={handleBodyFontChange}
           options={GOOGLE_FONTS}
           placeholder="Search Google Fonts..."
-          displayValue={config.customBodyFontName}
           size="compact"
+          value={config.primaryFont}
         />
         <div className="flex flex-col gap-6">
-          {(['light', 'regular', 'bold'] as const).map((slot) => (
-            <div key={slot} className="flex flex-col gap-2">
-              <span className="text-xs text-charcoal/80 capitalize">Weight – {slot}</span>
+          {(["light", "regular", "bold"] as const).map((slot) => (
+            <div className="flex flex-col gap-2" key={slot}>
+              <span className="text-charcoal/80 text-xs capitalize">
+                Weight – {slot}
+              </span>
               <WeightPills
-                selected={config.bodyWeights[slot]}
-                onSelect={(w) => setBodyWeight(slot, w)}
                 fontFamily={config.primaryFont}
+                onSelect={(w) => setBodyWeight(slot, w)}
+                selected={config.bodyWeights[slot]}
               />
             </div>
           ))}

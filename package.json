@@ -1,21 +1,27 @@
 {
+  "devDependencies": {
+    "@biomejs/biome": "2.5.3",
+    "lefthook": "^2.1.10",
+    "turbo": "^2",
+    "ultracite": "7.9.4"
+  },
   "name": "sora-lattice",
-  "private": true,
-  "engines": {
-    "node": ">=18.20.8"
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "test": "turbo test",
+    "preview": "turbo preview",
+    "check": "ultracite check",
+    "fix": "ultracite fix",
+    "prepare": "lefthook install"
   },
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
-  "scripts": {
-    "dev": "turbo dev",
-    "build": "turbo build",
-    "test": "turbo test",
-    "preview": "turbo preview"
-  },
-  "devDependencies": {
-    "turbo": "^2"
+  "private": true,
+  "engines": {
+    "node": ">=18.20.8"
   },
   "packageManager": "bun@1.3.5"
 }

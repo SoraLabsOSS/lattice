@@ -9,25 +9,39 @@ const FADE_MS = 280;
 
 function shouldIntercept(anchor: HTMLAnchorElement): boolean {
   // Only same-origin, non-hash, non-new-tab links
-  if (anchor.origin !== location.origin) return false;
-  if (anchor.pathname === location.pathname) return false;
-  if (anchor.target === '_blank') return false;
+  if (anchor.origin !== location.origin) {
+    return false;
+  }
+  if (anchor.pathname === location.pathname) {
+    return false;
+  }
+  if (anchor.target === "_blank") {
+    return false;
+  }
   // Never intercept downloads or non-navigable schemes — blob: anchors share
   // the page origin, so the origin check alone lets them through.
-  if (anchor.hasAttribute('download')) return false;
-  if (anchor.protocol !== 'http:' && anchor.protocol !== 'https:') return false;
+  if (anchor.hasAttribute("download")) {
+    return false;
+  }
+  if (anchor.protocol !== "http:" && anchor.protocol !== "https:") {
+    return false;
+  }
   return true;
 }
 
 function initPageExit() {
-  document.addEventListener('click', (e) => {
-    const anchor = (e.target as Element).closest?.('a[href]') as HTMLAnchorElement | null;
-    if (!anchor || !shouldIntercept(anchor)) return;
+  document.addEventListener("click", (e) => {
+    const anchor = (e.target as Element).closest?.(
+      "a[href]"
+    ) as HTMLAnchorElement | null;
+    if (!(anchor && shouldIntercept(anchor))) {
+      return;
+    }
 
     e.preventDefault();
     const dest = anchor.href;
 
-    document.documentElement.classList.add('page-exiting');
+    document.documentElement.classList.add("page-exiting");
 
     setTimeout(() => {
       window.location.href = dest;

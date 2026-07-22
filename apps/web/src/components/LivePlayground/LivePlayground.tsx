@@ -1,29 +1,34 @@
-import React, { useRef, useState } from 'react';
-import { Sun, Moon, Settings2 } from 'lucide-react';
-import { motion } from 'framer-motion';
-import PlaygroundDashboard from './PlaygroundDashboard';
-import PlaygroundControls from './PlaygroundControls';
-import type { LivePlaygroundProps } from './types';
+import { motion } from "framer-motion";
+import { Moon, Settings2, Sun } from "lucide-react";
+import type React from "react";
+import { useRef, useState } from "react";
+import PlaygroundControls from "./PlaygroundControls";
+import PlaygroundDashboard from "./PlaygroundDashboard";
+import type { LivePlaygroundProps } from "./types";
 
 const DarkModeToggle: React.FC<{ isDark: boolean; onToggle: () => void }> = ({
   isDark,
   onToggle,
 }) => (
   <button
+    className="relative h-8 w-14 cursor-pointer rounded-full p-1 transition-all duration-200 hover:scale-105 active:scale-95"
     onClick={onToggle}
-    className="relative w-14 h-8 rounded-full p-1 hover:scale-105 active:scale-95 cursor-pointer transition-all duration-200"
     style={{
-      backgroundColor: isDark ? '#374151' : '#e5e7eb',
+      backgroundColor: isDark ? "#374151" : "#e5e7eb",
     }}
   >
     <div
-      className="w-6 h-6 rounded-full bg-white shadow-sm flex items-center justify-center"
+      className="flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm"
       style={{
         transform: `translateX(${isDark ? 24 : 0}px)`,
-        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
       }}
     >
-      {isDark ? <Moon size={12} className="text-gray-600" /> : <Sun size={12} className="text-amber-500" />}
+      {isDark ? (
+        <Moon className="text-gray-600" size={12} />
+      ) : (
+        <Sun className="text-amber-500" size={12} />
+      )}
     </div>
   </button>
 );
@@ -35,18 +40,23 @@ const LivePlayground: React.FC<LivePlaygroundProps> = ({
   compact = false,
   showExternalDarkModeToggle = true,
   collapsibleControls = false,
-  defaultControlsOpen = true
+  defaultControlsOpen = true,
 }) => {
   const [isControlsOpen, setIsControlsOpen] = useState(defaultControlsOpen);
   const toggleRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div className="flex flex-col items-center" data-step-animate-children="ignore">
+    <div
+      className="flex flex-col items-center"
+      data-step-animate-children="ignore"
+    >
       {/* Dark Mode Toggle - above container */}
       {showExternalDarkModeToggle && (
-        <div 
+        <div
+          className={
+            "relative z-0 mx-auto -mb-6 hidden w-full max-w-xs flex-row items-center justify-between self-center rounded-2xl bg-gray/70 px-4 pt-3 pb-8 transition-all duration-400 ease-out md:flex"
+          }
           ref={toggleRef}
-          className={`relative rounded-2xl bg-gray/70 pt-3 pb-8 px-4 -mb-6 max-w-xs mx-auto flex-row justify-between items-center self-center w-full hidden md:flex z-0 transition-all duration-400 ease-out`}
         >
           <p className="text-xs">Dark mode included</p>
           <DarkModeToggle
@@ -58,56 +68,57 @@ const LivePlayground: React.FC<LivePlaygroundProps> = ({
 
       {/* Main Container */}
       <div
-        className={`w-full bg-gray rounded-4xl overflow-hidden flex flex-col lg:flex-row p-3 md:p-4 gap-3 md:gap-4 relative z-10 ${
-          compact ? 'max-h-[650px]' : ''
+        className={`relative z-10 flex w-full flex-col gap-3 overflow-hidden rounded-4xl bg-gray p-3 md:gap-4 md:p-4 lg:flex-row ${
+          compact ? "max-h-[650px]" : ""
         }`}
-        style={{ minHeight: compact ? '420px' : '520px' }}
+        style={{ minHeight: compact ? "420px" : "520px" }}
       >
         {/* Quick Edit Button */}
         {collapsibleControls && !isControlsOpen && (
-            <motion.button
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setIsControlsOpen(true)}
-              className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm text-charcoal shadow-lg border border-charcoal/10 rounded-full px-4 py-2 flex items-center gap-2 text-sm font-bold z-10 hover:bg-white transition-colors cursor-pointer"
-            >
-              <Settings2 size={16} />
-              <span>Quick Edit</span>
-            </motion.button>
-          )}
+          <motion.button
+            animate={{ opacity: 1, scale: 1 }}
+            className="absolute top-2 right-2 z-10 flex cursor-pointer items-center gap-2 rounded-full border border-charcoal/10 bg-white/90 px-4 py-2 font-bold text-charcoal text-sm shadow-lg backdrop-blur-sm transition-colors hover:bg-white"
+            initial={{ opacity: 0, scale: 0.9 }}
+            onClick={() => setIsControlsOpen(true)}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Settings2 size={16} />
+            <span>Quick Edit</span>
+          </motion.button>
+        )}
         {/* Dashboard Preview */}
-        <div className="flex-1 min-w-0 rounded-3xl border-2 border-white shadow-sm overflow-hidden relative" style={designTokens as React.CSSProperties}>
+        <div
+          className="relative min-w-0 flex-1 overflow-hidden rounded-3xl border-2 border-white shadow-sm"
+          style={designTokens as React.CSSProperties}
+        >
           <PlaygroundDashboard config={config} onChange={onChange} />
         </div>
 
         {/* Configuration Panel */}
         {collapsibleControls ? (
           <motion.div
-            className="absolute top-4 right-4 bottom-4 w-[320px] bg-white rounded-3xl shadow-2xl z-20 overflow-hidden"
-            initial={false}
             animate={{
-              x: isControlsOpen ? 0 : '120%',
               opacity: isControlsOpen ? 1 : 0,
-              pointerEvents: isControlsOpen ? 'auto' : 'none'
+              pointerEvents: isControlsOpen ? "auto" : "none",
+              x: isControlsOpen ? 0 : "120%",
             }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="absolute top-4 right-4 bottom-4 z-20 w-[320px] overflow-hidden rounded-3xl bg-white shadow-2xl"
+            initial={false}
+            transition={{ damping: 25, stiffness: 200, type: "spring" }}
           >
-             <PlaygroundControls 
-               config={config} 
-               onChange={onChange}
-               onClose={() => setIsControlsOpen(false)}
-               showDarkModeToggle={!showExternalDarkModeToggle}
-             />
+            <PlaygroundControls
+              config={config}
+              onChange={onChange}
+              onClose={() => setIsControlsOpen(false)}
+              showDarkModeToggle={!showExternalDarkModeToggle}
+            />
           </motion.div>
         ) : (
-          <div
-            className="shrink-0 bg-white rounded-3xl overflow-y-auto order-first md:order-last min-w-[300px]"
-          >
-            <PlaygroundControls 
-              config={config} 
-              onChange={onChange} 
+          <div className="order-first min-w-[300px] shrink-0 overflow-y-auto rounded-3xl bg-white md:order-last">
+            <PlaygroundControls
+              config={config}
+              onChange={onChange}
               showDarkModeToggle={!showExternalDarkModeToggle}
             />
           </div>

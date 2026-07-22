@@ -1,47 +1,49 @@
-import React from 'react';
-import { bg, fg, radius, transition } from './tokens';
+import type React from "react";
+import { bg, fg, transition } from "./tokens";
 
 interface ToggleProps {
   checked: boolean;
-  onChange: (checked: boolean) => void;
-  label?: string;
   id?: string;
+  label?: string;
+  onChange: (checked: boolean) => void;
 }
 
 const Toggle: React.FC<ToggleProps> = ({ checked, onChange, label, id }) => {
-  const toggleId = id || (label ? `toggle-${label.toLowerCase().replace(/\s+/g, '-')}` : undefined);
+  const toggleId =
+    id ||
+    (label ? `toggle-${label.toLowerCase().replace(/\s+/g, "-")}` : undefined);
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    <div style={{ alignItems: "center", display: "flex", gap: "8px" }}>
       <button
-        id={toggleId}
-        role="switch"
         aria-checked={checked}
         aria-label={label}
+        id={toggleId}
         onClick={() => onChange(!checked)}
+        role="switch"
         style={{
-          position: 'relative',
-          width: '32px',
-          height: '18px',
-          borderRadius: '999px',
-          border: 'none',
-          cursor: 'pointer',
           backgroundColor: checked ? bg.primary : bg.sunkenStrong,
-          transition: transition.interactive,
-          padding: 0,
+          border: "none",
+          borderRadius: "999px",
+          cursor: "pointer",
           flexShrink: 0,
+          height: "18px",
+          padding: 0,
+          position: "relative",
+          transition: transition.interactive,
+          width: "32px",
         }}
       >
         <span
           style={{
-            position: 'absolute',
-            top: '2px',
-            left: checked ? '16px' : '2px',
-            width: '14px',
-            height: '14px',
-            borderRadius: '50%',
             backgroundColor: bg.base,
+            borderRadius: "50%",
+            height: "14px",
+            left: checked ? "16px" : "2px",
+            position: "absolute",
+            top: "2px",
             transition: transition.interactive,
+            width: "14px",
           }}
         />
       </button>
@@ -49,10 +51,10 @@ const Toggle: React.FC<ToggleProps> = ({ checked, onChange, label, id }) => {
         <label
           htmlFor={toggleId}
           style={{
-            fontSize: '11px',
             color: fg.onBase,
-            fontFamily: 'inherit',
-            cursor: 'pointer',
+            cursor: "pointer",
+            fontFamily: "inherit",
+            fontSize: "11px",
           }}
         >
           {label}

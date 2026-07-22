@@ -1,32 +1,33 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { motion, useSpring, useMotionValue } from 'framer-motion';
-import { siteImages } from '../lib/siteImages';
+import { motion, useMotionValue, useSpring } from "framer-motion";
+import type React from "react";
+import { useEffect, useRef, useState } from "react";
+import { siteImages } from "../lib/siteImages";
 
 interface AnimatedCTAProps {
+  ariaLabel?: string;
   children: React.ReactNode;
   className?: string;
-  onClick?: () => void;
   href?: string;
   id?: string;
-  variant?: 'primary' | 'secondary';
-  size?: 'sm' | 'md' | 'lg';
-  ariaLabel?: string;
+  onClick?: () => void;
+  size?: "sm" | "md" | "lg";
+  variant?: "primary" | "secondary";
 }
 
 const ASSETS = {
+  leaf2: siteImages.leaf2,
   pink: siteImages.flowerPink,
   yellow: siteImages.flowerYellow,
-  leaf2: siteImages.leaf2,
 };
 
 export const AnimatedCTA: React.FC<AnimatedCTAProps> = ({
   children,
-  className = '',
+  className = "",
   onClick,
   href,
   id,
-  variant = 'primary',
-  size = 'md',
+  variant = "primary",
+  size = "md",
   ariaLabel,
 }) => {
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -42,24 +43,26 @@ export const AnimatedCTA: React.FC<AnimatedCTAProps> = ({
   const translateY = useSpring(mouseY, springConfig);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (rafRef.current !== null) return;
+    if (rafRef.current !== null) {
+      return;
+    }
 
     const { clientX, clientY } = e;
-    
+
     rafRef.current = requestAnimationFrame(() => {
       if (!buttonRef.current) {
         rafRef.current = null;
         return;
       }
-      
+
       const rect = buttonRef.current.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
-      
+
       // Subtle cursor tracking - buttons move around as pointer does
       const distanceX = (clientX - centerX) * 0.1;
       const distanceY = (clientY - centerY) * 0.2;
-      
+
       mouseX.set(distanceX);
       mouseY.set(distanceY);
       rafRef.current = null;
@@ -76,29 +79,29 @@ export const AnimatedCTA: React.FC<AnimatedCTAProps> = ({
     mouseY.set(0);
   };
 
-  useEffect(() => {
-    return () => {
+  useEffect(
+    () => () => {
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
       }
-    };
-  }, []);
+    },
+    []
+  );
 
-  const variantClasses = variant === 'primary' 
-    ? 'btn btn-primary' 
-    : 'btn btn-secondary';
+  const variantClasses =
+    variant === "primary" ? "btn btn-primary" : "btn btn-secondary";
 
-  const sizeClasses = size === 'sm' && 'text-sm btn-sm';
+  const sizeClasses = size === "sm" && "text-sm btn-sm";
 
-  const isFullWidth = className.includes('w-full');
-  const isSecondary = variant === 'secondary';
+  const isFullWidth = className.includes("w-full");
+  const isSecondary = variant === "secondary";
 
   return (
-    <motion.div 
-      className={`relative ${isFullWidth ? 'w-full' : 'inline-block'}`}
+    <motion.div
+      className={`relative ${isFullWidth ? "w-full" : "inline-block"}`}
       onMouseEnter={() => setIsHovered(true)}
-      onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      onMouseMove={handleMouseMove}
       style={{
         x: translateX,
         y: translateY,
@@ -106,49 +109,82 @@ export const AnimatedCTA: React.FC<AnimatedCTAProps> = ({
     >
       {/* Flower Decorations - scaling up and in */}
       <motion.img
+        alt=""
+        animate={
+          isHovered
+            ? { opacity: 1, rotate: 0, scale: 1, x: 0, y: 0 }
+            : { opacity: 0, rotate: -15, scale: 0, x: 15, y: 15 }
+        }
+        className={`absolute ${isSecondary ? "-top-2.5 -left-2.5 h-7 w-7" : "-top-4 -left-4 h-10 w-10"} pointer-events-none z-0`}
+        initial={{ opacity: 0, rotate: -15, scale: 0, x: 15, y: 15 }}
         src={ASSETS.pink}
-        alt=""
-        className={`absolute ${isSecondary ? '-top-2.5 -left-2.5 w-7 h-7' : '-top-4 -left-4 w-10 h-10'} pointer-events-none z-0`}
-        initial={{ scale: 0, opacity: 0, x: 15, y: 15, rotate: -15 }}
-        animate={isHovered ? { scale: 1, opacity: 1, x: 0, y: 0, rotate: 0 } : { scale: 0, opacity: 0, x: 15, y: 15, rotate: -15 }}
-        transition={{ type: 'spring', damping: 20, stiffness: 200 }}
+        transition={{ damping: 20, stiffness: 200, type: "spring" }}
       />
       <motion.img
+        alt=""
+        animate={
+          isHovered
+            ? { opacity: 1, rotate: 0, scale: 1, x: 0, y: 0 }
+            : { opacity: 0, rotate: 15, scale: 0, x: -15, y: -15 }
+        }
+        className={`absolute ${isSecondary ? "right-11.5 -bottom-4.5 h-7 w-7" : "right-12 -bottom-6 h-10 w-10"} pointer-events-none z-0`}
+        initial={{ opacity: 0, rotate: 15, scale: 0, x: -15, y: -15 }}
         src={ASSETS.yellow}
-        alt=""
-        className={`absolute ${isSecondary ? '-bottom-4.5 right-11.5 w-7 h-7' : '-bottom-6 right-12 w-10 h-10'} pointer-events-none z-0`}
-        initial={{ scale: 0, opacity: 0, x: -15, y: -15, rotate: 15 }}
-        animate={isHovered ? { scale: 1, opacity: 1, x: 0, y: 0, rotate: 0 } : { scale: 0, opacity: 0, x: -15, y: -15, rotate: 15 }}
-        transition={{ type: 'spring', damping: 20, stiffness: 150, delay: 0.05 }}
+        transition={{
+          damping: 20,
+          delay: 0.05,
+          stiffness: 150,
+          type: "spring",
+        }}
       />
       <motion.img
-        src={ASSETS.leaf2}
         alt=""
-        className={`absolute ${isSecondary ? 'top-0 -right-7 w-9 h-9' : '-top-2 -right-10 w-12 h-12'} pointer-events-none z-0`}
-        initial={{ scale: 0, opacity: 0, x: -25, y: -15, rotate: 45 }}
-        animate={isHovered ? { scale: 1, opacity: 1, x: 0, y: 0, rotate: 0, transformOrigin: 'bottom' } : { scale: 0, opacity: 0, x: -25, y: -15, rotate: 15, transformOrigin: 'bottom' }}
-        transition={{ type: 'spring', damping: 20, stiffness: 150, delay: 0.1 }}
+        animate={
+          isHovered
+            ? {
+                opacity: 1,
+                rotate: 0,
+                scale: 1,
+                transformOrigin: "bottom",
+                x: 0,
+                y: 0,
+              }
+            : {
+                opacity: 0,
+                rotate: 15,
+                scale: 0,
+                transformOrigin: "bottom",
+                x: -25,
+                y: -15,
+              }
+        }
+        className={`absolute ${isSecondary ? "top-0 -right-7 h-9 w-9" : "-top-2 -right-10 h-12 w-12"} pointer-events-none z-0`}
+        initial={{ opacity: 0, rotate: 45, scale: 0, x: -25, y: -15 }}
+        src={ASSETS.leaf2}
+        transition={{ damping: 20, delay: 0.1, stiffness: 150, type: "spring" }}
       />
 
       {href ? (
         <motion.a
-          ref={buttonRef as any}
-          id={id}
-          href={href}
-          onClick={onClick}
           aria-label={ariaLabel}
-          {...(href?.includes('/generate') ? { 'data-astro-reload': true } : {})}
+          href={href}
+          id={id}
+          onClick={onClick}
+          ref={buttonRef as any}
+          {...(href?.includes("/generate")
+            ? { "data-astro-reload": true }
+            : {})}
           className={`btn relative z-10 ${variantClasses} ${sizeClasses} ${className}`}
         >
           {children}
         </motion.a>
       ) : (
         <motion.button
-          ref={buttonRef}
-          id={id}
-          onClick={onClick}
           aria-label={ariaLabel}
           className={`btn relative z-10 ${variantClasses} ${sizeClasses} ${className}`}
+          id={id}
+          onClick={onClick}
+          ref={buttonRef}
         >
           {children}
         </motion.button>

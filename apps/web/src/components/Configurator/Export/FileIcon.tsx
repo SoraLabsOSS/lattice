@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from "react";
 
 /**
  * File-shape SVG icons for the export-page asset cards.
@@ -9,23 +9,28 @@ import React from 'react';
  * generated token system (primary / accent / warning / success).
  */
 
-export type FileIconKind = 'css' | 'json' | 'js' | 'md';
+export type FileIconKind = "css" | "json" | "js" | "md";
 
 const LABEL: Record<FileIconKind, string> = {
-  css:  'CSS',
-  json: 'JSON',
-  js:   'JS',
-  md:   'MD',
+  css: "CSS",
+  js: "JS",
+  json: "JSON",
+  md: "MD",
 };
 
 interface FileIconProps {
-  kind: FileIconKind;
-  color: string;
-  size?: number;
   className?: string;
+  color: string;
+  kind: FileIconKind;
+  size?: number;
 }
 
-export const FileIcon: React.FC<FileIconProps> = ({ kind, color, size = 56, className }) => {
+export const FileIcon: React.FC<FileIconProps> = ({
+  kind,
+  color,
+  size = 56,
+  className,
+}) => {
   const label = LABEL[kind];
   const labelLen = label.length;
   // Badge widens for longer extension labels so "JSON" doesn't crowd the corner.
@@ -35,17 +40,17 @@ export const FileIcon: React.FC<FileIconProps> = ({ kind, color, size = 56, clas
   const fontSize = labelLen >= 4 ? 7 : 8;
 
   const paper = `color-mix(in oklch, ${color} 10%, white)`;
-  const fold  = `color-mix(in oklch, ${color} 24%, white)`;
+  const fold = `color-mix(in oklch, ${color} 24%, white)`;
 
   return (
     <svg
-      width={size}
-      height={size}
-      viewBox="0 0 56 56"
-      fill="none"
-      role="img"
       aria-label={`${label} file`}
       className={className}
+      fill="none"
+      height={size}
+      role="img"
+      viewBox="0 0 56 56"
+      width={size}
     >
       {/* Page body */}
       <path
@@ -59,35 +64,32 @@ export const FileIcon: React.FC<FileIconProps> = ({ kind, color, size = 56, clas
         d="M36 4 V12 A2 2 0 0 0 38 14 H46"
         fill="none"
         stroke={fold}
-        strokeWidth={1.5}
         strokeLinejoin="round"
+        strokeWidth={1.5}
       />
-      <path
-        d="M36 4 L46 14 H38 A2 2 0 0 1 36 12 Z"
-        fill={fold}
-      />
+      <path d="M36 4 L46 14 H38 A2 2 0 0 1 36 12 Z" fill={fold} />
       {/* Filename body lines */}
-      <rect x="14" y="20" width="20" height="2" rx="1" fill={fold} />
-      <rect x="14" y="25" width="26" height="2" rx="1" fill={fold} />
-      <rect x="14" y="30" width="22" height="2" rx="1" fill={fold} />
+      <rect fill={fold} height="2" rx="1" width="20" x="14" y="20" />
+      <rect fill={fold} height="2" rx="1" width="26" x="14" y="25" />
+      <rect fill={fold} height="2" rx="1" width="22" x="14" y="30" />
       {/* Extension badge */}
       <rect
-        x={badgeX}
-        y={badgeY}
-        width={badgeWidth}
+        fill={color}
         height={11}
         rx={2.5}
-        fill={color}
+        width={badgeWidth}
+        x={badgeX}
+        y={badgeY}
       />
       <text
-        x={badgeX + badgeWidth / 2}
-        y={badgeY + 8.5}
-        textAnchor="middle"
+        fill="#FFFFFF"
+        fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
         fontSize={fontSize}
         fontWeight={700}
-        fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
-        fill="#FFFFFF"
         letterSpacing="0.5"
+        textAnchor="middle"
+        x={badgeX + badgeWidth / 2}
+        y={badgeY + 8.5}
       >
         {label}
       </text>

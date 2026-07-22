@@ -1,117 +1,126 @@
-import type { ColorRamp, NeutralColorRamp } from './colorUtils.js';
-import type { GenerationMode } from './colorGeneration.js';
+import type { GenerationMode } from "./colorGeneration.js";
+import type { ColorRamp, NeutralColorRamp } from "./colorUtils.js";
 
 export type { ColorRamp, NeutralColorRamp };
 
 export const FONT_WEIGHT_OPTIONS = [300, 400, 500, 600, 700, 800, 900] as const;
 export type FontWeight = (typeof FONT_WEIGHT_OPTIONS)[number];
 
-export const HEADLESS_LIB_OPTIONS = ['base-ui', 'radix', 'react-aria', 'headless-ui'] as const;
+export const HEADLESS_LIB_OPTIONS = [
+  "base-ui",
+  "radix",
+  "react-aria",
+  "headless-ui",
+] as const;
 export type HeadlessLib = (typeof HEADLESS_LIB_OPTIONS)[number];
-export const DEFAULT_HEADLESS_LIB: HeadlessLib = 'base-ui';
+export const DEFAULT_HEADLESS_LIB: HeadlessLib = "base-ui";
 
 export interface BodyFontWeights {
+  bold: FontWeight;
   light: FontWeight;
   regular: FontWeight;
-  bold: FontWeight;
 }
 
 export const DEFAULT_HEADING_WEIGHT: FontWeight = 400;
-export const DEFAULT_BODY_WEIGHTS: BodyFontWeights = { light: 300, regular: 400, bold: 700 };
+export const DEFAULT_BODY_WEIGHTS: BodyFontWeights = {
+  bold: 700,
+  light: 300,
+  regular: 400,
+};
 
 export interface BrandConfig {
-  logoUrl?: string;
-  primaryColor: string;
-  primaryRamp?: ColorRamp;
-  secondaryColor?: string;
-  secondaryRamp?: ColorRamp;
-  useCustomSecondary: boolean;
-  secondaryGenerationMode?: GenerationMode;
-  tertiaryColor?: string;
-  useTertiary: boolean;
-  useCustomTertiary: boolean;
-  tertiaryGenerationMode?: GenerationMode;
-  tertiaryRamp?: ColorRamp;
-  neutralTint: 'pure' | 'cool' | 'warm' | 'brand-tinted';
-  neutralRamp?: NeutralColorRamp;
   accentColor?: string;
-  useAccent: boolean;
-  useCustomAccent: boolean;
   accentGenerationMode?: GenerationMode;
   accentRamp?: ColorRamp;
-  rampOverrides: Record<string, Partial<ColorRamp>>;
+  bodyWeights: BodyFontWeights;
   chromaFalloff: number;
+  customBodyFontName?: string;
+  customHeadingFontName?: string;
+  density: "compact" | "default" | "comfortable";
+  expressiveness: "minimal" | "balanced" | "expressive";
+  fontScale: number;
+  headingFont: string;
+  headingWeight: FontWeight;
+  headlessLib: HeadlessLib;
+  logoUrl?: string;
+  neutralRamp?: NeutralColorRamp;
+  neutralTint: "pure" | "cool" | "warm" | "brand-tinted";
+  primaryColor: string;
+  primaryFont: string;
+  primaryRamp?: ColorRamp;
+  rampOverrides: Record<string, Partial<ColorRamp>>;
+  roundness: "sharp" | "subtle" | "rounded" | "pill";
+  secondaryColor?: string;
+  secondaryGenerationMode?: GenerationMode;
+  secondaryRamp?: ColorRamp;
+  shadows: "none" | "subtle" | "dramatic";
   statusColors: {
     success: string;
     warning: string;
     error: string;
     info: string;
   };
-  primaryFont: string;
-  headingFont: string;
-  customHeadingFontName?: string;
-  customBodyFontName?: string;
-  headingWeight: FontWeight;
-  bodyWeights: BodyFontWeights;
-  fontScale: number;
-  roundness: 'sharp' | 'subtle' | 'rounded' | 'pill';
-  shadows: 'none' | 'subtle' | 'dramatic';
-  density: 'compact' | 'default' | 'comfortable';
-  expressiveness: 'minimal' | 'balanced' | 'expressive';
-  headlessLib: HeadlessLib;
+  tertiaryColor?: string;
+  tertiaryGenerationMode?: GenerationMode;
+  tertiaryRamp?: ColorRamp;
+  useAccent: boolean;
+  useCustomAccent: boolean;
+  useCustomSecondary: boolean;
+  useCustomTertiary: boolean;
+  useTertiary: boolean;
 }
 
 export type BrandConfigInput = Partial<
-  Omit<BrandConfig, 'statusColors' | 'bodyWeights' | 'rampOverrides'>
+  Omit<BrandConfig, "statusColors" | "bodyWeights" | "rampOverrides">
 > & {
-  statusColors?: Partial<BrandConfig['statusColors']>;
+  statusColors?: Partial<BrandConfig["statusColors"]>;
   bodyWeights?: Partial<BodyFontWeights>;
-  rampOverrides?: BrandConfig['rampOverrides'];
+  rampOverrides?: BrandConfig["rampOverrides"];
 };
 
 export const initialConfig: BrandConfig = {
-  primaryColor: '#2e7bab',
+  accentGenerationMode: "triadic",
+  bodyWeights: { ...DEFAULT_BODY_WEIGHTS },
+  chromaFalloff: 80,
+  density: "default",
+  expressiveness: "balanced",
+  fontScale: 1.25,
+  headingFont: "Rubik",
+  headingWeight: DEFAULT_HEADING_WEIGHT,
+  headlessLib: DEFAULT_HEADLESS_LIB,
+  neutralTint: "brand-tinted",
+  primaryColor: "#2e7bab",
+  primaryFont: "Nunito",
   rampOverrides: {},
-  useCustomSecondary: false,
-  secondaryGenerationMode: 'complementary',
-  useTertiary: false,
-  useCustomTertiary: false,
-  tertiaryGenerationMode: 'analogous',
-  neutralTint: 'brand-tinted',
+  roundness: "rounded",
+  secondaryGenerationMode: "complementary",
+  shadows: "subtle",
+  statusColors: {
+    error: "#ef4444",
+    info: "#3b82f6",
+    success: "#10b981",
+    warning: "#f59e0b",
+  },
+  tertiaryGenerationMode: "analogous",
   useAccent: false,
   useCustomAccent: false,
-  accentGenerationMode: 'triadic',
-  chromaFalloff: 80,
-  statusColors: {
-    success: '#10b981',
-    warning: '#f59e0b',
-    error: '#ef4444',
-    info: '#3b82f6',
-  },
-  primaryFont: 'Nunito',
-  headingFont: 'Rubik',
-  headingWeight: DEFAULT_HEADING_WEIGHT,
-  bodyWeights: { ...DEFAULT_BODY_WEIGHTS },
-  fontScale: 1.25,
-  roundness: 'rounded',
-  shadows: 'subtle',
-  density: 'default',
-  expressiveness: 'balanced',
-  headlessLib: DEFAULT_HEADLESS_LIB,
+  useCustomSecondary: false,
+  useCustomTertiary: false,
+  useTertiary: false,
 };
 
 export function createBrandConfig(input: BrandConfigInput = {}): BrandConfig {
   return {
     ...initialConfig,
     ...input,
-    statusColors: {
-      ...initialConfig.statusColors,
-      ...input.statusColors,
-    },
     bodyWeights: {
       ...initialConfig.bodyWeights,
       ...input.bodyWeights,
     },
     rampOverrides: input.rampOverrides ?? {},
+    statusColors: {
+      ...initialConfig.statusColors,
+      ...input.statusColors,
+    },
   };
 }

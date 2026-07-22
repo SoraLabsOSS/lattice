@@ -1,20 +1,20 @@
-import { parse, converter } from 'culori';
-import { NAMED_HUES } from './colorGeneration.js';
-import type { BrandConfig, HeadlessLib } from './types.js';
-import type { TokenSet } from './exportTokens.js';
+import { converter, parse } from "culori";
+import { NAMED_HUES } from "./colorGeneration.js";
+import type { TokenSet } from "./exportTokens.js";
+import type { BrandConfig, HeadlessLib } from "./types.js";
 
 // ---------------------------------------------------------------------------
 // Skill artifact types
 // ---------------------------------------------------------------------------
 
-export type SkillId = 'tokens' | 'components' | 'accessibility';
+export type SkillId = "tokens" | "components" | "accessibility";
 
 export interface SkillArtifact {
-  id: SkillId;
-  filename: string;
-  title: string;
-  description: string;
   content: string;
+  description: string;
+  filename: string;
+  id: SkillId;
+  title: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -23,7 +23,7 @@ export interface SkillArtifact {
 // emitted token set).
 // ---------------------------------------------------------------------------
 
-const toOklch = converter('oklch');
+const toOklch = converter("oklch");
 const VAR_REF_RE = /^var\(\s*(--[A-Za-z0-9-]+)\s*\)$/;
 
 function findNearestNamedHue(hue: number): { name: string; hue: number } {
@@ -45,7 +45,9 @@ function extractEmittedHues(tokens: Record<string, string>): string[] {
   const hues = new Set<string>();
   for (const prop of Object.keys(tokens)) {
     const m = prop.match(/^--color-([a-z]+)-\d+$/);
-    if (m) hues.add(m[1]);
+    if (m) {
+      hues.add(m[1]);
+    }
   }
   return Array.from(hues);
 }
@@ -54,44 +56,52 @@ function capitalize(s: string): string {
   return s.length === 0 ? s : s[0].toUpperCase() + s.slice(1);
 }
 
-function pickToken(tokens: Record<string, string>, candidates: string[], fallback: string): string {
+function pickToken(
+  tokens: Record<string, string>,
+  candidates: string[],
+  fallback: string
+): string {
   for (const name of candidates) {
-    if (name in tokens) return name;
+    if (name in tokens) {
+      return name;
+    }
   }
   return fallback;
 }
 
 function resolvePx(tokens: Record<string, string>, name: string): string {
   const raw = tokens[name];
-  if (!raw) return '?';
+  if (!raw) {
+    return "?";
+  }
   const m = raw.match(VAR_REF_RE);
-  const value = m ? tokens[m[1]] ?? raw : raw;
+  const value = m ? (tokens[m[1]] ?? raw) : raw;
   return value.trim();
 }
 
 function padRight(s: string, width: number): string {
-  return s.length >= width ? s : s + ' '.repeat(width - s.length);
+  return s.length >= width ? s : s + " ".repeat(width - s.length);
 }
 
 interface SystemFacts {
-  primaryHueName: string;
-  primaryHueAngle: number;
-  supportingHues: string[];
   bgBase: string;
-  bgRaised: string;
   bgOverlay: string;
-  bgSunken: string;
   bgPrimary: string;
-  fgOnPri: string;
-  fgOnBase: string;
-  fgMuted: string;
-  fgPrimary: string;
+  bgRaised: string;
+  bgSunken: string;
+  bodyMd: string;
   borderTok: string;
   densityBase: string;
-  bodyMd: string;
+  fgMuted: string;
+  fgOnBase: string;
+  fgOnPri: string;
+  fgPrimary: string;
   heading2xl: string;
-  radiusContainer: string;
+  primaryHueAngle: number;
+  primaryHueName: string;
   radiusAction: string;
+  radiusContainer: string;
+  supportingHues: string[];
 }
 
 function deriveFacts(config: BrandConfig, set: TokenSet): SystemFacts {
@@ -100,27 +110,77 @@ function deriveFacts(config: BrandConfig, set: TokenSet): SystemFacts {
   const named = findNearestNamedHue(angle);
   const primaryHueKey = named.name.toLowerCase();
   const emitted = extractEmittedHues(set.light);
-  const supporting = emitted.filter((h) => h !== 'neutral' && h !== primaryHueKey).map(capitalize);
+  const supporting = emitted
+    .filter((h) => h !== "neutral" && h !== primaryHueKey)
+    .map(capitalize);
 
   return {
-    primaryHueName:  named.name,
+    bgBase: pickToken(
+      set.light,
+      ["--color-background-base"],
+      "--color-background-base"
+    ),
+    bgOverlay: pickToken(
+      set.light,
+      ["--color-background-overlay"],
+      "--color-background-overlay"
+    ),
+    bgPrimary: pickToken(
+      set.light,
+      ["--color-background-primary"],
+      "--color-background-primary"
+    ),
+    bgRaised: pickToken(
+      set.light,
+      ["--color-background-raised"],
+      "--color-background-raised"
+    ),
+    bgSunken: pickToken(
+      set.light,
+      ["--color-background-sunken"],
+      "--color-background-sunken"
+    ),
+    bodyMd: resolvePx(set.light, "--typography-size-200"),
+    borderTok: pickToken(
+      set.light,
+      ["--color-border-neutral", "--color-border-strong"],
+      "--color-border-neutral"
+    ),
+    densityBase: resolvePx(set.light, "--dimension-100"),
+    fgMuted: pickToken(
+      set.light,
+      ["--color-foreground-onBaseMuted"],
+      "--color-foreground-onBaseMuted"
+    ),
+    fgOnBase: pickToken(
+      set.light,
+      ["--color-foreground-onBase"],
+      "--color-foreground-onBase"
+    ),
+    fgOnPri: pickToken(
+      set.light,
+      ["--color-foreground-onPrimary"],
+      "--color-foreground-onPrimary"
+    ),
+    fgPrimary: pickToken(
+      set.light,
+      ["--color-foreground-primary"],
+      "--color-foreground-primary"
+    ),
+    heading2xl: resolvePx(set.light, "--typography-size-500"),
     primaryHueAngle: angle,
-    supportingHues:  supporting,
-    bgBase:    pickToken(set.light, ['--color-background-base'],          '--color-background-base'),
-    bgRaised:  pickToken(set.light, ['--color-background-raised'],        '--color-background-raised'),
-    bgOverlay: pickToken(set.light, ['--color-background-overlay'],       '--color-background-overlay'),
-    bgSunken:  pickToken(set.light, ['--color-background-sunken'],        '--color-background-sunken'),
-    bgPrimary: pickToken(set.light, ['--color-background-primary'],       '--color-background-primary'),
-    fgOnPri:   pickToken(set.light, ['--color-foreground-onPrimary'],     '--color-foreground-onPrimary'),
-    fgOnBase:  pickToken(set.light, ['--color-foreground-onBase'],        '--color-foreground-onBase'),
-    fgMuted:   pickToken(set.light, ['--color-foreground-onBaseMuted'],   '--color-foreground-onBaseMuted'),
-    fgPrimary: pickToken(set.light, ['--color-foreground-primary'],       '--color-foreground-primary'),
-    borderTok: pickToken(set.light, ['--color-border-neutral', '--color-border-strong'], '--color-border-neutral'),
-    densityBase:     resolvePx(set.light, '--dimension-100'),
-    bodyMd:          resolvePx(set.light, '--typography-size-200'),
-    heading2xl:      resolvePx(set.light, '--typography-size-500'),
-    radiusContainer: pickToken(set.light, ['--shape-radius-container'], '--shape-radius-container'),
-    radiusAction:    pickToken(set.light, ['--shape-radius-action'],    '--shape-radius-action'),
+    primaryHueName: named.name,
+    radiusAction: pickToken(
+      set.light,
+      ["--shape-radius-action"],
+      "--shape-radius-action"
+    ),
+    radiusContainer: pickToken(
+      set.light,
+      ["--shape-radius-container"],
+      "--shape-radius-container"
+    ),
+    supportingHues: supporting,
   };
 }
 
@@ -135,31 +195,33 @@ function frontmatter(name: string, description: string): string {
 function generateTokensSkill(config: BrandConfig, set: TokenSet): string {
   const f = deriveFacts(config, set);
   const tokenCount = Object.keys(set.light).length;
-  const supportingLine = f.supportingHues.length > 0
-    ? f.supportingHues.map((h) => `\`${h}\``).join(', ')
-    : '_(none — primary hue covers all accent roles)_';
+  const supportingLine =
+    f.supportingHues.length > 0
+      ? f.supportingHues.map((h) => `\`${h}\``).join(", ")
+      : "_(none — primary hue covers all accent roles)_";
 
   const spaceRows = [
-    ['--space-xs',  '--dimension-50',   '--space-xs'],
-    ['--space-sm',  '--dimension-100',  '--space-sm'],
-    ['--space-md',  '--dimension-150',  '--space-md'],
-    ['--space-lg',  '--dimension-200',  '--space-lg'],
-    ['--space-xl',  '--dimension-300',  '--space-xl'],
-    ['--space-2xl', '--dimension-400',  '--space-2xl'],
-    ['--space-3xl', '--dimension-500',  '--space-3xl'],
-    ['--space-4xl', '--dimension-600',  '--space-4xl'],
-    ['--space-5xl', '--dimension-800',  '--space-5xl'],
-    ['--space-6xl', '--dimension-1000', '--space-6xl'],
+    ["--space-xs", "--dimension-50", "--space-xs"],
+    ["--space-sm", "--dimension-100", "--space-sm"],
+    ["--space-md", "--dimension-150", "--space-md"],
+    ["--space-lg", "--dimension-200", "--space-lg"],
+    ["--space-xl", "--dimension-300", "--space-xl"],
+    ["--space-2xl", "--dimension-400", "--space-2xl"],
+    ["--space-3xl", "--dimension-500", "--space-3xl"],
+    ["--space-4xl", "--dimension-600", "--space-4xl"],
+    ["--space-5xl", "--dimension-800", "--space-5xl"],
+    ["--space-6xl", "--dimension-1000", "--space-6xl"],
   ] as const;
   const spaceTable = spaceRows
-    .map(([sem, prim, ref]) =>
-      `${padRight(sem, 11)} → ${padRight(prim, 18)} (${resolvePx(set.light, ref)})`,
+    .map(
+      ([sem, prim, ref]) =>
+        `${padRight(sem, 11)} → ${padRight(prim, 18)} (${resolvePx(set.light, ref)})`
     )
-    .join('\n');
+    .join("\n");
 
   return `${frontmatter(
-    'tokens-and-theming',
-    'Token contract for this design system: when to reach for each token, how primitive and semantic layers interact, and how theme swapping works.',
+    "tokens-and-theming",
+    "Token contract for this design system: when to reach for each token, how primitive and semantic layers interact, and how theme swapping works."
   )}
 # Tokens & theming
 
@@ -320,11 +382,34 @@ Place app-level token edits in \`@layer lattice.overrides\` so they win against 
 // Skill 2 — Component creation
 // ---------------------------------------------------------------------------
 
-const HEADLESS_LIB_INFO: Record<HeadlessLib, { label: string; importPath: string; primitivesNote: string }> = {
-  'base-ui':    { label: 'Base UI',    importPath: '@base-ui/react',                primitivesNote: 'Base UI exposes one primitive per file (e.g. `@base-ui/react/dialog` → `Dialog.Root`, `Dialog.Trigger`, `Dialog.Popup`).' },
-  'radix':      { label: 'Radix UI',   importPath: '@radix-ui/react-*',              primitivesNote: 'Radix exposes one primitive per package (e.g. `@radix-ui/react-dialog`).' },
-  'react-aria': { label: 'React Aria', importPath: 'react-aria-components',          primitivesNote: 'React Aria Components ship as a single package; import primitives by name from `react-aria-components`.' },
-  'headless-ui':{ label: 'Headless UI',importPath: '@headlessui/react',              primitivesNote: 'Headless UI exposes primitives from a single package; reach for `Dialog`, `Listbox`, `Menu`, etc.' },
+const HEADLESS_LIB_INFO: Record<
+  HeadlessLib,
+  { label: string; importPath: string; primitivesNote: string }
+> = {
+  "base-ui": {
+    importPath: "@base-ui/react",
+    label: "Base UI",
+    primitivesNote:
+      "Base UI exposes one primitive per file (e.g. `@base-ui/react/dialog` → `Dialog.Root`, `Dialog.Trigger`, `Dialog.Popup`).",
+  },
+  "headless-ui": {
+    importPath: "@headlessui/react",
+    label: "Headless UI",
+    primitivesNote:
+      "Headless UI exposes primitives from a single package; reach for `Dialog`, `Listbox`, `Menu`, etc.",
+  },
+  radix: {
+    importPath: "@radix-ui/react-*",
+    label: "Radix UI",
+    primitivesNote:
+      "Radix exposes one primitive per package (e.g. `@radix-ui/react-dialog`).",
+  },
+  "react-aria": {
+    importPath: "react-aria-components",
+    label: "React Aria",
+    primitivesNote:
+      "React Aria Components ship as a single package; import primitives by name from `react-aria-components`.",
+  },
 };
 
 function generateComponentsSkill(config: BrandConfig, set: TokenSet): string {
@@ -332,8 +417,8 @@ function generateComponentsSkill(config: BrandConfig, set: TokenSet): string {
   const lib = HEADLESS_LIB_INFO[config.headlessLib];
 
   return `${frontmatter(
-    'component-creation',
-    `How to build components against this token system using ${lib.label}: token application rules, interactivity, and composition.`,
+    "component-creation",
+    `How to build components against this token system using ${lib.label}: token application rules, interactivity, and composition.`
   )}
 # Component creation
 
@@ -511,7 +596,7 @@ The token API is library-agnostic. To swap (e.g. Base UI → Radix), you change 
 
 function dialogExample(lib: HeadlessLib, f: SystemFacts): string {
   switch (lib) {
-    case 'radix':
+    case "radix":
       return `import * as Dialog from '@radix-ui/react-dialog';
 
 export const ConfirmDialog: React.FC<{ open: boolean; onOpenChange: (v: boolean) => void }> = ({ open, onOpenChange, children }) => (
@@ -538,7 +623,7 @@ export const ConfirmDialog: React.FC<{ open: boolean; onOpenChange: (v: boolean)
   box-shadow:    var(--shadow-lg);
   max-width:     min(90vw, 480px);
 }`;
-    case 'react-aria':
+    case "react-aria":
       return `import { DialogTrigger, Dialog, Modal, ModalOverlay, Button } from 'react-aria-components';
 
 export const ConfirmDialog = ({ children }) => (
@@ -560,7 +645,7 @@ export const ConfirmDialog = ({ children }) => (
   padding:       var(--space-lg);
   box-shadow:    var(--shadow-lg);
 }`;
-    case 'headless-ui':
+    case "headless-ui":
       return `import { Dialog } from '@headlessui/react';
 
 export const ConfirmDialog: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose, children }) => (
@@ -580,7 +665,7 @@ export const ConfirmDialog: React.FC<{ open: boolean; onClose: () => void }> = (
   padding:       var(--space-lg);
   box-shadow:    var(--shadow-lg);
 }`;
-    case 'base-ui':
+    case "base-ui":
     default:
       return `import { Dialog } from '@base-ui/react/dialog';
 
@@ -613,12 +698,15 @@ export const ConfirmDialog: React.FC<{ open: boolean; onOpenChange: (v: boolean)
 // Skill 3 — Accessibility, motion, best practices
 // ---------------------------------------------------------------------------
 
-function generateAccessibilitySkill(config: BrandConfig, set: TokenSet): string {
+function generateAccessibilitySkill(
+  config: BrandConfig,
+  set: TokenSet
+): string {
   const f = deriveFacts(config, set);
 
   return `${frontmatter(
-    'accessibility-and-motion',
-    'Accessibility, focus, motion, and reduced-motion guarantees of this design system. Read before shipping anything interactive.',
+    "accessibility-and-motion",
+    "Accessibility, focus, motion, and reduced-motion guarantees of this design system. Read before shipping anything interactive."
   )}
 # Accessibility & motion
 
@@ -780,28 +868,31 @@ Status surfaces (\`success\`, \`warning\`, \`critical\`, \`info\`) use both colo
 // Public API
 // ---------------------------------------------------------------------------
 
-export function generateSkills(config: BrandConfig, set: TokenSet): SkillArtifact[] {
+export function generateSkills(
+  config: BrandConfig,
+  set: TokenSet
+): SkillArtifact[] {
   return [
     {
-      id: 'tokens',
-      filename: 'tokens-and-theming.skill.md',
-      title: 'Tokens & theming',
-      description: 'Token contract, decision tree, theme swapping',
       content: generateTokensSkill(config, set),
+      description: "Token contract, decision tree, theme swapping",
+      filename: "tokens-and-theming.skill.md",
+      id: "tokens",
+      title: "Tokens & theming",
     },
     {
-      id: 'components',
-      filename: 'component-creation.skill.md',
-      title: 'Component creation',
-      description: `Token application, interactivity, ${HEADLESS_LIB_INFO[config.headlessLib].label} usage`,
       content: generateComponentsSkill(config, set),
+      description: `Token application, interactivity, ${HEADLESS_LIB_INFO[config.headlessLib].label} usage`,
+      filename: "component-creation.skill.md",
+      id: "components",
+      title: "Component creation",
     },
     {
-      id: 'accessibility',
-      filename: 'accessibility-and-motion.skill.md',
-      title: 'Accessibility & motion',
-      description: 'Contrast, focus, motion, reduced-motion, ARIA',
       content: generateAccessibilitySkill(config, set),
+      description: "Contrast, focus, motion, reduced-motion, ARIA",
+      filename: "accessibility-and-motion.skill.md",
+      id: "accessibility",
+      title: "Accessibility & motion",
     },
   ];
 }

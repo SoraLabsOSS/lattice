@@ -1,6 +1,6 @@
 ---
 // Footer component
-import { siteImages } from '../lib/siteImages';
+import { siteImages } from "../lib/siteImages";
 
 const currentYear = new Date().getFullYear();
 ---
@@ -10,8 +10,12 @@ const currentYear = new Date().getFullYear();
     <div class="flex flex-col md:flex-row justify-between gap-12 md:gap-16">
       <!-- Logo Section -->
       <div class="flex flex-col justify-between">
-        <a href="/" class="flex items-center gap-3 group mb-6">
-          <img src={siteImages.logoIcon} alt="Sora Lattice Logo" class="w-[30px]" />
+        <a class="flex items-center gap-3 group mb-6" href="/">
+          <img
+            alt="Sora Lattice Logo"
+            class="w-[30px]"
+            src={siteImages.logoIcon}
+          >
         </a>
         <p class="text-charcoal/80 text-sm">
           Copyright © {currentYear} Sora Lattice. All rights reserved.
@@ -22,22 +26,20 @@ const currentYear = new Date().getFullYear();
       <div class="md:col-span-8 grid grid-cols-2 gap-8 md:gap-12">
         <!-- Product -->
         <div>
-          <h5 class="mb-4">
-            Product
-          </h5>
+          <h5 class="mb-4">Product</h5>
           <ul class="space-y-3">
             <li>
               <a
-                href="#how-it-works"
                 class="text-charcoal font-light hover:text-forest-green-200 transition-colors"
+                href="#how-it-works"
               >
                 How it works
               </a>
             </li>
             <li>
               <a
-                href="#faq"
                 class="text-charcoal font-light hover:text-forest-green-200 transition-colors"
+                href="#faq"
               >
                 FAQ
               </a>
@@ -47,34 +49,32 @@ const currentYear = new Date().getFullYear();
 
         <!-- Company -->
         <div>
-          <h5 class="mb-4">
-            Company
-          </h5>
+          <h5 class="mb-4">Company</h5>
           <ul class="space-y-3">
             <li>
               <a
-                href="https://cristobalgrana.me/"
-                target="_blank"
-                rel="noopener noreferrer"
                 class="text-charcoal font-light hover:text-forest-green-200 transition-colors"
+                href="https://cristobalgrana.me/"
+                rel="noopener noreferrer"
+                target="_blank"
               >
                 About the developer
               </a>
             </li>
             <li>
               <a
-                href="mailto:hellothere@cristobalgrana.me"
                 class="text-charcoal font-light hover:text-forest-green-200 transition-colors"
+                href="mailto:hellothere@cristobalgrana.me"
               >
                 Contact
               </a>
             </li>
             <li>
               <a
-                href="https://x.com/cristo_grana"
-                target="_blank"
-                rel="noopener noreferrer"
                 class="text-charcoal font-light hover:text-forest-green-200 transition-colors"
+                href="https://x.com/cristo_grana"
+                rel="noopener noreferrer"
+                target="_blank"
               >
                 X / Twitter
               </a>

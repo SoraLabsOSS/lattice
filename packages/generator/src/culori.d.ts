@@ -1,20 +1,24 @@
-declare module 'culori' {
+declare module "culori" {
   export interface OklchColor {
-    mode: 'oklch';
-    l: number;
     c: number;
     h?: number;
+    l: number;
+    mode: "oklch";
   }
 
   export interface LrgbColor {
-    mode: 'lrgb';
-    r: number;
-    g: number;
     b: number;
+    g: number;
+    mode: "lrgb";
+    r: number;
   }
 
-  export function converter(mode: 'oklch'): (color: string | object) => OklchColor | undefined;
-  export function converter(mode: 'lrgb'): (color: string | object) => LrgbColor | undefined;
+  export function converter(
+    mode: "oklch"
+  ): (color: string | object) => OklchColor | undefined;
+  export function converter(
+    mode: "lrgb"
+  ): (color: string | object) => LrgbColor | undefined;
   export function parse(color: string): object | undefined;
   export function formatHex(color: string | object): string | undefined;
   export function formatRgb(color: string | object): string | undefined;
