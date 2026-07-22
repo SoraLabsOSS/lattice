@@ -37,7 +37,7 @@ export function generateRamp(
 
   const lShift = (lightnessShift - 100) / 200; // -0.5 to +0.5
 
-  STEPS.forEach((step) => {
+  for (const step of STEPS) {
     const t = (step - 50) / 850; // 0 to 1
     let lightness = 0.98 - t * (0.98 - 0.32);
     lightness = Math.max(0.05, Math.min(0.99, lightness + lShift));
@@ -57,7 +57,7 @@ export function generateRamp(
     };
 
     ramp[step as keyof ColorRamp] = formatHex(color) || baseHex;
-  });
+  }
 
   return ramp as ColorRamp;
 }
@@ -75,7 +75,7 @@ export function generateRamp(
 export function flipRamp(ramp: ColorRamp): ColorRamp {
   const out: Partial<ColorRamp> = {};
   const n = STEPS.length;
-  for (let i = 0; i < n; i++) {
+  for (let i = 0; i < n; i += 1) {
     out[STEPS[i] as keyof ColorRamp] =
       ramp[STEPS[n - 1 - i] as keyof ColorRamp];
   }
@@ -85,11 +85,11 @@ export function flipRamp(ramp: ColorRamp): ColorRamp {
 export function invertForDarkMode(ramp: ColorRamp): ColorRamp {
   const inverted: Partial<ColorRamp> = {};
 
-  STEPS.forEach((step) => {
+  for (const step of STEPS) {
     const originalColor = toOklch(ramp[step as keyof ColorRamp]);
     if (!originalColor) {
       inverted[step as keyof ColorRamp] = ramp[step as keyof ColorRamp];
-      return;
+      continue;
     }
 
     const newLightness = Math.max(0.08, Math.min(0.95, 1 - originalColor.l));
@@ -101,7 +101,7 @@ export function invertForDarkMode(ramp: ColorRamp): ColorRamp {
         l: newLightness,
         mode: "oklch",
       }) || ramp[step as keyof ColorRamp];
-  });
+  }
 
   return inverted as ColorRamp;
 }

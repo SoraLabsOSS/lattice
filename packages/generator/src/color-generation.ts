@@ -1,5 +1,5 @@
 import { converter, displayable, formatHex, wcagContrast } from "culori";
-import { type ColorRamp, type NeutralColorRamp, STEPS } from "./colorUtils.js";
+import { type ColorRamp, type NeutralColorRamp, STEPS } from "./color-utils.js";
 
 export const toOklch = converter("oklch");
 
@@ -82,6 +82,63 @@ export interface PrimaryContrastClampResult {
   original: string;
 }
 
+const CONTRAST_WALK_STEPS = 50;
+const CONTRAST_WALK_STEP_L = 0.02;
+const CONTRAST_WALK_MIN_L = 0.1;
+const CONTRAST_WALK_MAX_L = 0.92;
+
+interface ContrastWalkResult {
+  contrast: number;
+  hex: string;
+}
+
+/**
+ * Walk OKLCH lightness away from the background in small steps, looking for
+ * the first candidate that meets `MIN_PRIMARY_CONTRAST`. Falls back to the
+ * best candidate found if the threshold is never reached within bounds.
+ */
+function walkLightnessForContrast(
+  baseBgHex: string,
+  hue: number,
+  startL: number,
+  startC: number,
+  direction: 1 | -1,
+  fallbackHex: string,
+  initialContrast: number
+): ContrastWalkResult {
+  let bestHex = fallbackHex;
+  let bestContrast = initialContrast;
+
+  for (let i = 1; i <= CONTRAST_WALK_STEPS; i += 1) {
+    const L = startL + direction * CONTRAST_WALK_STEP_L * i;
+    // Stop when we've walked past the safe lightness range in our direction
+    // of travel. (The input itself might already sit outside [minL, maxL] —
+    // walking toward the opposite side is still progress, so only break once
+    // we cross the far bound.)
+    if (direction < 0 && L < CONTRAST_WALK_MIN_L) {
+      break;
+    }
+    if (direction > 0 && L > CONTRAST_WALK_MAX_L) {
+      break;
+    }
+    const C = Math.min(startC, maxChromaForLH(L, hue));
+    const candidate = formatHex({ c: C, h: hue, l: L, mode: "oklch" });
+    if (!candidate) {
+      continue;
+    }
+    const contrast = wcagContrast(candidate, baseBgHex) ?? 1;
+    if (contrast >= MIN_PRIMARY_CONTRAST) {
+      return { contrast, hex: candidate };
+    }
+    if (contrast > bestContrast) {
+      bestContrast = contrast;
+      bestHex = candidate;
+    }
+  }
+
+  return { contrast: bestContrast, hex: bestHex };
+}
+
 /**
  * Ensure the exact-input primary maintains readable contrast against the
  * mode's base background. If the input falls below `MIN_PRIMARY_CONTRAST`,
@@ -95,81 +152,46 @@ export function clampPrimaryForContrast(
   mode: ColorMode
 ): PrimaryContrastClampResult {
   const initialContrast = wcagContrast(hex, baseBgHex) ?? 1;
+  const unadjustedResult: PrimaryContrastClampResult = {
+    adjusted: false,
+    applied: hex,
+    contrastAfter: initialContrast,
+    contrastBefore: initialContrast,
+    mode,
+    original: hex,
+  };
   if (initialContrast >= MIN_PRIMARY_CONTRAST) {
-    return {
-      adjusted: false,
-      applied: hex,
-      contrastAfter: initialContrast,
-      contrastBefore: initialContrast,
-      mode,
-      original: hex,
-    };
+    return unadjustedResult;
   }
 
   const o = toOklch(hex);
   if (!o) {
-    return {
-      adjusted: false,
-      applied: hex,
-      contrastAfter: initialContrast,
-      contrastBefore: initialContrast,
-      mode,
-      original: hex,
-    };
+    return unadjustedResult;
   }
 
   const H = o.h ?? 0;
   const startL = o.l ?? 0.5;
   const startC = o.c ?? 0;
   // Walk away from the bg: lighter when bg is dark, darker when bg is light.
-  const direction = mode === "dark" ? +1 : -1;
-  const stepL = 0.02;
-  const minL = 0.1;
-  const maxL = 0.92;
+  const direction = mode === "dark" ? 1 : -1;
 
-  let bestHex = hex;
-  let bestContrast = initialContrast;
+  // Couldn't reach the threshold within the lightness bounds — the walk
+  // falls back to the best candidate found so the surface is at least more
+  // legible.
+  const walked = walkLightnessForContrast(
+    baseBgHex,
+    H,
+    startL,
+    startC,
+    direction,
+    hex,
+    initialContrast
+  );
 
-  for (let i = 1; i <= 50; i++) {
-    const L = startL + direction * stepL * i;
-    // Stop when we've walked past the safe lightness range in our direction
-    // of travel. (The input itself might already sit outside [minL, maxL] —
-    // walking toward the opposite side is still progress, so only break once
-    // we cross the far bound.)
-    if (direction < 0 && L < minL) {
-      break;
-    }
-    if (direction > 0 && L > maxL) {
-      break;
-    }
-    const C = Math.min(startC, maxChromaForLH(L, H));
-    const candidate = formatHex({ c: C, h: H, l: L, mode: "oklch" });
-    if (!candidate) {
-      continue;
-    }
-    const contrast = wcagContrast(candidate, baseBgHex) ?? 1;
-    if (contrast >= MIN_PRIMARY_CONTRAST) {
-      return {
-        adjusted: true,
-        applied: candidate,
-        contrastAfter: contrast,
-        contrastBefore: initialContrast,
-        mode,
-        original: hex,
-      };
-    }
-    if (contrast > bestContrast) {
-      bestContrast = contrast;
-      bestHex = candidate;
-    }
-  }
-
-  // Couldn't reach the threshold within the lightness bounds — return the
-  // best candidate we found so the surface is at least more legible.
   return {
-    adjusted: bestHex !== hex,
-    applied: bestHex,
-    contrastAfter: bestContrast,
+    adjusted: walked.hex !== hex,
+    applied: walked.hex,
+    contrastAfter: walked.contrast,
     contrastBefore: initialContrast,
     mode,
     original: hex,
@@ -332,7 +354,8 @@ function angularDistance(h1: number, h2: number): number {
 }
 
 function findNearestHue(hue: number): NamedHue {
-  let nearest = NAMED_HUES[0];
+  const [firstHue] = NAMED_HUES;
+  let nearest = firstHue;
   let minDist = angularDistance(hue, nearest.hue);
 
   for (const nh of NAMED_HUES) {
@@ -359,27 +382,30 @@ export interface HueSelection {
   selected: HueSlot[];
 }
 
-/**
- * Select 9 chromatic hues from the 12 named hues using a greedy algorithm.
- */
-export function selectHues(
+function buildHueCandidates(
   primaryHue: number,
-  secondaryHue?: number
-): HueSelection {
-  const nearestNamed = findNearestHue(primaryHue);
-  const secondary = typeof secondaryHue === "number" ? secondaryHue : null;
-
-  const candidates: HueSlot[] = NAMED_HUES.map((h) => ({
+  nearestNamed: NamedHue
+): HueSlot[] {
+  return NAMED_HUES.map((h) => ({
     hue: h.name === nearestNamed.name ? primaryHue : h.hue,
     isOriginal: h.name !== nearestNamed.name,
     isPrimary: h.name === nearestNamed.name,
     name: h.name,
   }));
+}
 
+/** Semantic hues (Red/Green/Blue/Yellow) close enough to the primary/secondary
+ * to be considered "occupied" and dropped from the greedy fill. */
+function findOccupiedSemanticHues(
+  candidates: HueSlot[],
+  primaryHue: number,
+  secondary: number | null
+): Map<string, "primary" | "secondary"> {
+  const occupiedSemanticBy = new Map<string, "primary" | "secondary">();
   const semanticCandidates = candidates.filter((c) =>
     SEMANTIC_HUES.includes(c.name)
   );
-  const occupiedSemanticBy = new Map<string, "primary" | "secondary">();
+
   for (const semantic of semanticCandidates) {
     const primaryDistance = angularDistance(primaryHue, semantic.hue);
     const secondaryDistance =
@@ -395,28 +421,39 @@ export function selectHues(
     }
   }
 
-  const selected: HueSlot[] = [];
-  const primaryCandidate = candidates.find(
-    (c) => c.name === nearestNamed.name
-  )!;
-  selected.push(primaryCandidate);
+  return occupiedSemanticBy;
+}
+
+function buildInitialSelection(
+  candidates: HueSlot[],
+  nearestNamed: NamedHue,
+  occupiedSemanticBy: Map<string, "primary" | "secondary">
+): HueSlot[] {
+  const findCandidateByName = (name: string): HueSlot => {
+    const found = candidates.find((c) => c.name === name);
+    if (!found) {
+      throw new Error(`No hue candidate found for name: ${name}`);
+    }
+    return found;
+  };
+
+  const selected: HueSlot[] = [findCandidateByName(nearestNamed.name)];
 
   for (const semantic of SEMANTIC_HUES) {
     if (semantic !== nearestNamed.name && !occupiedSemanticBy.has(semantic)) {
-      const candidate = candidates.find((c) => c.name === semantic)!;
-      selected.push(candidate);
+      selected.push(findCandidateByName(semantic));
     }
   }
 
-  const excludedSemanticNames = new Set(
-    Array.from(occupiedSemanticBy.keys()).filter(
-      (name) => name !== nearestNamed.name
-    )
-  );
-  const remaining = candidates.filter(
-    (c) => !(selected.includes(c) || excludedSemanticNames.has(c.name))
-  );
+  return selected;
+}
 
+/** Greedily fill `selected` (mutated in place) up to 9 hues, each time picking
+ * the remaining candidate that is farthest from every hue already selected. */
+function fillRemainingHuesGreedily(
+  selected: HueSlot[],
+  remaining: HueSlot[]
+): void {
   while (selected.length < 9 && remaining.length > 0) {
     let bestCandidate: HueSlot | null = null;
     let bestMinDist = -1;
@@ -437,7 +474,28 @@ export function selectHues(
       remaining.splice(remaining.indexOf(bestCandidate), 1);
     }
   }
+}
 
+function findClosestSelectedHue(hue: number, selected: HueSlot[]): HueSlot {
+  const [firstSelected] = selected;
+  let closestSelected = firstSelected;
+  let closestDist = angularDistance(hue, closestSelected.hue);
+  for (const s of selected) {
+    const dist = angularDistance(hue, s.hue);
+    if (dist < closestDist) {
+      closestDist = dist;
+      closestSelected = s;
+    }
+  }
+  return closestSelected;
+}
+
+function buildDroppedList(
+  occupiedSemanticBy: Map<string, "primary" | "secondary">,
+  nearestNamed: NamedHue,
+  remaining: HueSlot[],
+  selected: HueSlot[]
+): { name: string; reason: string }[] {
   const dropped = Array.from(occupiedSemanticBy.entries())
     .filter(([name]) => name !== nearestNamed.name)
     .map(([name, source]) => ({
@@ -447,17 +505,52 @@ export function selectHues(
 
   dropped.push(
     ...remaining.map((r) => {
-      let closestSelected = selected[0];
-      let closestDist = angularDistance(r.hue, closestSelected.hue);
-      for (const s of selected) {
-        const dist = angularDistance(r.hue, s.hue);
-        if (dist < closestDist) {
-          closestDist = dist;
-          closestSelected = s;
-        }
-      }
+      const closestSelected = findClosestSelectedHue(r.hue, selected);
       return { name: r.name, reason: `too close to ${closestSelected.name}` };
     })
+  );
+
+  return dropped;
+}
+
+/**
+ * Select 9 chromatic hues from the 12 named hues using a greedy algorithm.
+ */
+export function selectHues(
+  primaryHue: number,
+  secondaryHue?: number
+): HueSelection {
+  const nearestNamed = findNearestHue(primaryHue);
+  const secondary = typeof secondaryHue === "number" ? secondaryHue : null;
+
+  const candidates = buildHueCandidates(primaryHue, nearestNamed);
+  const occupiedSemanticBy = findOccupiedSemanticHues(
+    candidates,
+    primaryHue,
+    secondary
+  );
+  const selected = buildInitialSelection(
+    candidates,
+    nearestNamed,
+    occupiedSemanticBy
+  );
+
+  const excludedSemanticNames = new Set(
+    Array.from(occupiedSemanticBy.keys()).filter(
+      (name) => name !== nearestNamed.name
+    )
+  );
+  const remaining = candidates.filter(
+    (c) => !(selected.includes(c) || excludedSemanticNames.has(c.name))
+  );
+
+  fillRemainingHuesGreedily(selected, remaining);
+
+  const dropped = buildDroppedList(
+    occupiedSemanticBy,
+    nearestNamed,
+    remaining,
+    selected
   );
 
   selected.sort((a, b) => a.hue - b.hue);
@@ -595,6 +688,8 @@ export function generateNeutralRamp(
       hue = primaryHue;
       // Slightly reduce tint for yellow-green hues which can feel overpowering
       peakNeutralC = primaryHue >= 70 && primaryHue <= 140 ? 0.007 : 0.009;
+      break;
+    default:
       break;
   }
 

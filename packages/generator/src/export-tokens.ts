@@ -1,5 +1,5 @@
 import { converter, formatHex, formatHsl, formatRgb, parse } from "culori";
-import { HUE_NAMES } from "./generateTokens.js";
+import { HUE_NAMES } from "./generate-tokens.js";
 
 // ---------------------------------------------------------------------------
 // Color-space formatting
@@ -33,11 +33,16 @@ function formatColor(raw: string, space: ColorSpace): string {
   return `oklch(${l} ${c} ${h})`;
 }
 
+const HEX_LITERAL_PATTERN = /^#[0-9a-f]{3,8}$/i;
+const FUNCTIONAL_COLOR_LITERAL_PATTERN =
+  /^(rgb|rgba|hsl|hsla|oklch|lch|lab)\(/i;
+const RGBA_WITH_ALPHA_PATTERN = /^rgba?\([^)]*,[^)]*,[^)]*,/;
+const HSLA_WITH_ALPHA_PATTERN = /^hsla?\([^)]*,[^)]*,[^)]*,/;
+
 function isColorLiteral(v: string): boolean {
   const t = v.trim();
   return (
-    /^#[0-9a-f]{3,8}$/i.test(t) ||
-    /^(rgb|rgba|hsl|hsla|oklch|lch|lab)\(/i.test(t)
+    HEX_LITERAL_PATTERN.test(t) || FUNCTIONAL_COLOR_LITERAL_PATTERN.test(t)
   );
 }
 
@@ -51,8 +56,7 @@ function convertLiteral(raw: string, space: ColorSpace): string {
   }
   // rgba/hsla with alpha — keep as-is to preserve transparency (OKLCH has no alpha literal parity here)
   if (
-    (/^rgba?\([^)]*,[^)]*,[^)]*,/.test(t) ||
-      /^hsla?\([^)]*,[^)]*,[^)]*,/.test(t)) &&
+    (RGBA_WITH_ALPHA_PATTERN.test(t) || HSLA_WITH_ALPHA_PATTERN.test(t)) &&
     (space === "rgb" || space === "hsl")
   ) {
     return raw;
@@ -65,6 +69,7 @@ function convertLiteral(raw: string, space: ColorSpace): string {
 // ---------------------------------------------------------------------------
 
 const HUE_PATTERN = new RegExp(`^--color-(${HUE_NAMES.join("|")})-(\\d+)$`);
+const CSS_VAR_PREFIX_PATTERN = /^--/;
 
 function parsePrimitive(prop: string): { hue: string; step: string } | null {
   const m = prop.match(HUE_PATTERN);
@@ -344,56 +349,52 @@ function exportCSS(
 // DTCG JSON export
 // ---------------------------------------------------------------------------
 
-function dtcgTypeFor(prop: string): string {
-  if (prop.startsWith("--color-")) {
-    return "color";
+const SIMPLE_DTCG_TYPE_BY_PREFIX: { prefix: string; type: string }[] = [
+  { prefix: "--color-", type: "color" },
+  { prefix: "--gradient-", type: "other" },
+  { prefix: "--space-", type: "dimension" },
+  { prefix: "--dimension-", type: "dimension" },
+  { prefix: "--shape-", type: "dimension" },
+  { prefix: "--shadow-", type: "shadow" },
+  { prefix: "--state-", type: "other" },
+  { prefix: "--transition-", type: "other" },
+];
+
+function dtcgFontType(prop: string): string {
+  if (prop.endsWith("-family")) {
+    return "fontFamily";
   }
-  if (prop.startsWith("--gradient-")) {
-    return "other";
+  if (prop.includes("-weight")) {
+    return "fontWeight";
   }
-  if (prop.startsWith("--font-")) {
-    if (prop.endsWith("-family")) {
-      return "fontFamily";
-    }
-    if (prop.includes("-weight")) {
-      return "fontWeight";
-    }
-    if (prop.includes("-size")) {
-      return "dimension";
-    }
-    if (prop.includes("-lineheight")) {
-      return "other";
-    }
-    return "other";
-  }
-  if (prop.startsWith("--typography-")) {
-    if (prop.includes("-family")) {
-      return "fontFamily";
-    }
-    if (prop.startsWith("--typography-weight-")) {
-      return "fontWeight";
-    }
+  if (prop.includes("-size")) {
     return "dimension";
-  }
-  if (prop.startsWith("--space-")) {
-    return "dimension";
-  }
-  if (prop.startsWith("--dimension-")) {
-    return "dimension";
-  }
-  if (prop.startsWith("--shape-")) {
-    return "dimension";
-  }
-  if (prop.startsWith("--shadow-")) {
-    return "shadow";
-  }
-  if (prop.startsWith("--state-")) {
-    return "other";
-  }
-  if (prop.startsWith("--transition-")) {
-    return "other";
   }
   return "other";
+}
+
+function dtcgTypographyType(prop: string): string {
+  if (prop.includes("-family")) {
+    return "fontFamily";
+  }
+  if (prop.startsWith("--typography-weight-")) {
+    return "fontWeight";
+  }
+  return "dimension";
+}
+
+function dtcgTypeFor(prop: string): string {
+  if (prop.startsWith("--font-")) {
+    return dtcgFontType(prop);
+  }
+  if (prop.startsWith("--typography-")) {
+    return dtcgTypographyType(prop);
+  }
+
+  const simpleMatch = SIMPLE_DTCG_TYPE_BY_PREFIX.find(({ prefix }) =>
+    prop.startsWith(prefix)
+  );
+  return simpleMatch?.type ?? "other";
 }
 
 /** Convert a `var(--foo-bar-baz)` reference into a DTCG reference `{foo.bar.baz}`. */
@@ -402,7 +403,7 @@ function dtcgReferenceFor(value: string): string | null {
   if (!name) {
     return null;
   }
-  return `{${name.replace(/^--/, "").split("-").join(".")}}`;
+  return `{${name.replace(CSS_VAR_PREFIX_PATTERN, "").split("-").join(".")}}`;
 }
 
 function dtcgValue(prop: string, value: string, space: ColorSpace): string {
@@ -417,7 +418,7 @@ function dtcgValue(prop: string, value: string, space: ColorSpace): string {
 }
 
 function tokenPath(prop: string): string[] {
-  return prop.replace(/^--/, "").split("-");
+  return prop.replace(CSS_VAR_PREFIX_PATTERN, "").split("-");
 }
 
 function insertDTCG(
@@ -428,13 +429,13 @@ function insertDTCG(
 ) {
   const parts = tokenPath(prop);
   let cursor: Record<string, unknown> = root;
-  for (let i = 0; i < parts.length - 1; i++) {
+  for (let i = 0; i < parts.length - 1; i += 1) {
     if (!cursor[parts[i]]) {
       cursor[parts[i]] = {};
     }
     cursor = cursor[parts[i]] as Record<string, unknown>;
   }
-  cursor[parts[parts.length - 1]] = {
+  cursor[parts.at(-1) as string] = {
     $type: dtcgTypeFor(prop),
     $value: dtcgValue(prop, value, space),
   };
@@ -502,6 +503,8 @@ function buildColorGroups(tokens: Record<string, string>, space: ColorSpace) {
   return { primitives, semantic };
 }
 
+const NUMERIC_KEY_PATTERN = /^\d+$/;
+
 function serializeGroup(
   map: Record<string, string | Record<string, string>>,
   indent: string
@@ -514,7 +517,7 @@ function serializeGroup(
       const inner = Object.entries(v)
         .map(
           ([kk, vv]) =>
-            `${indent}  ${/^\d+$/.test(kk) ? kk : `'${kk}'`}: '${vv}'`
+            `${indent}  ${NUMERIC_KEY_PATTERN.test(kk) ? kk : `'${kk}'`}: '${vv}'`
         )
         .join(",\n");
       return `${indent}'${k}': {\n${inner}\n${indent}}`;
@@ -674,6 +677,8 @@ function shadcnPrimitives(
     });
 }
 
+const COLOR_VALUE_PREFIX_PATTERN = /^(#|rgb|hsl|oklch|lab|lch)/i;
+
 function renderShadcnBlock(
   selector: string,
   sections: { label: string; entries: ShadcnEntry[] }[],
@@ -686,7 +691,7 @@ function renderShadcnBlock(
     }
     lines.push(`    /* ${section.label} */`);
     for (const [prop, raw] of section.entries) {
-      const value = /^(#|rgb|hsl|oklch|lab|lch)/i.test(raw.trim())
+      const value = COLOR_VALUE_PREFIX_PATTERN.test(raw.trim())
         ? convertLiteral(raw, space)
         : raw;
       lines.push(`    ${prop}: ${value};`);
@@ -751,5 +756,7 @@ export function exportTokens(
       return exportTailwind(set, space);
     case "shadcn":
       return exportShadcn(set, space);
+    default:
+      throw new Error(`Unsupported export format: ${format}`);
   }
 }

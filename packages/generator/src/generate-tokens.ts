@@ -2,7 +2,7 @@ import { wcagContrast } from "culori";
 import type {
   ColorMode,
   PrimaryContrastClampResult,
-} from "./colorGeneration.js";
+} from "./color-generation.js";
 import {
   clampPrimaryForContrast,
   generateNeutralRamp,
@@ -11,14 +11,14 @@ import {
   maxChromaForLH,
   NAMED_HUES,
   toOklch,
-} from "./colorGeneration.js";
+} from "./color-generation.js";
 import {
   type ColorRamp,
   flipRamp,
   type NeutralColorRamp,
   STEPS,
-} from "./colorUtils.js";
-import { pickStep } from "./contrastUtils.js";
+} from "./color-utils.js";
+import { pickStep } from "./contrast-utils.js";
 import type { BrandConfig } from "./types.js";
 
 // ---------------------------------------------------------------------------
@@ -99,7 +99,8 @@ const DECORATIVE_SLOT_COUNT = 4;
 /** Return the lowercase hue name nearest to the given OKLCH hue angle. */
 function hueNameFor(hue: number): string {
   const normalized = ((hue % 360) + 360) % 360;
-  let best = NAMED_HUES[0];
+  const [firstHue] = NAMED_HUES;
+  let best = firstHue;
   let bestDist = 360;
   for (const nh of NAMED_HUES) {
     const diff = Math.abs(normalized - nh.hue);
@@ -126,7 +127,8 @@ const RESERVED_HUE_TOLERANCE = 10; // degrees
  */
 function hueNameForRole(hue: number): string {
   const normalized = ((hue % 360) + 360) % 360;
-  let best = NAMED_HUES[0];
+  const [firstHue] = NAMED_HUES;
+  let best = firstHue;
   let bestDist = 360;
   for (const nh of NAMED_HUES) {
     const diff = Math.abs(normalized - nh.hue);
@@ -485,21 +487,20 @@ function hexToRgbTriple(hex: string): string {
   return `${r}, ${g}, ${b}`;
 }
 
+const TRANSITION_DURATIONS_BY_EXPRESSIVENESS: Record<
+  BrandConfig["expressiveness"],
+  { gradual: string; swift: string }
+> = {
+  balanced: { gradual: "350ms", swift: "150ms" },
+  expressive: { gradual: "500ms", swift: "250ms" },
+  minimal: { gradual: "250ms", swift: "100ms" },
+};
+
 function transitionTokens(
   expressiveness: BrandConfig["expressiveness"]
 ): Record<string, string> {
-  const swift =
-    expressiveness === "minimal"
-      ? "100ms"
-      : expressiveness === "expressive"
-        ? "250ms"
-        : "150ms";
-  const gradual =
-    expressiveness === "minimal"
-      ? "250ms"
-      : expressiveness === "expressive"
-        ? "500ms"
-        : "350ms";
+  const { swift, gradual } =
+    TRANSITION_DURATIONS_BY_EXPRESSIVENESS[expressiveness];
 
   const out: Record<string, string> = {
     "--transition-gradual-duration": gradual,
@@ -558,107 +559,82 @@ function applyRampOverrides<T extends ColorRamp | NeutralColorRamp>(
   return out as unknown as T;
 }
 
-/** Build raw ramps for a single mode (no per-step overrides applied yet). */
-function buildModeRamps(
+interface BrandRampInfo {
+  c: number;
+  h: number;
+  hue: string;
+  l: number;
+  ramp: ColorRamp;
+}
+
+function buildPrimaryRampInfo(
   config: BrandConfig,
-  mode: ColorMode
-): {
-  byHue: Record<string, ColorRamp | NeutralColorRamp>;
-  roleHue: Record<RampRole, string>;
-  decorativeHues: string[];
-} {
-  const isDark = mode === "dark";
-  const falloff = config.chromaFalloff / 100;
+  mode: ColorMode,
+  falloff: number
+): BrandRampInfo {
+  const oklch = toOklch(config.primaryColor);
+  const h = oklch?.h || 0;
+  const l = oklch?.l ?? 0.5;
+  const c = oklch?.c ?? 0;
+  const maxC = maxChromaForLH(l, h);
+  const satRatio = maxC > 0 ? c / maxC : 0;
+  const ramp = generateOklchRamp(h, c, l, falloff, { mode, satRatio });
+  return { c, h, hue: hueNameForRole(h), l, ramp };
+}
 
-  // --- Primary ---
-  const primaryOklch = toOklch(config.primaryColor);
-  const primaryH = primaryOklch?.h || 0;
-  const primaryL = primaryOklch?.l ?? 0.5;
-  const primaryC = primaryOklch?.c ?? 0;
-  const primaryMaxC = maxChromaForLH(primaryL, primaryH);
-  const primarySatRatio = primaryMaxC > 0 ? primaryC / primaryMaxC : 0;
-  const primaryRamp = generateOklchRamp(primaryH, primaryC, primaryL, falloff, {
-    mode,
-    satRatio: primarySatRatio,
-  });
-  const primaryHue = hueNameForRole(primaryH);
+function buildSecondaryRampInfo(
+  mode: ColorMode,
+  falloff: number,
+  secondaryColor: string
+): BrandRampInfo {
+  const oklch = toOklch(secondaryColor);
+  const h = oklch?.h || 0;
+  const l = oklch?.l ?? 0.5;
+  const c = oklch?.c ?? 0;
+  const maxC = maxChromaForLH(l, h);
+  const satRatio = maxC > 0 ? c / maxC : 0;
+  const ramp = generateOklchRamp(h, c, l, falloff, { mode, satRatio });
+  return { c, h, hue: hueNameForRole(h), l, ramp };
+}
 
-  // --- Secondary ---
-  const secondaryColor =
-    config.useCustomSecondary && config.secondaryColor
-      ? config.secondaryColor
-      : getGeneratedColor(
-          config.primaryColor,
-          config.secondaryGenerationMode || "complementary"
-        );
-  const secondaryOklch = toOklch(secondaryColor);
-  const secondaryH = secondaryOklch?.h || 0;
-  const secondaryL = secondaryOklch?.l ?? 0.5;
-  const secondaryC = secondaryOklch?.c ?? 0;
-  const secondaryMaxC = maxChromaForLH(secondaryL, secondaryH);
-  const secondarySatRatio = secondaryMaxC > 0 ? secondaryC / secondaryMaxC : 0;
-  const secondaryRamp = generateOklchRamp(
-    secondaryH,
-    secondaryC,
-    secondaryL,
-    falloff,
-    { mode, satRatio: secondarySatRatio }
-  );
-  const secondaryHue = hueNameForRole(secondaryH);
+function resolveSecondaryColor(config: BrandConfig): string {
+  return config.useCustomSecondary && config.secondaryColor
+    ? config.secondaryColor
+    : getGeneratedColor(
+        config.primaryColor,
+        config.secondaryGenerationMode || "complementary"
+      );
+}
 
-  // --- Neutral ---
-  const neutralRamp = generateNeutralRamp(
-    primaryH,
-    config.neutralTint,
-    primaryL,
-    falloff,
-    { mode }
-  );
+/** Priority-order assignment: primary wins collisions, then secondary, then status. */
+const STATUS_ASSIGNMENT_PRIORITY: RampRole[] = [
+  "primary",
+  "secondary",
+  "success",
+  "warning",
+  "critical",
+  "info",
+];
 
-  // --- Status colors ---
-  const statusInput: Record<RampRole, string> = {
-    critical: config.statusColors.error,
-    info: config.statusColors.info,
-    primary: config.primaryColor,
-    secondary: secondaryColor,
-    success: config.statusColors.success,
-    warning: config.statusColors.warning,
-  };
-
-  const byHue: Record<string, ColorRamp | NeutralColorRamp> = {
-    neutral: neutralRamp,
-  };
-  const roleHue: Record<RampRole, string> = {
-    critical: "red",
-    info: "blue",
-    primary: primaryHue,
-    secondary: secondaryHue,
-    success: "green",
-    warning: "yellow",
-  };
-
-  // Priority-order assignment: primary wins collisions, then secondary, then status.
-  const PRIORITY: RampRole[] = [
-    "primary",
-    "secondary",
-    "success",
-    "warning",
-    "critical",
-    "info",
-  ];
-
-  for (const role of PRIORITY) {
+function assignStatusRamps(
+  mode: ColorMode,
+  falloff: number,
+  statusInput: Record<RampRole, string>,
+  primary: BrandRampInfo,
+  secondary: BrandRampInfo,
+  byHue: Record<string, ColorRamp | NeutralColorRamp>,
+  roleHue: Record<RampRole, string>
+): void {
+  for (const role of STATUS_ASSIGNMENT_PRIORITY) {
     const hex = statusInput[role];
     const oklch = toOklch(hex);
     const h = oklch?.h || 0;
     const l = oklch?.l ?? 0.5;
     const c = oklch?.c ?? 0;
+    const isBrandRole = role === "primary" || role === "secondary";
     // Brand roles (primary/secondary) bucket with the narrow rule so they don't
     // greedily occupy a reserved status hue; status roles bucket normally.
-    const hueName =
-      role === "primary" || role === "secondary"
-        ? hueNameForRole(h)
-        : hueNameFor(h);
+    const hueName = isBrandRole ? hueNameForRole(h) : hueNameFor(h);
     roleHue[role] = hueName;
 
     // Skip emission if a higher-priority role already occupies this hue slot.
@@ -666,19 +642,29 @@ function buildModeRamps(
       continue;
     }
 
+    if (role === "primary") {
+      byHue[hueName] = primary.ramp;
+      continue;
+    }
+    if (role === "secondary") {
+      byHue[hueName] = secondary.ramp;
+      continue;
+    }
+
     // Primary/secondary use the configured falloff for soft ramps; status uses 0.8.
-    const sigma = role === "primary" || role === "secondary" ? falloff : 0.8;
+    const sigma = isBrandRole ? falloff : 0.8;
     const maxC = maxChromaForLH(l, h);
     const satRatio = maxC > 0 ? c / maxC : 0;
-    byHue[hueName] =
-      role === "primary"
-        ? primaryRamp
-        : role === "secondary"
-          ? secondaryRamp
-          : generateOklchRamp(h, c, l, sigma, { mode, satRatio });
+    byHue[hueName] = generateOklchRamp(h, c, l, sigma, { mode, satRatio });
   }
+}
 
-  // --- Decoratives: pick hues not already occupied ---
+/** Pick decorative hues not already occupied, up to `DECORATIVE_SLOT_COUNT`. */
+function assignDecorativeRamps(
+  mode: ColorMode,
+  byHue: Record<string, ColorRamp | NeutralColorRamp>
+): string[] {
+  const isDark = mode === "dark";
   const decorativeHues: string[] = [];
   for (const candidate of DECORATIVE_HUE_PREFERENCE) {
     if (decorativeHues.length >= DECORATIVE_SLOT_COUNT) {
@@ -697,6 +683,64 @@ function buildModeRamps(
       satRatio: 0.8,
     });
   }
+  return decorativeHues;
+}
+
+/** Build raw ramps for a single mode (no per-step overrides applied yet). */
+function buildModeRamps(
+  config: BrandConfig,
+  mode: ColorMode
+): {
+  byHue: Record<string, ColorRamp | NeutralColorRamp>;
+  roleHue: Record<RampRole, string>;
+  decorativeHues: string[];
+} {
+  const falloff = config.chromaFalloff / 100;
+
+  const primary = buildPrimaryRampInfo(config, mode, falloff);
+  const secondaryColor = resolveSecondaryColor(config);
+  const secondary = buildSecondaryRampInfo(mode, falloff, secondaryColor);
+
+  const neutralRamp = generateNeutralRamp(
+    primary.h,
+    config.neutralTint,
+    primary.l,
+    falloff,
+    { mode }
+  );
+
+  const statusInput: Record<RampRole, string> = {
+    critical: config.statusColors.error,
+    info: config.statusColors.info,
+    primary: config.primaryColor,
+    secondary: secondaryColor,
+    success: config.statusColors.success,
+    warning: config.statusColors.warning,
+  };
+
+  const byHue: Record<string, ColorRamp | NeutralColorRamp> = {
+    neutral: neutralRamp,
+  };
+  const roleHue: Record<RampRole, string> = {
+    critical: "red",
+    info: "blue",
+    primary: primary.hue,
+    secondary: secondary.hue,
+    success: "green",
+    warning: "yellow",
+  };
+
+  assignStatusRamps(
+    mode,
+    falloff,
+    statusInput,
+    primary,
+    secondary,
+    byHue,
+    roleHue
+  );
+
+  const decorativeHues = assignDecorativeRamps(mode, byHue);
 
   return { byHue, decorativeHues, roleHue };
 }
@@ -734,7 +778,7 @@ function overrideKeyForHue(
  * Build both light and dark ramp sets. Dark-mode chromatic ramps are flipped
  * (darkest shade → step 50) so a single semantic mapping works in both modes;
  * the neutral ramp keeps its natural ordering. Per-step overrides are applied
- * *after* the flip, so an inspector-edited swatch stays at its displayed step.
+ * after the flip, so an inspector-edited swatch stays at its displayed step.
  */
 function allocateRamps(config: BrandConfig): RampAllocation {
   const light = buildModeRamps(config, "light");
@@ -769,86 +813,68 @@ function allocateRamps(config: BrandConfig): RampAllocation {
 // Main token generator
 // ---------------------------------------------------------------------------
 
-export function generateDesignTokens(
-  config: BrandConfig,
-  isDarkMode: boolean
-): TokenResult {
-  const tokens: Record<string, string> = {};
-  const semanticMap: Record<string, PrimitiveMapping> = {};
-  const isDark = isDarkMode;
+const SEMANTIC_ROLES = ["success", "warning", "critical", "info"] as const;
 
-  const allocation = allocateRamps(config);
-  const { byHueLight, byHueDark, roleHue, decorativeHues } = allocation;
-  // Active ramp set for primitive emission: chromatic ramps flipped when dark.
-  const byHue = isDark ? byHueDark : byHueLight;
+function capitalizeFirst(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
-  // =========================================================================
-  // Primitive color tokens — emit one ramp per hue
-  // =========================================================================
+/**
+ * Pick between `neutral-0` and `neutral-1050` based on which has higher WCAG
+ * contrast against `bg`. Used for foregrounds on solid, fully-saturated
+ * surfaces (e.g. `onAccent`, `onSuccess`, `onPrimary`).
+ */
+function pickNeutralExtreme(bg: string, neutral: NeutralColorRamp): 0 | 1000 {
+  return (wcagContrast(bg, neutral[0]) ?? 0) >=
+    (wcagContrast(bg, neutral[1050]) ?? 0)
+    ? 0
+    : 1000;
+}
 
-  /** Reverse lookup: hue name → override role (for inspector). */
-  const overrideRoleFor = (hue: string): string =>
-    overrideKeyForHue(hue, roleHue);
+/**
+ * Accumulates emitted tokens/semanticMap entries and centralizes the handful
+ * of assignment strategies (fixed step, lightness-picked step, contrast-aware
+ * step, literal value) shared across every semantic token section below.
+ */
+class TokenEmitter {
+  tokens: Record<string, string> = {};
+  semanticMap: Record<string, PrimitiveMapping> = {};
 
-  // The legacy neutral ramp uses `1050` as its near-black / near-white endpoint;
-  // tokens.css names that step `1000` instead. Keep the internal ramp identifier
-  // for compatibility with ColorRampView etc., but emit the canonical name.
-  const emittedStep = (step: string) => (step === "1050" ? "1000" : step);
+  private readonly byHueLight: Record<string, ColorRamp | NeutralColorRamp>;
+  private readonly byHueDark: Record<string, ColorRamp | NeutralColorRamp>;
+  private readonly roleHue: Record<RampRole, string>;
+  readonly isDark: boolean;
 
-  for (const [hue, ramp] of Object.entries(byHue)) {
-    const role = overrideRoleFor(hue);
-    for (const [step, hex] of Object.entries(ramp)) {
-      const out = emittedStep(step);
-      const tokenName = `color-${hue}-${out}`;
-      tokens[`--${tokenName}`] = hex as string;
-      semanticMap[tokenName] = {
-        darkStep: Number(step),
-        lightStep: Number(step),
-        ramp: hue,
-        role,
-      };
-    }
+  constructor(
+    byHueLight: Record<string, ColorRamp | NeutralColorRamp>,
+    byHueDark: Record<string, ColorRamp | NeutralColorRamp>,
+    roleHue: Record<RampRole, string>,
+    isDark: boolean
+  ) {
+    this.byHueLight = byHueLight;
+    this.byHueDark = byHueDark;
+    this.roleHue = roleHue;
+    this.isDark = isDark;
   }
 
-  // Exact-input primitive: bypasses ramp clamping so saturated primary surfaces
-  // (button background, border, hover) preserve the user's chosen hex verbatim.
-  // Same hex in both light and dark modes — branding wins over mode-specific tuning.
-  //
-  // Guardrail: if the input would be illegible against this mode's base
-  // background (e.g. a near-black primary in dark mode), nudge it toward the
-  // opposite of the bg until WCAG 3:1 is met. `config.primaryColor` itself is
-  // left untouched so the picker keeps showing the user's chosen hex.
-  const neutralRampOut = byHue.neutral as NeutralColorRamp;
-  const baseBgHex = (
-    isDark ? neutralRampOut[800] : neutralRampOut[0]
-  ) as string;
-  const primaryAdjustment = clampPrimaryForContrast(
-    config.primaryColor,
-    baseBgHex,
-    isDark ? "dark" : "light"
-  );
-  const primaryBaseHex = primaryAdjustment.applied;
-  tokens["--color-primary-base"] = primaryBaseHex;
-  semanticMap["color-primary-base"] = {
-    darkStep: null,
-    lightStep: null,
-    ramp: roleHue.primary,
-    role: "primary",
-    target: "primaryColor",
-  };
+  /** Active ramp set for primitive emission: chromatic ramps flipped when dark. */
+  get byHue(): Record<string, ColorRamp | NeutralColorRamp> {
+    return this.isDark ? this.byHueDark : this.byHueLight;
+  }
 
-  // =========================================================================
-  // Semantic color helpers — every write emits `var(--color-<hue>-<step>)`
-  // =========================================================================
+  /** Reverse lookup: hue name → override role (for inspector). */
+  overrideRoleFor(hue: string): string {
+    return overrideKeyForHue(hue, this.roleHue);
+  }
 
   /** Emit a token that references a primitive at a fixed step. */
-  function assignPrimitiveRef(tokenSuffix: string, hue: string, step: number) {
-    tokens[`--color-${tokenSuffix}`] = `var(--color-${hue}-${step})`;
-    semanticMap[`color-${tokenSuffix}`] = {
+  assignPrimitiveRef(tokenSuffix: string, hue: string, step: number): void {
+    this.tokens[`--color-${tokenSuffix}`] = `var(--color-${hue}-${step})`;
+    this.semanticMap[`color-${tokenSuffix}`] = {
       darkStep: step,
       lightStep: step,
       ramp: hue,
-      role: overrideRoleFor(hue),
+      role: this.overrideRoleFor(hue),
     };
   }
 
@@ -860,26 +886,27 @@ export function generateDesignTokens(
    * `{light,dark}` target picks per mode (light step on the light ramp, dark
    * step on the flipped dark ramp) for the rare token whose flip lands wrong.
    */
-  function assignPicked(
+  assignPicked(
     tokenSuffix: string,
     hue: string,
     target: number | { light: number; dark: number }
-  ) {
+  ): void {
     let lightStep: number;
     let darkStep: number;
     if (typeof target === "number") {
-      lightStep = darkStep = pickStep(byHueLight[hue] as ColorRamp, target);
+      lightStep = pickStep(this.byHueLight[hue] as ColorRamp, target);
+      darkStep = lightStep;
     } else {
-      lightStep = pickStep(byHueLight[hue] as ColorRamp, target.light);
-      darkStep = pickStep(byHueDark[hue] as ColorRamp, target.dark);
+      lightStep = pickStep(this.byHueLight[hue] as ColorRamp, target.light);
+      darkStep = pickStep(this.byHueDark[hue] as ColorRamp, target.dark);
     }
-    const step = isDark ? darkStep : lightStep;
-    tokens[`--color-${tokenSuffix}`] = `var(--color-${hue}-${step})`;
-    semanticMap[`color-${tokenSuffix}`] = {
+    const step = this.isDark ? darkStep : lightStep;
+    this.tokens[`--color-${tokenSuffix}`] = `var(--color-${hue}-${step})`;
+    this.semanticMap[`color-${tokenSuffix}`] = {
       darkStep,
       lightStep,
       ramp: hue,
-      role: overrideRoleFor(hue),
+      role: this.overrideRoleFor(hue),
     };
   }
 
@@ -889,19 +916,19 @@ export function generateDesignTokens(
    * background in *both* the light ramp and the flipped dark ramp; if none does,
    * falls back to the step with the best worst-case contrast.
    */
-  function assignContrastFg(
+  assignContrastFg(
     tokenSuffix: string,
     bgTokenSuffix: string,
     hue: string
-  ) {
-    const lightRamp = byHueLight[hue] as ColorRamp;
-    const darkRamp = byHueDark[hue] as ColorRamp;
-    const bgValue = tokens[`--color-${bgTokenSuffix}`];
-    const bgLight = resolveStepRef(bgValue, byHueLight);
-    const bgDark = resolveStepRef(bgValue, byHueDark);
+  ): void {
+    const lightRamp = this.byHueLight[hue] as ColorRamp;
+    const darkRamp = this.byHueDark[hue] as ColorRamp;
+    const bgValue = this.tokens[`--color-${bgTokenSuffix}`];
+    const bgLight = resolveStepRef(bgValue, this.byHueLight);
+    const bgDark = resolveStepRef(bgValue, this.byHueDark);
 
     let chosen: number | null = null;
-    let bestStep: number = STEPS[STEPS.length - 1];
+    let bestStep: number = STEPS.at(-1) as number;
     let bestMin = -1;
     for (const step of STEPS) {
       const cLight = wcagContrast(bgLight, lightRamp[step]) ?? 0;
@@ -917,12 +944,12 @@ export function generateDesignTokens(
       }
     }
     const step = chosen ?? bestStep;
-    tokens[`--color-${tokenSuffix}`] = `var(--color-${hue}-${step})`;
-    semanticMap[`color-${tokenSuffix}`] = {
+    this.tokens[`--color-${tokenSuffix}`] = `var(--color-${hue}-${step})`;
+    this.semanticMap[`color-${tokenSuffix}`] = {
       darkStep: step,
       lightStep: step,
       ramp: hue,
-      role: overrideRoleFor(hue),
+      role: this.overrideRoleFor(hue),
     };
   }
 
@@ -935,151 +962,234 @@ export function generateDesignTokens(
    * ramp does not, so the winning extreme is computed per mode — `lightStep`
    * and `darkStep` may differ.
    */
-  function assignNeutralContrastFg(tokenSuffix: string, bgTokenSuffix: string) {
-    const bgValue = tokens[`--color-${bgTokenSuffix}`];
-    const neutralLight = byHueLight.neutral as NeutralColorRamp;
-    const neutralDark = byHueDark.neutral as NeutralColorRamp;
+  assignNeutralContrastFg(tokenSuffix: string, bgTokenSuffix: string): void {
+    const bgValue = this.tokens[`--color-${bgTokenSuffix}`];
+    const neutralLight = this.byHueLight.neutral as NeutralColorRamp;
+    const neutralDark = this.byHueDark.neutral as NeutralColorRamp;
 
-    const pick = (bg: string, neutral: NeutralColorRamp): 0 | 1000 =>
-      (wcagContrast(bg, neutral[0]) ?? 0) >=
-      (wcagContrast(bg, neutral[1050]) ?? 0)
-        ? 0
-        : 1000;
+    const lightStep = pickNeutralExtreme(
+      resolveStepRef(bgValue, this.byHueLight),
+      neutralLight
+    );
+    const darkStep = pickNeutralExtreme(
+      resolveStepRef(bgValue, this.byHueDark),
+      neutralDark
+    );
+    const step = this.isDark ? darkStep : lightStep;
+    this.tokens[`--color-${tokenSuffix}`] = `var(--color-neutral-${step})`;
 
-    const lightStep = pick(resolveStepRef(bgValue, byHueLight), neutralLight);
-    const darkStep = pick(resolveStepRef(bgValue, byHueDark), neutralDark);
-    const step = isDark ? darkStep : lightStep;
-    tokens[`--color-${tokenSuffix}`] = `var(--color-neutral-${step})`;
-
-    semanticMap[`color-${tokenSuffix}`] = {
+    this.semanticMap[`color-${tokenSuffix}`] = {
       darkStep,
       lightStep,
       ramp: "neutral",
-      role: overrideRoleFor("neutral"),
+      role: this.overrideRoleFor("neutral"),
     };
   }
 
   /** Emit a literal (non-primitive) value; records null mapping for the inspector. */
-  function assignLiteral(tokenSuffix: string, value: string) {
-    tokens[`--color-${tokenSuffix}`] = value;
-    semanticMap[`color-${tokenSuffix}`] = {
+  assignLiteral(tokenSuffix: string, value: string): void {
+    this.tokens[`--color-${tokenSuffix}`] = value;
+    this.semanticMap[`color-${tokenSuffix}`] = {
       darkStep: null,
       lightStep: null,
       ramp: null,
       role: null,
     };
   }
+}
 
-  // =========================================================================
-  // Semantic background tokens
-  // =========================================================================
+/** Primitive color tokens — emit one ramp per hue. */
+function emitPrimitiveRampTokens(emitter: TokenEmitter): void {
+  // The legacy neutral ramp uses `1050` as its near-black / near-white endpoint;
+  // tokens.css names that step `1000` instead. Keep the internal ramp identifier
+  // for compatibility with ColorRampView etc., but emit the canonical name.
+  const emittedStep = (step: string) => (step === "1050" ? "1000" : step);
 
-  // Neutral surfaces — step-based references for both modes.
-  if (isDark) {
-    assignPrimitiveRef("background-base", "neutral", 800);
-    assignPrimitiveRef("background-sunken", "neutral", 900);
-    assignPrimitiveRef("background-sunkenStrong", "neutral", 1000);
-    assignPrimitiveRef("background-raised", "neutral", 700);
-    assignPrimitiveRef("background-raisedHover", "neutral", 600);
-    assignPrimitiveRef("background-overlay", "neutral", 700);
-  } else {
-    assignPrimitiveRef("background-base", "neutral", 0);
-    assignPrimitiveRef("background-sunken", "neutral", 50);
-    assignPrimitiveRef("background-sunkenStrong", "neutral", 100);
-    assignPrimitiveRef("background-raised", "neutral", 0);
-    assignPrimitiveRef("background-raisedHover", "neutral", 50);
-    assignPrimitiveRef("background-overlay", "neutral", 0);
+  for (const [hue, ramp] of Object.entries(emitter.byHue)) {
+    const role = emitter.overrideRoleFor(hue);
+    for (const [step, hex] of Object.entries(ramp)) {
+      const out = emittedStep(step);
+      const tokenName = `color-${hue}-${out}`;
+      emitter.tokens[`--${tokenName}`] = hex as string;
+      emitter.semanticMap[tokenName] = {
+        darkStep: Number(step),
+        lightStep: Number(step),
+        ramp: hue,
+        role,
+      };
+    }
   }
+}
 
-  // Brand / accent backgrounds
-  // background-primary routes through the exact-input primitive — see the
-  // `--color-primary-base` block above. primaryHover is a normal semantic step
-  // on the primary ramp, so it flips with the ramp in dark mode.
-  tokens["--color-background-primary"] = "var(--color-primary-base)";
-  semanticMap["color-background-primary"] = {
+interface PrimaryBaseResult {
+  primaryAdjustment: PrimaryContrastClampResult;
+  primaryBaseHex: string;
+}
+
+/**
+ * Exact-input primitive: bypasses ramp clamping so saturated primary surfaces
+ * (button background, border, hover) preserve the user's chosen hex verbatim.
+ * Same hex in both light and dark modes — branding wins over mode-specific tuning.
+ *
+ * Guardrail: if the input would be illegible against this mode's base
+ * background (e.g. a near-black primary in dark mode), nudge it toward the
+ * opposite of the bg until WCAG 3:1 is met. `config.primaryColor` itself is
+ * left untouched so the picker keeps showing the user's chosen hex.
+ */
+function emitExactPrimaryToken(
+  emitter: TokenEmitter,
+  config: BrandConfig,
+  roleHue: Record<RampRole, string>
+): PrimaryBaseResult {
+  const neutralRampOut = emitter.byHue.neutral as NeutralColorRamp;
+  const baseBgHex = (
+    emitter.isDark ? neutralRampOut[800] : neutralRampOut[0]
+  ) as string;
+  const primaryAdjustment = clampPrimaryForContrast(
+    config.primaryColor,
+    baseBgHex,
+    emitter.isDark ? "dark" : "light"
+  );
+  const primaryBaseHex = primaryAdjustment.applied;
+  emitter.tokens["--color-primary-base"] = primaryBaseHex;
+  emitter.semanticMap["color-primary-base"] = {
     darkStep: null,
     lightStep: null,
     ramp: roleHue.primary,
     role: "primary",
     target: "primaryColor",
   };
-  assignPicked(
+  return { primaryAdjustment, primaryBaseHex };
+}
+
+/** Semantic background tokens. */
+function emitBackgroundTokens(
+  emitter: TokenEmitter,
+  roleHue: Record<RampRole, string>,
+  decorativeHues: string[]
+): void {
+  // Neutral surfaces — step-based references for both modes.
+  if (emitter.isDark) {
+    emitter.assignPrimitiveRef("background-base", "neutral", 800);
+    emitter.assignPrimitiveRef("background-sunken", "neutral", 900);
+    emitter.assignPrimitiveRef("background-sunkenStrong", "neutral", 1000);
+    emitter.assignPrimitiveRef("background-raised", "neutral", 700);
+    emitter.assignPrimitiveRef("background-raisedHover", "neutral", 600);
+    emitter.assignPrimitiveRef("background-overlay", "neutral", 700);
+  } else {
+    emitter.assignPrimitiveRef("background-base", "neutral", 0);
+    emitter.assignPrimitiveRef("background-sunken", "neutral", 50);
+    emitter.assignPrimitiveRef("background-sunkenStrong", "neutral", 100);
+    emitter.assignPrimitiveRef("background-raised", "neutral", 0);
+    emitter.assignPrimitiveRef("background-raisedHover", "neutral", 50);
+    emitter.assignPrimitiveRef("background-overlay", "neutral", 0);
+  }
+
+  // Brand / accent backgrounds
+  // background-primary routes through the exact-input primitive — see the
+  // `--color-primary-base` block above. primaryHover is a normal semantic step
+  // on the primary ramp, so it flips with the ramp in dark mode.
+  emitter.tokens["--color-background-primary"] = "var(--color-primary-base)";
+  emitter.semanticMap["color-background-primary"] = {
+    darkStep: null,
+    lightStep: null,
+    ramp: roleHue.primary,
+    role: "primary",
+    target: "primaryColor",
+  };
+  emitter.assignPicked(
     "background-primaryHover",
     roleHue.primary,
     LIGHTNESS_TARGETS.strongHover
   );
-  assignPicked(
+  emitter.assignPicked(
     "background-primarySubtle",
     roleHue.primary,
     LIGHTNESS_TARGETS.subtle
   );
-  assignPicked(
+  emitter.assignPicked(
     "background-accent",
     roleHue.secondary,
     LIGHTNESS_TARGETS.strong
   );
-  assignPicked(
+  emitter.assignPicked(
     "background-accentSubtle",
     roleHue.secondary,
     LIGHTNESS_TARGETS.subtle
   );
 
   // Status backgrounds
-  for (const role of ["success", "warning", "critical", "info"] as const) {
+  for (const role of SEMANTIC_ROLES) {
     const hue = roleHue[role];
-    assignPicked(`background-${role}`, hue, LIGHTNESS_TARGETS.strong);
-    assignPicked(`background-${role}Subtle`, hue, LIGHTNESS_TARGETS.subtle);
+    emitter.assignPicked(`background-${role}`, hue, LIGHTNESS_TARGETS.strong);
+    emitter.assignPicked(
+      `background-${role}Subtle`,
+      hue,
+      LIGHTNESS_TARGETS.subtle
+    );
   }
 
   // Decorative backgrounds + borders
   for (const hue of decorativeHues) {
-    assignPicked(`background-decorative-${hue}`, hue, LIGHTNESS_TARGETS.strong);
-    assignPicked(
+    emitter.assignPicked(
+      `background-decorative-${hue}`,
+      hue,
+      LIGHTNESS_TARGETS.strong
+    );
+    emitter.assignPicked(
       `background-decorative-${hue}Subtle`,
       hue,
       LIGHTNESS_TARGETS.subtle
     );
-    assignPicked(`border-decorative-${hue}`, hue, LIGHTNESS_TARGETS.strong);
+    emitter.assignPicked(
+      `border-decorative-${hue}`,
+      hue,
+      LIGHTNESS_TARGETS.strong
+    );
   }
+}
 
-  // =========================================================================
-  // Foreground tokens (neutral hierarchy + colored + contrast-dependent)
-  // =========================================================================
-
-  if (isDark) {
-    assignPrimitiveRef("foreground-onBase", "neutral", 50);
-    assignPrimitiveRef("foreground-onBaseMuted", "neutral", 200);
-    assignPrimitiveRef("foreground-onBaseFaint", "neutral", 300);
-    assignPrimitiveRef("foreground-onRaised", "neutral", 50);
-    assignPrimitiveRef("foreground-onSunken", "neutral", 100);
+/** Foreground tokens (neutral hierarchy + colored + contrast-dependent). */
+function emitForegroundTokens(
+  emitter: TokenEmitter,
+  roleHue: Record<RampRole, string>,
+  decorativeHues: string[],
+  primaryBaseHex: string
+): void {
+  if (emitter.isDark) {
+    emitter.assignPrimitiveRef("foreground-onBase", "neutral", 50);
+    emitter.assignPrimitiveRef("foreground-onBaseMuted", "neutral", 200);
+    emitter.assignPrimitiveRef("foreground-onBaseFaint", "neutral", 300);
+    emitter.assignPrimitiveRef("foreground-onRaised", "neutral", 50);
+    emitter.assignPrimitiveRef("foreground-onSunken", "neutral", 100);
   } else {
-    assignPrimitiveRef("foreground-onBase", "neutral", 900);
-    assignPrimitiveRef("foreground-onBaseMuted", "neutral", 600);
-    assignPrimitiveRef("foreground-onBaseFaint", "neutral", 500);
-    assignPrimitiveRef("foreground-onRaised", "neutral", 900);
-    assignPrimitiveRef("foreground-onSunken", "neutral", 900);
+    emitter.assignPrimitiveRef("foreground-onBase", "neutral", 900);
+    emitter.assignPrimitiveRef("foreground-onBaseMuted", "neutral", 600);
+    emitter.assignPrimitiveRef("foreground-onBaseFaint", "neutral", 500);
+    emitter.assignPrimitiveRef("foreground-onRaised", "neutral", 900);
+    emitter.assignPrimitiveRef("foreground-onSunken", "neutral", 900);
   }
 
   // Colored foregrounds on base surfaces
-  assignPicked(
+  emitter.assignPicked(
     "foreground-primary",
     roleHue.primary,
     LIGHTNESS_TARGETS.fgColored
   );
-  assignPicked(
+  emitter.assignPicked(
     "foreground-accent",
     roleHue.secondary,
     LIGHTNESS_TARGETS.fgColored
   );
-  for (const role of ["success", "warning", "critical", "info"] as const) {
-    assignPicked(
+  for (const role of SEMANTIC_ROLES) {
+    emitter.assignPicked(
       `foreground-${role}`,
       roleHue[role],
       LIGHTNESS_TARGETS.fgColored
     );
   }
   for (const hue of decorativeHues) {
-    assignPicked(
+    emitter.assignPicked(
       `foreground-decorative-${hue}`,
       hue,
       LIGHTNESS_TARGETS.fgColored
@@ -1094,30 +1204,28 @@ export function generateDesignTokens(
   // rather than via `assignNeutralContrastFg`. Still emits a neutral primitive
   // (the neutral ramp doesn't flip, so one step works in both modes), matching
   // the sample tokens.css.
-  {
-    const neutral = byHue.neutral as NeutralColorRamp;
-    const onPrimaryStep =
-      (wcagContrast(primaryBaseHex, neutral[0]) ?? 0) >=
-      (wcagContrast(primaryBaseHex, neutral[1050]) ?? 0)
-        ? 0
-        : 1000;
-    tokens["--color-foreground-onPrimary"] =
-      `var(--color-neutral-${onPrimaryStep})`;
-    semanticMap["color-foreground-onPrimary"] = {
-      darkStep: onPrimaryStep,
-      lightStep: onPrimaryStep,
-      ramp: "neutral",
-      role: "neutral",
-    };
-  }
-  assignNeutralContrastFg("foreground-onAccent", "background-accent");
-  for (const role of ["success", "warning", "critical", "info"] as const) {
-    const cap = role.charAt(0).toUpperCase() + role.slice(1);
-    assignNeutralContrastFg(`foreground-on${cap}`, `background-${role}`);
+  const neutral = emitter.byHue.neutral as NeutralColorRamp;
+  const onPrimaryStep = pickNeutralExtreme(primaryBaseHex, neutral);
+  emitter.tokens["--color-foreground-onPrimary"] =
+    `var(--color-neutral-${onPrimaryStep})`;
+  emitter.semanticMap["color-foreground-onPrimary"] = {
+    darkStep: onPrimaryStep,
+    lightStep: onPrimaryStep,
+    ramp: "neutral",
+    role: "neutral",
+  };
+
+  emitter.assignNeutralContrastFg("foreground-onAccent", "background-accent");
+  for (const role of SEMANTIC_ROLES) {
+    const cap = capitalizeFirst(role);
+    emitter.assignNeutralContrastFg(
+      `foreground-on${cap}`,
+      `background-${role}`
+    );
   }
   for (const hue of decorativeHues) {
-    const cap = hue.charAt(0).toUpperCase() + hue.slice(1);
-    assignNeutralContrastFg(
+    const cap = capitalizeFirst(hue);
+    emitter.assignNeutralContrastFg(
       `foreground-decorative-on${cap}`,
       `background-decorative-${hue}`
     );
@@ -1125,27 +1233,27 @@ export function generateDesignTokens(
 
   // Subtle tinted backgrounds read best with a dark step of the same hue —
   // matches the sample tokens.css pattern (e.g. `onPrimarySubtle` → blue-700).
-  assignContrastFg(
+  emitter.assignContrastFg(
     "foreground-onPrimarySubtle",
     "background-primarySubtle",
     roleHue.primary
   );
-  assignContrastFg(
+  emitter.assignContrastFg(
     "foreground-onAccentSubtle",
     "background-accentSubtle",
     roleHue.secondary
   );
-  for (const role of ["success", "warning", "critical", "info"] as const) {
-    const cap = role.charAt(0).toUpperCase() + role.slice(1);
-    assignContrastFg(
+  for (const role of SEMANTIC_ROLES) {
+    const cap = capitalizeFirst(role);
+    emitter.assignContrastFg(
       `foreground-on${cap}Subtle`,
       `background-${role}Subtle`,
       roleHue[role]
     );
   }
   for (const hue of decorativeHues) {
-    const cap = hue.charAt(0).toUpperCase() + hue.slice(1);
-    assignContrastFg(
+    const cap = capitalizeFirst(hue);
+    emitter.assignContrastFg(
       `foreground-decorative-on${cap}Subtle`,
       `background-decorative-${hue}Subtle`,
       hue
@@ -1158,88 +1266,106 @@ export function generateDesignTokens(
   // text that lets the gradient bleed through, and a 15%-white ghost-button
   // fill — so they can't map to an opaque primitive and stay literal as the
   // documented gradient exception.
-  assignPrimitiveRef("foreground-onGradient", "neutral", 0);
-  assignPrimitiveRef("foreground-onGradientMuted", "neutral", 100);
-  assignPrimitiveRef("background-gradientSoft", "neutral", 0);
+  emitter.assignPrimitiveRef("foreground-onGradient", "neutral", 0);
+  emitter.assignPrimitiveRef("foreground-onGradientMuted", "neutral", 100);
+  emitter.assignPrimitiveRef("background-gradientSoft", "neutral", 0);
+}
 
-  // =========================================================================
-  // Semantic border tokens
-  // =========================================================================
-
+/** Semantic border tokens. */
+function emitBorderTokens(
+  emitter: TokenEmitter,
+  roleHue: Record<RampRole, string>
+): void {
   // Hairline borders reference the neutral ramp (matches the sample tokens.css:
   // border-neutral → neutral-100, border-strong → neutral-200). Dark mode uses
   // mid steps, not deep ones, so borders stay visible on raised surfaces
   // (which themselves sit at neutral-700).
-  assignPrimitiveRef("border-neutral", "neutral", isDark ? 600 : 100);
-  assignPrimitiveRef("border-strong", "neutral", isDark ? 500 : 200);
+  emitter.assignPrimitiveRef(
+    "border-neutral",
+    "neutral",
+    emitter.isDark ? 600 : 100
+  );
+  emitter.assignPrimitiveRef(
+    "border-strong",
+    "neutral",
+    emitter.isDark ? 500 : 200
+  );
   // border-primary mirrors the exact-input primary fill so a primary button
   // doesn't get a hue mismatch between fill and outline.
-  tokens["--color-border-primary"] = "var(--color-primary-base)";
-  semanticMap["color-border-primary"] = {
+  emitter.tokens["--color-border-primary"] = "var(--color-primary-base)";
+  emitter.semanticMap["color-border-primary"] = {
     darkStep: null,
     lightStep: null,
     ramp: roleHue.primary,
     role: "primary",
     target: "primaryColor",
   };
-  assignPicked("border-accent", roleHue.secondary, LIGHTNESS_TARGETS.strong);
-  for (const role of ["success", "warning", "critical", "info"] as const) {
-    assignPicked(`border-${role}`, roleHue[role], LIGHTNESS_TARGETS.strong);
+  emitter.assignPicked(
+    "border-accent",
+    roleHue.secondary,
+    LIGHTNESS_TARGETS.strong
+  );
+  for (const role of SEMANTIC_ROLES) {
+    emitter.assignPicked(
+      `border-${role}`,
+      roleHue[role],
+      LIGHTNESS_TARGETS.strong
+    );
   }
+}
 
-  // =========================================================================
-  // Chart tokens
-  // =========================================================================
-
+/** Chart tokens. */
+function emitChartTokens(emitter: TokenEmitter): void {
   // Chart gridlines — a faint neutral primitive (no hardcoded literal). Dark
   // mode uses a mid step so gridlines read against the chart surface.
-  assignPrimitiveRef("chart-grid", "neutral", isDark ? 600 : 100);
-  const bgPrimaryMapping = semanticMap["color-background-primary"];
-  tokens["--color-chart-primary"] = tokens["--color-background-primary"];
-  tokens["--color-chart-primaryGradientStart"] =
-    tokens["--color-background-primary"];
-  tokens["--color-chart-primaryGradientEnd"] =
-    tokens["--color-background-primary"];
-  semanticMap["color-chart-primary"] = { ...bgPrimaryMapping };
-  semanticMap["color-chart-primaryGradientStart"] = { ...bgPrimaryMapping };
-  semanticMap["color-chart-primaryGradientEnd"] = { ...bgPrimaryMapping };
+  emitter.assignPrimitiveRef(
+    "chart-grid",
+    "neutral",
+    emitter.isDark ? 600 : 100
+  );
+  const bgPrimaryMapping = emitter.semanticMap["color-background-primary"];
+  const bgPrimary = emitter.tokens["--color-background-primary"];
+  emitter.tokens["--color-chart-primary"] = bgPrimary;
+  emitter.tokens["--color-chart-primaryGradientStart"] = bgPrimary;
+  emitter.tokens["--color-chart-primaryGradientEnd"] = bgPrimary;
+  emitter.semanticMap["color-chart-primary"] = { ...bgPrimaryMapping };
+  emitter.semanticMap["color-chart-primaryGradientStart"] = {
+    ...bgPrimaryMapping,
+  };
+  emitter.semanticMap["color-chart-primaryGradientEnd"] = {
+    ...bgPrimaryMapping,
+  };
+}
 
-  // =========================================================================
-  // Gradient
-  // =========================================================================
+/**
+ * Semantic interactive tokens: a translucent scrim laid over an interactive
+ * element on hover/active. Light mode darkens the underlying surface with a
+ * deep neutral; dark mode lightens it with a pale neutral. Because the
+ * overlay only shifts whatever color sits beneath it, a single pair of
+ * tokens drives the hover affordance for every interactive element
+ * regardless of its own background. Alpha tracks the shared `STATE_OPACITY`
+ * scale.
+ */
+function emitInteractiveTokens(emitter: TokenEmitter): void {
+  const neutral = emitter.byHue.neutral as NeutralColorRamp;
+  const scrim = hexToRgbTriple(
+    (emitter.isDark ? neutral[50] : neutral[700]) as string
+  );
+  emitter.assignLiteral(
+    "interactive-background-hover",
+    `rgba(${scrim}, ${STATE_OPACITY.hover})`
+  );
+  emitter.assignLiteral(
+    "interactive-background-active",
+    `rgba(${scrim}, ${STATE_OPACITY.active})`
+  );
+}
 
-  tokens["--gradient-primary"] =
-    "linear-gradient(135deg, var(--color-background-primary), var(--color-background-accent))";
-
-  // =========================================================================
-  // Semantic interactive tokens
-  // =========================================================================
-
-  // A translucent scrim laid over an interactive element on hover/active.
-  // Light mode darkens the underlying surface with a deep neutral; dark mode
-  // lightens it with a pale neutral. Because the overlay only shifts whatever
-  // color sits beneath it, a single pair of tokens drives the hover affordance
-  // for every interactive element regardless of its own background. Alpha
-  // tracks the shared `STATE_OPACITY` scale.
-  {
-    const neutral = byHue.neutral as NeutralColorRamp;
-    const scrim = hexToRgbTriple(
-      (isDark ? neutral[50] : neutral[700]) as string
-    );
-    assignLiteral(
-      "interactive-background-hover",
-      `rgba(${scrim}, ${STATE_OPACITY.hover})`
-    );
-    assignLiteral(
-      "interactive-background-active",
-      `rgba(${scrim}, ${STATE_OPACITY.active})`
-    );
-  }
-
-  // =========================================================================
-  // Non-color tokens
-  // =========================================================================
-
+function emitNonColorTokens(
+  tokens: Record<string, string>,
+  config: BrandConfig,
+  isDark: boolean
+): void {
   Object.assign(tokens, dimensionPrimitives(config.density));
   Object.assign(tokens, typographyPrimitives(config));
   Object.assign(tokens, spaceSemantics());
@@ -1248,7 +1374,38 @@ export function generateDesignTokens(
   Object.assign(tokens, shadowTokens(config.shadows, isDark));
   Object.assign(tokens, stateTokens());
   Object.assign(tokens, transitionTokens(config.expressiveness));
+}
 
+export function generateDesignTokens(
+  config: BrandConfig,
+  isDarkMode: boolean
+): TokenResult {
+  const isDark = isDarkMode;
+
+  const allocation = allocateRamps(config);
+  const { byHueLight, byHueDark, roleHue, decorativeHues } = allocation;
+
+  const emitter = new TokenEmitter(byHueLight, byHueDark, roleHue, isDark);
+
+  emitPrimitiveRampTokens(emitter);
+  const { primaryBaseHex, primaryAdjustment } = emitExactPrimaryToken(
+    emitter,
+    config,
+    roleHue
+  );
+
+  emitBackgroundTokens(emitter, roleHue, decorativeHues);
+  emitForegroundTokens(emitter, roleHue, decorativeHues, primaryBaseHex);
+  emitBorderTokens(emitter, roleHue);
+  emitChartTokens(emitter);
+
+  emitter.tokens["--gradient-primary"] =
+    "linear-gradient(135deg, var(--color-background-primary), var(--color-background-accent))";
+
+  emitInteractiveTokens(emitter);
+  emitNonColorTokens(emitter.tokens, config, isDark);
+
+  const { byHue } = emitter;
   const swatches = {
     neutral: (byHue.neutral as ColorRamp)[500],
     primary: (byHue[roleHue.primary] as ColorRamp)[500],
@@ -1256,9 +1413,9 @@ export function generateDesignTokens(
   };
 
   return {
-    semanticMap,
+    semanticMap: emitter.semanticMap,
     swatches,
-    tokens,
+    tokens: emitter.tokens,
     ...(primaryAdjustment.adjusted ? { primaryAdjustment } : {}),
   };
 }
@@ -1266,6 +1423,8 @@ export function generateDesignTokens(
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+const STEP_REF_PATTERN = /^var\(--color-([a-z]+)-(\d+)\)$/;
 
 /**
  * Resolve a `var(--color-<hue>-<step>)` reference to a concrete hex via the
@@ -1279,7 +1438,7 @@ function resolveStepRef(
   if (!value) {
     return "#808080";
   }
-  const m = value.trim().match(/^var\(--color-([a-z]+)-(\d+)\)$/);
+  const m = value.trim().match(STEP_REF_PATTERN);
   if (!m) {
     return value;
   }

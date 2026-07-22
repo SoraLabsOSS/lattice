@@ -14,6 +14,7 @@ export interface ContrastValidationFailure extends ContrastPair {
 }
 
 const WCAG_AA_TEXT_RATIO = 4.5;
+const VAR_REFERENCE_PATTERN = /^var\(\s*(--[A-Za-z0-9-]+)\s*\)$/;
 // `background-primary` resolves to the user's exact input color (preserving
 // brand fidelity), so it isn't guaranteed body-text AA the way ramp-derived
 // surfaces are. We still enforce large-text AA — adequate for primary
@@ -127,7 +128,7 @@ function resolveTokenValue(
   if (depth > 8) {
     return value;
   }
-  const match = value.match(/^var\(\s*(--[A-Za-z0-9-]+)\s*\)$/);
+  const match = value.match(VAR_REFERENCE_PATTERN);
   if (!match) {
     return value;
   }

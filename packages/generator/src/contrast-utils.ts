@@ -1,5 +1,5 @@
 import { converter, wcagContrast } from "culori";
-import { type ColorRamp, STEPS } from "./colorUtils.js";
+import { type ColorRamp, STEPS } from "./color-utils.js";
 
 const toOklch = converter("oklch");
 

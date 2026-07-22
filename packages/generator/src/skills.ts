@@ -1,6 +1,6 @@
 import { converter, parse } from "culori";
-import { NAMED_HUES } from "./colorGeneration.js";
-import type { TokenSet } from "./exportTokens.js";
+import { NAMED_HUES } from "./color-generation.js";
+import type { TokenSet } from "./export-tokens.js";
 import type { BrandConfig, HeadlessLib } from "./types.js";
 
 // ---------------------------------------------------------------------------
@@ -25,10 +25,12 @@ export interface SkillArtifact {
 
 const toOklch = converter("oklch");
 const VAR_REF_RE = /^var\(\s*(--[A-Za-z0-9-]+)\s*\)$/;
+const EMITTED_HUE_PATTERN = /^--color-([a-z]+)-\d+$/;
 
 function findNearestNamedHue(hue: number): { name: string; hue: number } {
   const normalized = ((hue % 360) + 360) % 360;
-  let best = NAMED_HUES[0];
+  const [firstHue] = NAMED_HUES;
+  let best = firstHue;
   let bestDist = 360;
   for (const nh of NAMED_HUES) {
     const diff = Math.abs(normalized - nh.hue);
@@ -44,7 +46,7 @@ function findNearestNamedHue(hue: number): { name: string; hue: number } {
 function extractEmittedHues(tokens: Record<string, string>): string[] {
   const hues = new Set<string>();
   for (const prop of Object.keys(tokens)) {
-    const m = prop.match(/^--color-([a-z]+)-\d+$/);
+    const m = prop.match(EMITTED_HUE_PATTERN);
     if (m) {
       hues.add(m[1]);
     }
@@ -665,7 +667,6 @@ export const ConfirmDialog: React.FC<{ open: boolean; onClose: () => void }> = (
   padding:       var(--space-lg);
   box-shadow:    var(--shadow-lg);
 }`;
-    case "base-ui":
     default:
       return `import { Dialog } from '@base-ui/react/dialog';
 

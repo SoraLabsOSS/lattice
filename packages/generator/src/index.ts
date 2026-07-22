@@ -1,18 +1,20 @@
+// biome-ignore-all lint/performance/noBarrelFile: this is the package's public entry point (see package.json "exports")
+
 import {
   type ColorSpace,
   type ExportFormat,
   exportTokens,
   type TokenSet,
-} from "./exportTokens.js";
-import { generateDesignTokens } from "./generateTokens.js";
+} from "./export-tokens.js";
+import { generateDesignTokens } from "./generate-tokens.js";
 import { type BrandConfigInput, createBrandConfig } from "./types.js";
 
 export * from "./accessibility.js";
-export * from "./colorGeneration.js";
-export * from "./colorUtils.js";
-export * from "./contrastUtils.js";
-export * from "./exportTokens.js";
-export * from "./generateTokens.js";
+export * from "./color-generation.js";
+export * from "./color-utils.js";
+export * from "./contrast-utils.js";
+export * from "./export-tokens.js";
+export * from "./generate-tokens.js";
 export * from "./skills.js";
 export * from "./types.js";
 

@@ -1,7 +1,7 @@
-import type { GenerationMode } from "./colorGeneration.js";
-import type { ColorRamp, NeutralColorRamp } from "./colorUtils.js";
+import type { GenerationMode } from "./color-generation.js";
+import type { ColorRamp, NeutralColorRamp } from "./color-utils.js";
 
-export type { ColorRamp, NeutralColorRamp };
+export type { ColorRamp, NeutralColorRamp } from "./color-utils.js";
 
 export const FONT_WEIGHT_OPTIONS = [300, 400, 500, 600, 700, 800, 900] as const;
 export type FontWeight = (typeof FONT_WEIGHT_OPTIONS)[number];
