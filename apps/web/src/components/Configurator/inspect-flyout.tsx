@@ -4,14 +4,14 @@ import { Palette, Pencil, Sparkles } from "lucide-react";
 import type React from "react";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { InspectTokenEditor } from "./InspectTokenEditor";
+import { InspectTokenEditor } from "./inspect-token-editor";
 import {
   CATEGORY_LABELS,
   getEditLabel,
   isEditableToken,
   type TokenCategory,
   type TokenInfo,
-} from "./inspectUtils";
+} from "./inspect-utils";
 
 // ---------------------------------------------------------------------------
 // Constants

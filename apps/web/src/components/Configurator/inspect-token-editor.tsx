@@ -4,7 +4,7 @@ import type React from "react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { HexColorPicker } from "react-colorful";
 import { updateConfig, updateRampStep } from "../BrandIntake/store";
-import { getTokenEditInfo } from "./inspectUtils";
+import { getTokenEditInfo } from "./inspect-utils";
 
 // ---------------------------------------------------------------------------
 // Constants

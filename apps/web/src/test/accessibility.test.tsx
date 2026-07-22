@@ -2,8 +2,8 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { describe, expect, it, vi } from "vitest";
-import TabBar from "../components/BrandIntake/TabBar";
-import { ColorPickerPopover } from "../components/ui/ColorPickerPopover";
+import TabBar from "../components/BrandIntake/tab-bar";
+import { ColorPickerPopover } from "../components/ui/color-picker-popover";
 
 expect.extend({
   toHaveNoViolations(received) {

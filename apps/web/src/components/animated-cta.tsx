@@ -1,7 +1,7 @@
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
-import { siteImages } from "../lib/siteImages";
+import { siteImages } from "../lib/site-images";
 
 interface AnimatedCTAProps {
   ariaLabel?: string;

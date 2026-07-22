@@ -4,8 +4,8 @@ import { useCallback, useEffect } from "react";
 import {
   appendGoogleFontStylesheet,
   GOOGLE_FONTS,
-} from "../../data/googleFonts";
-import { Combobox } from "../ui/Combobox";
+} from "../../data/google-fonts";
+import { Combobox } from "../ui/combobox";
 import {
   $brandConfig,
   type BodyFontWeights,

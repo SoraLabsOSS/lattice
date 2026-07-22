@@ -15,24 +15,24 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { decodeBrandConfig, encodeBrandConfig } from "../../lib/configUrl";
-import { siteImages } from "../../lib/siteImages";
+import { decodeBrandConfig, encodeBrandConfig } from "../../lib/config-url";
+import { siteImages } from "../../lib/site-images";
 import {
   $brandConfig,
   FONT_WEIGHT_OPTIONS,
   type TabId,
   updateConfig,
 } from "../BrandIntake/store";
-import TabBar from "../BrandIntake/TabBar";
-import TabColor from "../BrandIntake/TabColor";
-import TabStyle from "../BrandIntake/TabStyle";
-import TabTypography from "../BrandIntake/TabTypography";
+import TabBar from "../BrandIntake/tab-bar";
+import TabColor from "../BrandIntake/tab-color";
+import TabStyle from "../BrandIntake/tab-style";
+import TabTypography from "../BrandIntake/tab-typography";
 import PreviewComponents from "../ComponentSampler";
-import PlaygroundDashboard from "../LivePlayground/PlaygroundDashboard";
-import PreviewTypography from "../LivePlayground/PreviewTypography";
+import PlaygroundDashboard from "../LivePlayground/playground-dashboard";
+import PreviewTypography from "../LivePlayground/preview-typography";
 import type { PlaygroundConfig } from "../LivePlayground/types";
-import { Tooltip } from "../ui/Tooltip";
-import InspectOverlay from "./InspectOverlay";
+import { Tooltip } from "../ui/tooltip";
+import InspectOverlay from "./inspect-overlay";
 
 // ---------------------------------------------------------------------------
 // Preview tab bar (Dashboard / Components)

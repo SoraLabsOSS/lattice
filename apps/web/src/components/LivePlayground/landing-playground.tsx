@@ -3,14 +3,14 @@ import { generateDesignTokens } from "@sora-lattice/generator";
 import { Moon, Sun } from "lucide-react";
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
-import { appendGoogleFontStylesheet } from "../../data/googleFonts";
+import { appendGoogleFontStylesheet } from "../../data/google-fonts";
 import { $brandConfig, updateConfig } from "../BrandIntake/store";
-import { GOOGLE_FONTS } from "../BrandIntake/TabTypography";
-import { useColorRamps } from "../BrandIntake/useColorRamps";
+import { GOOGLE_FONTS } from "../BrandIntake/tab-typography";
+import { useColorRamps } from "../BrandIntake/use-color-ramps";
 import PreviewComponents from "../ComponentSampler";
-import { ColorRampView } from "../Showcase/ColorRampView";
-import { ColorPickerPopover } from "../ui/ColorPickerPopover";
-import { Combobox } from "../ui/Combobox";
+import { ColorRampView } from "../Showcase/color-ramp-view";
+import { ColorPickerPopover } from "../ui/color-picker-popover";
+import { Combobox } from "../ui/combobox";
 
 const DarkModeToggle: React.FC<{ isDark: boolean; onToggle: () => void }> = ({
   isDark,

@@ -8,7 +8,7 @@ import type React from "react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { HexColorPicker } from "react-colorful";
 import { createPortal } from "react-dom";
-import { Tooltip } from "../ui/Tooltip";
+import { Tooltip } from "../ui/tooltip";
 
 interface ColorRampViewProps {
   className?: string;

@@ -1,5 +1,5 @@
 import { motion, useReducedMotion } from "framer-motion";
-import { siteImages } from "../lib/siteImages";
+import { siteImages } from "../lib/site-images";
 
 interface FlowerProps {
   index: number;

@@ -1,6 +1,6 @@
 ---
-import { AnimatedCTA } from "./AnimatedCTA";
-import { FloralDecoration } from "./FloralDecoration";
+import { AnimatedCTA } from "./animated-cta";
+import { FloralDecoration } from "./floral-decoration";
 
 // Master delay (seconds) — shifts all hero animations (text + florals) by this amount.
 // Loader takes 2.1s, header starts at 2.1s. Hero starts 0.15s after header begins.
@@ -69,7 +69,7 @@ const MASTER_DELAY = 1.5;
 </style>
 
 <script>
-  import { applyLineSplitAnimation } from "../utils/lineSplit";
+  import { applyLineSplitAnimation } from "../utils/line-split";
 
   const LINE_STAGGER_DELAY = 0.1;
   const SECTION_GAP_DELAY = 0;

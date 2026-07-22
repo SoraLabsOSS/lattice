@@ -2,9 +2,9 @@ import { generateRamp } from "@sora-lattice/generator";
 import { Moon, Settings2, Sun, X } from "lucide-react";
 import type React from "react";
 import { useMemo } from "react";
-import { ColorRampView } from "../Showcase/ColorRampView";
-import { ColorPickerPopover } from "../ui/ColorPickerPopover";
-import { Select } from "../ui/Select";
+import { ColorRampView } from "../Showcase/color-ramp-view";
+import { ColorPickerPopover } from "../ui/color-picker-popover";
+import { Select } from "../ui/select";
 import type { PlaygroundConfig } from "./types";
 import { GOOGLE_FONTS } from "./types";
 

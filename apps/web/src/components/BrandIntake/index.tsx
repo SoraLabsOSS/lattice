@@ -4,15 +4,15 @@ import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import { Download, Moon, Sun } from "lucide-react";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { siteImages } from "../../lib/siteImages";
-import PlaygroundDashboard from "../LivePlayground/PlaygroundDashboard";
+import { siteImages } from "../../lib/site-images";
+import PlaygroundDashboard from "../LivePlayground/playground-dashboard";
 import type { PlaygroundConfig } from "../LivePlayground/types";
-import BrandHeader from "./BrandHeader";
+import BrandHeader from "./brand-header";
 import { $brandConfig, resetConfig, type TabId, updateConfig } from "./store";
-import TabBar from "./TabBar";
-import TabColor from "./TabColor";
-import TabStyle from "./TabStyle";
-import TabTypography from "./TabTypography";
+import TabBar from "./tab-bar";
+import TabColor from "./tab-color";
+import TabStyle from "./tab-style";
+import TabTypography from "./tab-typography";
 
 // ---------------------------------------------------------------------------
 // Preview tab bar (Dashboard / Components)

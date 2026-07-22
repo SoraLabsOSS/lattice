@@ -14,10 +14,10 @@ import { strToU8, zipSync } from "fflate";
 import { ArrowLeft, Check, ChevronDown, Copy, Download } from "lucide-react";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { decodeBrandConfig, encodeBrandConfig } from "../../../lib/configUrl";
-import { siteImages } from "../../../lib/siteImages";
-import { Select } from "../../ui/Select";
-import { FileIcon, type FileIconKind } from "./FileIcon";
+import { decodeBrandConfig, encodeBrandConfig } from "../../../lib/config-url";
+import { siteImages } from "../../../lib/site-images";
+import { Select } from "../../ui/select";
+import { FileIcon, type FileIconKind } from "./file-icon";
 import { highlight, type Lang } from "./highlight";
 
 // ---------------------------------------------------------------------------

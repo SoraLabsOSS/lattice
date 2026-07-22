@@ -3,7 +3,7 @@ import { generateDesignTokens } from "@sora-lattice/generator";
 import type React from "react";
 import { useMemo, useState } from "react";
 import { $brandConfig, updateConfig } from "../BrandIntake/store";
-import LivePlayground from "./LivePlayground";
+import LivePlayground from "./live-playground";
 import type { PlaygroundConfig } from "./types";
 
 const IntakePlayground: React.FC = () => {

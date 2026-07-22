@@ -1,6 +1,6 @@
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { siteImages } from "../lib/siteImages";
+import { siteImages } from "../lib/site-images";
 
 // Scroll distance (px) before flowers begin to disappear. Kept small so it feels scroll-driven.
 const HIDE_THRESHOLD = 140;

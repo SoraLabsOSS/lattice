@@ -2,8 +2,8 @@ import type { ColorRamp } from "@sora-lattice/generator";
 import { AnimatePresence, motion } from "framer-motion";
 import type React from "react";
 import { useState } from "react";
-import { ColorRampView } from "../Showcase/ColorRampView";
-import { ColorPickerPopover } from "../ui/ColorPickerPopover";
+import { ColorRampView } from "../Showcase/color-ramp-view";
+import { ColorPickerPopover } from "../ui/color-picker-popover";
 
 export interface StatusColorRowProps {
   baseColor: string;

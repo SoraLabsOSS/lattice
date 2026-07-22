@@ -2,10 +2,10 @@ import { useStore } from "@nanostores/react";
 import { generateRamp } from "@sora-lattice/generator";
 import type React from "react";
 import { useMemo } from "react";
-import { ColorPickerPopover } from "../ui/ColorPickerPopover";
-import { ColorRampView } from "./ColorRampView";
+import { ColorPickerPopover } from "../ui/color-picker-popover";
+import { ColorRampView } from "./color-ramp-view";
 import { $showcaseConfig, updateShowcase } from "./store";
-import { VisualPicker, type VisualPickerOption } from "./VisualPicker";
+import { VisualPicker, type VisualPickerOption } from "./visual-picker";
 
 const ROUNDNESS_OPTIONS: VisualPickerOption[] = [
   {

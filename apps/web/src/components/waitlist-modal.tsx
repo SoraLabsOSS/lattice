@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Check, X } from "lucide-react";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Input } from "./ui/Input";
+import { Input } from "./ui/input";
 
 const backdropVariants = {
   hidden: { opacity: 0 },

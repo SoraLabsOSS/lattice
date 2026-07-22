@@ -2,8 +2,8 @@ import { motion } from "framer-motion";
 import { Moon, Settings2, Sun } from "lucide-react";
 import type React from "react";
 import { useRef, useState } from "react";
-import PlaygroundControls from "./PlaygroundControls";
-import PlaygroundDashboard from "./PlaygroundDashboard";
+import PlaygroundControls from "./playground-controls";
+import PlaygroundDashboard from "./playground-dashboard";
 import type { LivePlaygroundProps } from "./types";
 
 const DarkModeToggle: React.FC<{ isDark: boolean; onToggle: () => void }> = ({

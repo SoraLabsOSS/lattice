@@ -1,4 +1,4 @@
-export { GOOGLE_FONTS } from "../../data/googleFonts";
+export { GOOGLE_FONTS } from "../../data/google-fonts";
 
 export interface PlaygroundConfig {
   density: "compact" | "default" | "comfortable";

@@ -9,16 +9,16 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import type React from "react";
 import { useCallback, useMemo, useState } from "react";
-import { ColorRampView } from "../Showcase/ColorRampView";
-import { ColorPickerPopover } from "../ui/ColorPickerPopover";
+import { ColorRampView } from "../Showcase/color-ramp-view";
+import { ColorPickerPopover } from "../ui/color-picker-popover";
 import {
   GenerationModeSelector,
   HexColorInput,
   NeutralTintSelector,
   RampSliders,
-} from "./ColorRow";
+} from "./color-row";
 import { $brandConfig, updateConfig, updateRampStep } from "./store";
-import { type ColorSlot, useColorRamps } from "./useColorRamps";
+import { type ColorSlot, useColorRamps } from "./use-color-ramps";
 
 const EXPAND_TRANSITION = { duration: 0.25, ease: [0.32, 0.72, 0, 1] as const };
 

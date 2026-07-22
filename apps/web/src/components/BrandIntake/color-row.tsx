@@ -11,10 +11,10 @@ import {
   Waves,
 } from "lucide-react";
 import type React from "react";
-import { ColorRampView } from "../Showcase/ColorRampView";
-import { ColorPickerPopover } from "../ui/ColorPickerPopover";
-import { Input } from "../ui/Input";
-import { Select, type SelectOption } from "../ui/Select";
+import { ColorRampView } from "../Showcase/color-ramp-view";
+import { ColorPickerPopover } from "../ui/color-picker-popover";
+import { Input } from "../ui/input";
+import { Select, type SelectOption } from "../ui/select";
 
 // ---------------------------------------------------------------------------
 // Small reusable pieces

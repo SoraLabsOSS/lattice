@@ -2,12 +2,12 @@ import type { PrimitiveMapping } from "@sora-lattice/generator";
 import { AnimatePresence, motion } from "framer-motion";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { InspectFlyout } from "./InspectFlyout";
+import { InspectFlyout } from "./inspect-flyout";
 import {
   extractTokensFromElement,
   findStyledAncestor,
   type TokenInfo,
-} from "./inspectUtils";
+} from "./inspect-utils";
 
 interface InspectOverlayProps {
   containerRef: React.RefObject<HTMLDivElement | null>;

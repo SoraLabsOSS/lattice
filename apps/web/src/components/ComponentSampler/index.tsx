@@ -34,14 +34,14 @@ import {
 import type React from "react";
 import { useState } from "react";
 import qrcodePng from "../../assets/qrcode.png";
-import Alert from "./Alert";
-import Avatar from "./Avatar";
-import Badge from "./Badge";
-import Button from "./Button";
-import Card from "./Card";
-import Checkbox from "./Checkbox";
-import Input from "./Input";
-import Toggle from "./Toggle";
+import Alert from "./alert";
+import Avatar from "./avatar";
+import Badge from "./badge";
+import Button from "./button";
+import Card from "./card";
+import Checkbox from "./checkbox";
+import Input from "./input";
+import Toggle from "./toggle";
 import {
   bg,
   border,
