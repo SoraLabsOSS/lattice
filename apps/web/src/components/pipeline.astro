@@ -190,9 +190,9 @@ const steps = [
   }
 
   /* ============================================
-                                                         ANIMATION 1 — Color swatch + ramp cascade
-                                                         Loop: ~8s (JS-driven clicks; cursor fixed on swatch)
-                                                         ============================================ */
+                                                               ANIMATION 1 — Color swatch + ramp cascade
+                                                               Loop: ~8s (JS-driven clicks; cursor fixed on swatch)
+                                                               ============================================ */
   .anim1 {
     position: absolute;
     inset: 0;
@@ -311,13 +311,13 @@ const steps = [
   }
 
   /* ============================================
-                                                         ANIMATION 2 — IDE token typing
-                                                         Total loop: ~6.5s (JS-driven)
-                                                         ============================================ */
+                                                               ANIMATION 2 — IDE token typing
+                                                               Total loop: ~6.5s (JS-driven)
+                                                               ============================================ */
 
   /* The IDE window extends past the card's bottom edge; the card's
-                                                         rounded `overflow: hidden` clips the extension into its bottom curve.
-                                                         Container queries let the inner font size scale with the card width. */
+                                                               rounded `overflow: hidden` clips the extension into its bottom curve.
+                                                               Container queries let the inner font size scale with the card width. */
   .anim-container-ide {
     container-type: inline-size;
     overflow: hidden;
@@ -392,7 +392,7 @@ const steps = [
   }
 
   /* Disables gutter transitions so we can instantly reset state between
-                                                         cycles without any visible fade-out. */
+                                                               cycles without any visible fade-out. */
   .anim2-code.is-resetting .anim2-gutter {
     transition: none;
   }
@@ -405,9 +405,9 @@ const steps = [
   /* Token colors are applied inline in JS to keep styles scoped. */
 
   /* ============================================
-                                                         ANIMATION 3 — UI assembly (staggered reveal)
-                                                         Total loop: 5.8s — static hold, then unravel (no frame highlight)
-                                                         ============================================ */
+                                                               ANIMATION 3 — UI assembly (staggered reveal)
+                                                               Total loop: 5.8s — static hold, then unravel (no frame highlight)
+                                                               ============================================ */
   .anim3 {
     --a3-dur: 5.8s;
     --a3-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -800,8 +800,8 @@ const steps = [
   }
 
   /* ============================================
-                                                         Reduced motion — show final state, no animation
-                                                         ============================================ */
+                                                               Reduced motion — show final state, no animation
+                                                               ============================================ */
   @media (prefers-reduced-motion: reduce) {
     .anim1-swatch,
     .anim1-cell,

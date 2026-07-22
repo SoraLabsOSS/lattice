@@ -43,6 +43,7 @@ const WeightPills: React.FC<WeightPillsProps> = ({
             fontFamily: `'${fontFamily}', system-ui, sans-serif`,
             fontWeight: w,
           }}
+          type="button"
         >
           {w}
         </button>

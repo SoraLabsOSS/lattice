@@ -21,6 +21,7 @@ const DarkModeToggle: React.FC<{ isDark: boolean; onToggle: () => void }> = ({
     className="relative h-8 w-14 cursor-pointer rounded-full p-1 transition-all duration-200 hover:scale-105 active:scale-95"
     onClick={onToggle}
     style={{ backgroundColor: isDark ? "#374151" : "#e5e7eb" }}
+    type="button"
   >
     <div
       className="flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm"
@@ -54,6 +55,7 @@ const PlaygroundSegmentedControl: React.FC<{
         }`}
         key={panel}
         onClick={() => onChange(panel)}
+        type="button"
       >
         {panel}
       </button>
@@ -89,6 +91,7 @@ const PresetSelector: React.FC<{
           }`}
           key={opt.id}
           onClick={() => onChange(opt.id)}
+          type="button"
         >
           {opt.hint && <span className="shrink-0">{opt.hint}</span>}
           {opt.label}

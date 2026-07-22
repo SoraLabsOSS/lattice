@@ -133,6 +133,7 @@ const PreviewTypography: React.FC<PreviewTypographyProps> = ({
               padding: `${space.sm} ${space.lg}`,
               transition: transition.interactive,
             }}
+            type="button"
           >
             Subscribe
           </button>

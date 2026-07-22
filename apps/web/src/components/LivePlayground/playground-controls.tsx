@@ -27,6 +27,7 @@ const DarkModeToggle: React.FC<{ isDark: boolean; onToggle: () => void }> = ({
     style={{
       backgroundColor: isDark ? "#374151" : "#e5e7eb",
     }}
+    type="button"
   >
     <div
       className="flex h-5 w-5 items-center justify-center rounded-full bg-white shadow-sm"
@@ -72,6 +73,7 @@ const SegmentedControl: React.FC<SegmentedControlProps> = ({
           }`}
           key={opt.id}
           onClick={() => onChange(opt.id)}
+          type="button"
         >
           {opt.label}
         </button>
@@ -158,6 +160,7 @@ const PlaygroundControls: React.FC<PlaygroundControlsProps> = ({
             <button
               className="cursor-pointer rounded-lg p-1.5 text-charcoal/40 transition-colors hover:bg-charcoal/5 hover:text-charcoal/80"
               onClick={onClose}
+              type="button"
             >
               <X size={18} />
             </button>

@@ -110,6 +110,7 @@ const Button: React.FC<ButtonProps> = ({
   const [scrim, setScrim] = useState<"none" | "hover" | "active">("none");
   return (
     <button
+      type="button"
       {...rest}
       onMouseDown={(e) => {
         setScrim("active");

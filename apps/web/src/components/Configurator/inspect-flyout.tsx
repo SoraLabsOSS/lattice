@@ -307,6 +307,7 @@ const TokenRow: React.FC<{
             }
           }}
           ref={editBtnRef}
+          type="button"
         >
           <Pencil size={10} />
         </button>

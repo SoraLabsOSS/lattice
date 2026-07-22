@@ -59,6 +59,7 @@ const FAQAccordion = () => {
             aria-expanded={openIndex === index}
             className="flex w-full items-center justify-between gap-4 px-4 py-6 text-left transition-all duration-300 hover:cursor-pointer hover:px-10 md:px-8 md:py-8"
             onClick={() => toggleAccordion(index)}
+            type="button"
           >
             <span className="pr-4 font-semibold text-lg md:text-xl">
               {faq.question}

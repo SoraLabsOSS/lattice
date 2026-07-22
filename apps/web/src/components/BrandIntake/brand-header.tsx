@@ -24,6 +24,7 @@ const BrandHeader: React.FC = () => {
         aria-label="Upload logo"
         className="group relative flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-xl border-2 border-charcoal/15 border-dashed transition-colors hover:border-forest-green/30 hover:bg-forest-green/5"
         onClick={() => fileInputRef.current?.click()}
+        type="button"
       >
         {config.logoUrl ? (
           <img

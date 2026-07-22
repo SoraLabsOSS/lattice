@@ -132,6 +132,7 @@ const TreeRow: React.FC<{ node: TreeNode; depth?: number }> = ({
           transition: transition.interactive,
           width: "100%",
         }}
+        type="button"
       >
         {hasChildren && (
           <ChevronDown
@@ -183,6 +184,7 @@ const IconButton: React.FC<{
       transition: transition.interactive,
       width: "30px",
     }}
+    type="button"
   >
     <Icon size={14} />
   </button>
@@ -704,6 +706,7 @@ const NavList: React.FC = () => {
               transition: transition.interactive,
               width: "100%",
             }}
+            type="button"
           >
             <Icon size={14} />
             <span style={{ flex: 1 }}>{item.label}</span>
@@ -1138,6 +1141,7 @@ const PrefCheckbox: React.FC<{ checked: boolean; onChange: () => void }> = ({
       transition: transition.interactive,
       width: "16px",
     }}
+    type="button"
   >
     {checked && (
       <svg
@@ -1343,6 +1347,7 @@ const FAQCard: React.FC = () => {
                 padding: `${space.sm} ${space.lg}`,
                 transition: transition.interactive,
               }}
+              type="button"
             >
               {t}
             </button>
@@ -1382,6 +1387,7 @@ const FAQCard: React.FC = () => {
                   textAlign: "left",
                   width: "100%",
                 }}
+                type="button"
               >
                 <span>{item.question}</span>
                 {open ? (
