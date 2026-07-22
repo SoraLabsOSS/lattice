@@ -99,6 +99,18 @@ bun run --filter @sora-lattice/generator test    # vitest run
 
 The single test in [`test/generator.test.ts`](test/generator.test.ts) covers config normalization, deterministic token output, all four export formats, and the AA contrast guarantees for both modes.
 
+## Publishing
+
+This package is published to npm as [`@sora-lattice/generator`](https://www.npmjs.com/package/@sora-lattice/generator) under MIT, so it can be consumed outside this monorepo (e.g. a CLI in another repo calling `generateTheme()` directly, with no network dependency).
+
+To cut a release:
+
+1. Bump `version` in [`package.json`](package.json) (semver — this is a public API surface once published).
+2. Push a tag matching `generator-v<version>` (e.g. `generator-v0.1.0`) on `main`.
+3. [`.github/workflows/publish-generator.yml`](../../.github/workflows/publish-generator.yml) builds, tests, verifies the tag matches `package.json`, then runs `npm publish --access public --provenance`.
+
+Requires an `NPM_TOKEN` repository secret (npm automation token with publish rights on the `@sora-lattice` scope).
+
 ## Implementation notes
 
 - Color math is OKLCH-first via [culori](https://culorijs.org/). Lightness targets in [colorGeneration.ts](src/colorGeneration.ts) are tuned so that primary/status backgrounds land near step 600 in light mode and step 400 in dark mode, which keeps neutral-0 foregrounds above 4.5:1 contrast without per-token overrides.
