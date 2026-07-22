@@ -1204,7 +1204,7 @@ const PlaygroundDashboard: React.FC<PlaygroundDashboardProps> = ({
                     style={{
                       backgroundColor: bg.gradientSoft,
                       borderRadius: radius.badge,
-                      color: fg.onGradientSoft,
+                      color: fg.onGradientMuted,
                       transition: transition.interactive,
                     }}
                     type="button"

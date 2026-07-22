@@ -218,7 +218,12 @@ export const ColorRampView: React.FC<ColorRampViewProps> = ({
         }`}
       >
         {stepsToRender.map((step) => {
-          const color = (ramp as Record<number, string>)[step];
+          const color = (ramp as ColorRamp & Partial<NeutralColorRamp>)[
+            step as keyof NeutralColorRamp
+          ];
+          if (color === undefined) {
+            return null;
+          }
           return onStepChange ? (
             <EditableSwatch
               color={color}
