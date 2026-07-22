@@ -67,5 +67,3 @@ export const StatusColorRow: React.FC<StatusColorRowProps> = ({
     </div>
   );
 };
-
-export default StatusColorRow;

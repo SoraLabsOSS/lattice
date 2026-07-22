@@ -97,5 +97,3 @@ export const SoraLatticeScrollAnimation = () => {
     </div>
   );
 };
-
-export default SoraLatticeScrollAnimation;

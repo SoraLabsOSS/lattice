@@ -240,5 +240,3 @@ export const ColorRampView: React.FC<ColorRampViewProps> = ({
     </div>
   );
 };
-
-export default ColorRampView;

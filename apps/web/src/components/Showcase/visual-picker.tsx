@@ -52,5 +52,3 @@ export const VisualPicker: React.FC<VisualPickerProps> = ({
     </div>
   </div>
 );
-
-export default VisualPicker;
