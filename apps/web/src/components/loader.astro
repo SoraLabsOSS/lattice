@@ -131,6 +131,22 @@
 </style>
 
 <script>
+  // Duration must match the `loaderOverlay` keyframe's animation-duration below.
+  const OVERLAY_ANIMATION_MS = 2100;
+
+  function releaseLoader(loader: HTMLElement) {
+    loader.dataset.loaderMode = "transition";
+    loader.style.opacity = "0";
+    loader.style.pointerEvents = "none";
+    const logo = loader.querySelector(".loader-logo") as HTMLElement | null;
+    if (logo) {
+      for (const a of logo.getAnimations()) {
+        a.cancel();
+      }
+      logo.style.opacity = "0";
+    }
+  }
+
   function initLoader(isSwap = false) {
     const loader = document.getElementById("sora-lattice-loader");
     if (!loader) {
@@ -139,33 +155,53 @@
 
     if (isSwap) {
       // View transition swap — skip loader animation, hide immediately
-      loader.dataset.loaderMode = "transition";
-      loader.style.opacity = "0";
-      loader.style.pointerEvents = "none";
-      const logo = loader.querySelector(".loader-logo") as HTMLElement | null;
-      if (logo) {
-        logo.getAnimations().forEach((a) => a.cancel());
-        logo.style.opacity = "0";
-      }
+      releaseLoader(loader);
       return;
     }
 
-    if (loader.dataset.loaderMode === "initial") {
-      const handler = (e: AnimationEvent) => {
-        if (e.target !== loader) {
-          return;
-        }
-        loader.removeEventListener("animationend", handler);
-        loader.dataset.loaderMode = "transition";
-        loader.style.opacity = "0";
-        loader.style.pointerEvents = "none";
-        const logo = loader.querySelector(".loader-logo") as HTMLElement | null;
-        if (logo) {
-          logo.getAnimations().forEach((a) => a.cancel());
-          logo.style.opacity = "0";
-        }
-      };
-      loader.addEventListener("animationend", handler);
+    if (loader.dataset.loaderMode !== "initial") {
+      return;
+    }
+
+    // `prefers-reduced-motion` strips the CSS animation entirely below, so no
+    // `animationend` will ever fire for it — release right away instead of
+    // waiting on an event that can never come.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      releaseLoader(loader);
+      return;
+    }
+
+    let released = false;
+    const release = () => {
+      if (released) {
+        return;
+      }
+      released = true;
+      loader.removeEventListener("animationend", onAnimationEnd);
+      releaseLoader(loader);
+    };
+
+    const onAnimationEnd = (e: AnimationEvent) => {
+      if (e.target === loader) {
+        release();
+      }
+    };
+    loader.addEventListener("animationend", onAnimationEnd);
+
+    // Belt-and-suspenders: on a slow initial load this script can attach the
+    // listener after the animation has already finished, permanently missing
+    // its one-shot `animationend` event and leaving the loader invisible but
+    // still capturing every click. A timer matched to the animation's
+    // duration guarantees release either way.
+    const alreadyFinished = loader
+      .getAnimations()
+      .some(
+        (a) => a.animationName === "loaderOverlay" && a.playState === "finished"
+      );
+    if (alreadyFinished) {
+      release();
+    } else {
+      setTimeout(release, OVERLAY_ANIMATION_MS);
     }
   }
 
