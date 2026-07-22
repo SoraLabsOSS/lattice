@@ -186,6 +186,10 @@ const CHART_PALETTE_FALLBACK: ChartPalette = {
   textMuted: "#6b7280",
 };
 
+const REVENUE_CHART_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const REVENUE_CHART_REVENUE_SERIES = [1820, 2240, 2090, 2985, 2650, 3120, 3390];
+const REVENUE_CHART_ORDER_SERIES = [38, 48, 44, 67, 59, 72, 78];
+
 const PlaygroundDashboard: React.FC<PlaygroundDashboardProps> = ({
   config,
   onChange,
@@ -201,6 +205,7 @@ const PlaygroundDashboard: React.FC<PlaygroundDashboardProps> = ({
     CHART_PALETTE_FALLBACK
   );
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: config isn't read directly, but its identity change is the signal that the parent finished applying new design tokens as CSS vars, which is what we re-read here.
   useEffect(() => {
     const el = rootRef.current;
     if (!el) {
@@ -346,9 +351,9 @@ const PlaygroundDashboard: React.FC<PlaygroundDashboardProps> = ({
     Pending: { bg: bg.warningSubtle, fg: fg.onWarningSubtle },
   };
 
-  const revenueDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const revenueSeries = [1820, 2240, 2090, 2985, 2650, 3120, 3390];
-  const orderSeries = [38, 48, 44, 67, 59, 72, 78];
+  const revenueDays = REVENUE_CHART_DAYS;
+  const revenueSeries = REVENUE_CHART_REVENUE_SERIES;
+  const orderSeries = REVENUE_CHART_ORDER_SERIES;
 
   const revenueChartOption = useMemo<EChartsOption>(() => {
     const { primary, primarySubtle, raised, grid, textMuted, textFaint } =
@@ -456,7 +461,7 @@ const PlaygroundDashboard: React.FC<PlaygroundDashboardProps> = ({
         },
       ],
     };
-  }, [config, chartPalette]);
+  }, [chartPalette]);
 
   const trafficSources = [
     { color: bg.primary, label: "Direct", share: 45 },

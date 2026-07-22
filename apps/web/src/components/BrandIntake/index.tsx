@@ -199,11 +199,11 @@ const BrandIntake: React.FC = () => {
     [isOpen]
   );
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setIsOpen(false);
     document.body.classList.remove("modal-open");
     (window as any).lenis?.start();
-  };
+  }, []);
 
   // ESC to close
   useEffect(() => {
@@ -217,7 +217,7 @@ const BrandIntake: React.FC = () => {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [isOpen]);
+  }, [isOpen, handleClose]);
 
   return (
     <AnimatePresence>

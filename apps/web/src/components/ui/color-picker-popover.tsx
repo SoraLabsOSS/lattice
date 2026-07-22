@@ -1,6 +1,13 @@
 import { AnimatePresence, motion } from "framer-motion";
 import type React from "react";
-import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { HexColorInput, HexColorPicker } from "react-colorful";
 import { createPortal } from "react-dom";
 
@@ -38,7 +45,7 @@ export const ColorPickerPopover: React.FC<ColorPickerPopoverProps> = ({
   const popoverRef = useRef<HTMLDivElement>(null);
 
   // Update popover position when opened or on scroll/resize (fixed = viewport coords)
-  const updatePosition = () => {
+  const updatePosition = useCallback(() => {
     if (triggerRef.current && isOpen) {
       const rect = triggerRef.current.getBoundingClientRect();
       setPosition({
@@ -46,7 +53,7 @@ export const ColorPickerPopover: React.FC<ColorPickerPopoverProps> = ({
         top: rect.bottom + 8,
       });
     }
-  };
+  }, [isOpen]);
 
   useLayoutEffect(() => {
     if (!isOpen) {
@@ -59,7 +66,7 @@ export const ColorPickerPopover: React.FC<ColorPickerPopoverProps> = ({
       window.removeEventListener("scroll", updatePosition, true);
       window.removeEventListener("resize", updatePosition);
     };
-  }, [isOpen]);
+  }, [isOpen, updatePosition]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {

@@ -5,7 +5,13 @@ import {
 } from "@sora-lattice/generator";
 import { AnimatePresence, motion } from "framer-motion";
 import type React from "react";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { HexColorPicker } from "react-colorful";
 import { createPortal } from "react-dom";
 import { Tooltip } from "../ui/tooltip";
@@ -34,7 +40,7 @@ const EditableSwatch: React.FC<{
   const POPOVER_OUTER_W = 200 + 24; // picker width + p-3 * 2
   const MARGIN = 8;
 
-  const updatePosition = () => {
+  const updatePosition = useCallback(() => {
     if (triggerRef.current && isOpen) {
       const rect = triggerRef.current.getBoundingClientRect();
       let left = rect.left + rect.width / 2 - POPOVER_OUTER_W / 2;
@@ -44,7 +50,7 @@ const EditableSwatch: React.FC<{
       );
       setPosition({ left, top: rect.bottom + 8 });
     }
-  };
+  }, [isOpen]);
 
   useLayoutEffect(() => {
     if (!isOpen) {
@@ -57,7 +63,7 @@ const EditableSwatch: React.FC<{
       window.removeEventListener("scroll", updatePosition, true);
       window.removeEventListener("resize", updatePosition);
     };
-  }, [isOpen]);
+  }, [isOpen, updatePosition]);
 
   useEffect(() => {
     if (!isOpen) {
