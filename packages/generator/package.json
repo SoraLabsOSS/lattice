@@ -1,9 +1,10 @@
 {
   "name": "@soralabsoss/generator",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Pure TypeScript design-token generator: OKLCH ramps, WCAG-AA-validated semantic tokens, and CSS / DTCG / Tailwind / shadcn exporters from a few brand inputs.",
   "type": "module",
   "license": "MIT",
+  "sideEffects": false,
   "homepage": "https://github.com/SoraLabsOSS/sora-lattice/tree/main/packages/generator#readme",
   "repository": {
     "type": "git",
