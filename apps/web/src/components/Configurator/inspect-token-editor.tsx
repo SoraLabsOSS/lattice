@@ -1,4 +1,4 @@
-import type { PrimitiveMapping } from "@sora-lattice/generator";
+import type { PrimitiveMapping } from "@soralabsoss/generator";
 import { motion } from "framer-motion";
 import type React from "react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";

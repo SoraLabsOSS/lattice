@@ -1,5 +1,5 @@
 import { useStore } from "@nanostores/react";
-import { generateRamp } from "@sora-lattice/generator";
+import { generateRamp } from "@soralabsoss/generator";
 import {
   FileImage,
   FileJson,

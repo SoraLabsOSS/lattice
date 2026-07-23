@@ -1,4 +1,4 @@
-import type { PrimitiveMapping } from "@sora-lattice/generator";
+import type { PrimitiveMapping } from "@soralabsoss/generator";
 import { AnimatePresence, motion } from "framer-motion";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";

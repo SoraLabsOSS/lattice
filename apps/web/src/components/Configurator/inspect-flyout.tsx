@@ -1,4 +1,4 @@
-import type { PrimitiveMapping } from "@sora-lattice/generator";
+import type { PrimitiveMapping } from "@soralabsoss/generator";
 import { AnimatePresence } from "framer-motion";
 import { Palette, Pencil, Sparkles } from "lucide-react";
 import type React from "react";

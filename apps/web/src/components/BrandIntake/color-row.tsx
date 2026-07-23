@@ -1,4 +1,4 @@
-import type { ColorRamp, GenerationMode } from "@sora-lattice/generator";
+import type { ColorRamp, GenerationMode } from "@soralabsoss/generator";
 import {
   ArrowLeftRight,
   Circle,

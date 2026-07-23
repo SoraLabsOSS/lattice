@@ -9,7 +9,7 @@ import {
   validateWcagAaContrast,
 } from "../src/index.js";
 
-describe("@sora-lattice/generator", () => {
+describe("@soralabsoss/generator", () => {
   it("normalizes partial brand input without mutating defaults", () => {
     const config = createBrandConfig({
       bodyWeights: { regular: 500 },

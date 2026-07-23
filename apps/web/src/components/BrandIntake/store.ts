@@ -8,7 +8,7 @@ import {
   type FontWeight,
   initialConfig,
   type NeutralColorRamp,
-} from "@sora-lattice/generator";
+} from "@soralabsoss/generator";
 import { map } from "nanostores";
 
 export type TabId = "color" | "typography" | "style";

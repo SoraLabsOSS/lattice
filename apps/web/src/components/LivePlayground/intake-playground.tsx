@@ -1,5 +1,5 @@
 import { useStore } from "@nanostores/react";
-import { generateDesignTokens } from "@sora-lattice/generator";
+import { generateDesignTokens } from "@soralabsoss/generator";
 import type React from "react";
 import { useMemo, useState } from "react";
 import { $brandConfig, updateConfig } from "../BrandIntake/store";

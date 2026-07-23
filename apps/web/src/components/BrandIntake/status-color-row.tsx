@@ -1,4 +1,4 @@
-import type { ColorRamp } from "@sora-lattice/generator";
+import type { ColorRamp } from "@soralabsoss/generator";
 import { AnimatePresence, motion } from "framer-motion";
 import type React from "react";
 import { useState } from "react";

@@ -1,6 +1,6 @@
 import { useStore } from "@nanostores/react";
-import type { GenerationMode } from "@sora-lattice/generator";
-import { NEUTRAL_STEPS, SEMANTIC_HUES } from "@sora-lattice/generator";
+import type { GenerationMode } from "@soralabsoss/generator";
+import { NEUTRAL_STEPS, SEMANTIC_HUES } from "@soralabsoss/generator";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import type React from "react";

@@ -18,7 +18,7 @@
     "@nanostores/persistent": "^0.10.2",
     "@nanostores/react": "^0.8.4",
     "@tailwindcss/vite": "^4.0.0",
-    "@sora-lattice/generator": "workspace:*",
+    "@soralabsoss/generator": "workspace:*",
     "astro": "^5.16.0",
     "culori": "^4.0.1",
     "echarts": "^6.0.0",

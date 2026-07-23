@@ -2,7 +2,7 @@ import {
   type ColorRamp,
   type NeutralColorRamp,
   STEPS,
-} from "@sora-lattice/generator";
+} from "@soralabsoss/generator";
 import { AnimatePresence, motion } from "framer-motion";
 import type React from "react";
 import {
