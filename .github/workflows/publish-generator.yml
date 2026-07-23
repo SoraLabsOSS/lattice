@@ -1,4 +1,4 @@
-name: Publish @sora-lattice/generator
+name: Publish @soralabsoss/generator
 
 on:
   push:
@@ -27,10 +27,10 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Build
-        run: bun run --filter @sora-lattice/generator build
+        run: bun run --filter @soralabsoss/generator build
 
       - name: Test
-        run: bun run --filter @sora-lattice/generator test
+        run: bun run --filter @soralabsoss/generator test
 
       - name: Verify tag matches package.json version
         run: |
