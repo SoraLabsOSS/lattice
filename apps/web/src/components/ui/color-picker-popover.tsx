@@ -172,5 +172,3 @@ export const ColorPickerPopover: React.FC<ColorPickerPopoverProps> = ({
     </div>
   );
 };
-
-export default ColorPickerPopover;

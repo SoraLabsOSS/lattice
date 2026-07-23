@@ -45,6 +45,7 @@ const PresetSelector: React.FC<PresetSelectorProps> = ({
           }`}
           key={opt.id}
           onClick={() => onChange(opt.id)}
+          type="button"
         >
           {opt.hint && <span className="shrink-0">{opt.hint}</span>}
           {opt.label}
@@ -187,6 +188,7 @@ const TabStyle: React.FC = () => {
               : "text-charcoal/80 hover:text-charcoal"
           }`}
           onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
+          type="button"
         >
           <span>Advanced</span>
           <ChevronDown

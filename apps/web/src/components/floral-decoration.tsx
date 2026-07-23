@@ -548,5 +548,3 @@ export const FloralDecoration = ({
     </div>
   );
 };
-
-export default FloralDecoration;

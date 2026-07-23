@@ -71,7 +71,7 @@ export const Select: React.FC<SelectProps> = ({
         items={items}
         modal={false}
         onValueChange={(val) => {
-          if (val != null) {
+          if (val !== null && val !== undefined) {
             onValueChange(val as string);
           }
         }}

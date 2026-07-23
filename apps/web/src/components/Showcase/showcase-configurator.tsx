@@ -32,7 +32,7 @@ const ROUNDNESS_OPTIONS: VisualPickerOption[] = [
   },
 ];
 
-const EXPRESSIVENESS_OPTIONS: VisualPickerOption[] = [
+const _EXPRESSIVENESS_OPTIONS: VisualPickerOption[] = [
   {
     description: "Clean and understated.",
     id: "minimal",

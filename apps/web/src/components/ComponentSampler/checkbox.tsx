@@ -39,6 +39,7 @@ const Checkbox: React.FC<CheckboxProps> = ({
           transition: transition.interactive,
           width: "16px",
         }}
+        type="button"
       >
         {checked && <Check size={10} style={{ color: fg.onPrimary }} />}
       </button>

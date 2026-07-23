@@ -33,6 +33,7 @@ const Toggle: React.FC<ToggleProps> = ({ checked, onChange, label, id }) => {
           transition: transition.interactive,
           width: "32px",
         }}
+        type="button"
       >
         <span
           style={{

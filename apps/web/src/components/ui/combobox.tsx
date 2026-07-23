@@ -51,7 +51,7 @@ export const Combobox: React.FC<ComboboxProps> = ({
   label,
   size = "default",
   className = "",
-  displayValue,
+  displayValue: _displayValue,
 }) => (
   <div className={`flex w-full min-w-0 flex-col gap-3 ${className}`}>
     {label && (
@@ -61,7 +61,7 @@ export const Combobox: React.FC<ComboboxProps> = ({
     <BaseCombobox.Root
       items={options}
       onValueChange={(val) => {
-        if (val != null) {
+        if (val !== null && val !== undefined) {
           onValueChange(val as string);
         }
       }}

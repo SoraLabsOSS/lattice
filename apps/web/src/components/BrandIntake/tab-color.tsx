@@ -1,14 +1,10 @@
 import { useStore } from "@nanostores/react";
 import type { GenerationMode } from "@sora-lattice/generator";
-import {
-  clampPrimaryForContrast,
-  NEUTRAL_STEPS,
-  SEMANTIC_HUES,
-} from "@sora-lattice/generator";
+import { NEUTRAL_STEPS, SEMANTIC_HUES } from "@sora-lattice/generator";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import type React from "react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { ColorRampView } from "../Showcase/color-ramp-view";
 import { ColorPickerPopover } from "../ui/color-picker-popover";
 import {
@@ -89,25 +85,6 @@ const TabColor: React.FC<{ isDarkMode?: boolean }> = ({
       updateRampStep(rampKey, step, color),
     []
   );
-
-  // The exact-input primary becomes `--color-primary-base` (button/border fill).
-  // If it sits too close to the base background in either mode, the generator
-  // nudges it toward readability — surface that to the user here so they
-  // understand why the rendered surface isn't a 1:1 match for their input.
-  const primaryContrastNotice = useMemo(() => {
-    const lightBase = derived.neutralRamp[0];
-    const darkBase = derived.dark?.neutralRamp[800];
-    const light = lightBase
-      ? clampPrimaryForContrast(config.primaryColor, lightBase, "light")
-      : null;
-    const dark = darkBase
-      ? clampPrimaryForContrast(config.primaryColor, darkBase, "dark")
-      : null;
-    if (!(light?.adjusted || dark?.adjusted)) {
-      return null;
-    }
-    return { dark, light };
-  }, [config.primaryColor, derived.neutralRamp, derived.dark]);
 
   return (
     <div className="flex flex-col gap-8">

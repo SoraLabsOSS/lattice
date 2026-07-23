@@ -22,8 +22,9 @@ expect.extend({
 });
 
 declare module "vitest" {
-  interface Assertion<T = unknown> {
-    toHaveNoViolations(): T;
+  // biome-ignore lint/suspicious/noExplicitAny: must match vitest's own Assertion<T = any> default exactly for declaration merging
+  interface Assertion<T = any> {
+    toHaveNoViolations: () => T;
   }
 }
 

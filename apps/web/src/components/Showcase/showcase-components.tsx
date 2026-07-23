@@ -31,6 +31,7 @@ const DarkModeToggle: React.FC<{ isDark: boolean; onToggle: () => void }> = ({
     style={{
       backgroundColor: isDark ? "#374151" : "#e5e7eb",
     }}
+    type="button"
   >
     <div
       className="flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm"
@@ -146,7 +147,6 @@ const ShowcaseComponents: React.FC = () => {
           input: "9999px",
           tag: "6px",
         };
-      case "rounded":
       default:
         return {
           button: "8px",
@@ -252,6 +252,7 @@ const ShowcaseComponents: React.FC = () => {
                   transition:
                     "background-color 0.4s ease, border-radius 0.4s ease, transform 0.15s ease",
                 }}
+                type="button"
               >
                 Primary Action
               </button>
@@ -280,6 +281,7 @@ const ShowcaseComponents: React.FC = () => {
                   transition:
                     "color 0.4s ease, border-color 0.4s ease, border-radius 0.4s ease, background-color 0.15s ease, transform 0.15s ease",
                 }}
+                type="button"
               >
                 Secondary Action
               </button>
@@ -305,6 +307,7 @@ const ShowcaseComponents: React.FC = () => {
                   transition:
                     "color 0.4s ease, border-radius 0.4s ease, background-color 0.15s ease, transform 0.15s ease",
                 }}
+                type="button"
               >
                 Ghost Action
               </button>
@@ -351,6 +354,7 @@ const ShowcaseComponents: React.FC = () => {
                       transition:
                         "background-color 0.15s ease, color 0.15s ease, border-color 0.4s ease, border-radius 0.4s ease, transform 0.15s ease",
                     }}
+                    type="button"
                   >
                     {label}
                   </button>
@@ -382,6 +386,7 @@ const ShowcaseComponents: React.FC = () => {
                       : colors.border,
                     transition: "background-color 0.3s ease",
                   }}
+                  type="button"
                 >
                   <div
                     className="h-5 w-5 rounded-full bg-white shadow-sm"

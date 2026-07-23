@@ -18,9 +18,10 @@ export const StatusColorRow: React.FC<StatusColorRowProps> = ({
   ramp,
   baseColor,
   onChange,
-  description,
+  description: _description,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const toggleOpen = () => setIsOpen((prev) => !prev);
 
   return (
     <div className="flex flex-col gap-2">
@@ -34,7 +35,8 @@ export const StatusColorRow: React.FC<StatusColorRowProps> = ({
               ? "text-forest-green"
               : "text-charcoal/20 hover:text-charcoal/80"
           }`}
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={toggleOpen}
+          type="button"
         >
           {isOpen ? "Close" : "Edit Base"}
         </button>
@@ -65,5 +67,3 @@ export const StatusColorRow: React.FC<StatusColorRowProps> = ({
     </div>
   );
 };
-
-export default StatusColorRow;

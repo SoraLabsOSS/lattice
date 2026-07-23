@@ -16,6 +16,7 @@ const DarkModeToggle: React.FC<{ isDark: boolean; onToggle: () => void }> = ({
     style={{
       backgroundColor: isDark ? "#374151" : "#e5e7eb",
     }}
+    type="button"
   >
     <div
       className="flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm"

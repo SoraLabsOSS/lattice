@@ -54,7 +54,7 @@
               >
               <div class="flex flex-wrap gap-3">
                 {['#2D5016', '#E63946', '#457B9D', '#F4A261', '#2A9D8F'].map((color) => (
-                  <div class="w-12 h-12 md:w-14 md:h-14 rounded-2xl shadow-sm border-4 border-white" style={`background-color: ${color}`} />
+                  <div class="w-12 h-12 md:w-14 md:h-14 rounded-2xl shadow-sm border-4 border-white" style={`background-color: ${color}`} key={color} />
                 ))}
               </div>
             </div>
@@ -65,7 +65,7 @@
                 { icon: '🎨', label: 'figma.fig' },
                 { icon: '⚛️', label: 'components.zip' }
               ].map((item) => (
-                <div class="bg-white rounded-xl p-4 text-center shadow-sm border border-charcoal/5">
+                <div class="bg-white rounded-xl p-4 text-center shadow-sm border border-charcoal/5" key={item.label}>
                   <div class="text-2xl mb-1">{item.icon}</div>
                   <div class="text-xs font-mono text-charcoal/60">{item.label}</div>
                 </div>

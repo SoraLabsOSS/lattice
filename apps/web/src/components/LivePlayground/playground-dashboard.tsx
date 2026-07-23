@@ -666,6 +666,7 @@ const PlaygroundDashboard: React.FC<PlaygroundDashboardProps> = ({
                   color: fg.onBaseMuted,
                   transition: transition.interactive,
                 }}
+                type="button"
               >
                 <Bell size={13} />
               </button>
@@ -678,6 +679,7 @@ const PlaygroundDashboard: React.FC<PlaygroundDashboardProps> = ({
                   color: fg.onPrimary,
                   transition: transition.interactive,
                 }}
+                type="button"
               >
                 <Plus size={12} />
                 New Project
@@ -839,6 +841,7 @@ const PlaygroundDashboard: React.FC<PlaygroundDashboardProps> = ({
                         color: fg.onBaseMuted,
                         transition: transition.interactive,
                       }}
+                      type="button"
                     >
                       Last 7 days <ChevronDown size={10} />
                     </button>
@@ -892,6 +895,7 @@ const PlaygroundDashboard: React.FC<PlaygroundDashboardProps> = ({
                         color: fg.primary,
                         transition: transition.interactive,
                       }}
+                      type="button"
                     >
                       View all <ExternalLink size={9} />
                     </button>
@@ -1145,6 +1149,7 @@ const PlaygroundDashboard: React.FC<PlaygroundDashboardProps> = ({
                         color: fg.onPrimary,
                         transition: transition.interactive,
                       }}
+                      type="button"
                     >
                       Save Preferences
                     </button>
@@ -1158,6 +1163,7 @@ const PlaygroundDashboard: React.FC<PlaygroundDashboardProps> = ({
                         color: fg.onBase,
                         transition: transition.interactive,
                       }}
+                      type="button"
                     >
                       Cancel
                     </button>
@@ -1198,9 +1204,10 @@ const PlaygroundDashboard: React.FC<PlaygroundDashboardProps> = ({
                     style={{
                       backgroundColor: bg.gradientSoft,
                       borderRadius: radius.badge,
-                      color: fg.onGradientSoft,
+                      color: fg.onGradientMuted,
                       transition: transition.interactive,
                     }}
+                    type="button"
                   >
                     Read Docs
                   </button>

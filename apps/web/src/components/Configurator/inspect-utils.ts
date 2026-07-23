@@ -80,20 +80,20 @@ export function extractTokensFromElement(el: HTMLElement): TokenInfo[] {
     const value = decl.slice(colonIdx + 1).trim();
 
     VAR_RE.lastIndex = 0;
-    let match: RegExpExecArray | null;
-    while ((match = VAR_RE.exec(value)) !== null) {
+    let match: RegExpExecArray | null = VAR_RE.exec(value);
+    while (match !== null) {
       const tokenName = match[1];
-      if (seen.has(tokenName)) {
-        continue;
-      }
-      seen.add(tokenName);
+      if (!seen.has(tokenName)) {
+        seen.add(tokenName);
 
-      tokens.push({
-        category: categorize(tokenName),
-        cssProperty: prop,
-        resolvedValue: computed.getPropertyValue(`--${tokenName}`).trim(),
-        tokenName,
-      });
+        tokens.push({
+          category: categorize(tokenName),
+          cssProperty: prop,
+          resolvedValue: computed.getPropertyValue(`--${tokenName}`).trim(),
+          tokenName,
+        });
+      }
+      match = VAR_RE.exec(value);
     }
   }
 
@@ -160,7 +160,7 @@ export function getTokenEditInfo(
   }
 
   const step = isDarkMode ? mapping.darkStep : mapping.lightStep;
-  if (!mapping.ramp || step == null) {
+  if (!mapping.ramp || step === null || step === undefined) {
     return null;
   }
   const rampKey = mapping.role ?? mapping.ramp;

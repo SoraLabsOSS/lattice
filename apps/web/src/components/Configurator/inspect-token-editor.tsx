@@ -157,6 +157,7 @@ export const InspectTokenEditor: React.FC<InspectTokenEditorProps> = ({
         <button
           className="cursor-pointer font-bold text-forest-green text-xs hover:underline"
           onClick={onClose}
+          type="button"
         >
           Done
         </button>

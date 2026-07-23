@@ -361,6 +361,7 @@ const Configurator: React.FC = () => {
                       aria-label="Expand sidebar"
                       className="cursor-pointer text-charcoal/40 transition-colors hover:text-charcoal/70"
                       onClick={() => setIsCollapsed(false)}
+                      type="button"
                     >
                       <PanelLeftOpen size={18} />
                     </button>
@@ -385,6 +386,7 @@ const Configurator: React.FC = () => {
                         aria-label={`${name}: ${value}`}
                         className="h-6 w-6 cursor-default rounded-md border border-charcoal/10 shadow-sm transition-transform hover:scale-110"
                         style={{ backgroundColor: value }}
+                        type="button"
                       />
                     </Tooltip>
                   ))}
@@ -419,6 +421,7 @@ const Configurator: React.FC = () => {
                       aria-label="Collapse sidebar"
                       className="hidden cursor-pointer text-charcoal/40 transition-colors hover:text-charcoal/70 md:block"
                       onClick={() => setIsCollapsed(true)}
+                      type="button"
                     >
                       <PanelLeftClose size={18} />
                     </button>
@@ -492,6 +495,7 @@ const Configurator: React.FC = () => {
                   href={exportHref}
                 >
                   <svg
+                    aria-hidden="true"
                     fill="none"
                     height="13"
                     stroke="currentColor"

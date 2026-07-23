@@ -132,6 +132,7 @@ const TreeRow: React.FC<{ node: TreeNode; depth?: number }> = ({
           transition: transition.interactive,
           width: "100%",
         }}
+        type="button"
       >
         {hasChildren && (
           <ChevronDown
@@ -150,7 +151,7 @@ const TreeRow: React.FC<{ node: TreeNode; depth?: number }> = ({
       </button>
       {hasChildren &&
         open &&
-        node.children!.map((child, i) => (
+        node.children?.map((child, i) => (
           <TreeRow depth={depth + 1} key={`${child.label}-${i}`} node={child} />
         ))}
     </div>
@@ -183,6 +184,7 @@ const IconButton: React.FC<{
       transition: transition.interactive,
       width: "30px",
     }}
+    type="button"
   >
     <Icon size={14} />
   </button>
@@ -390,7 +392,7 @@ const AvatarGroup: React.FC = () => {
 // Rich Text
 // ---------------------------------------------------------------------------
 
-const RichTextBlock: React.FC = () => (
+const _RichTextBlock: React.FC = () => (
   <Card>
     <p
       style={{
@@ -704,6 +706,7 @@ const NavList: React.FC = () => {
               transition: transition.interactive,
               width: "100%",
             }}
+            type="button"
           >
             <Icon size={14} />
             <span style={{ flex: 1 }}>{item.label}</span>
@@ -749,7 +752,7 @@ const DonutStatCard: React.FC = () => {
             width: size,
           }}
         >
-          <svg height={size} width={size}>
+          <svg aria-hidden="true" height={size} width={size}>
             <circle
               cx={size / 2}
               cy={size / 2}
@@ -1138,9 +1141,11 @@ const PrefCheckbox: React.FC<{ checked: boolean; onChange: () => void }> = ({
       transition: transition.interactive,
       width: "16px",
     }}
+    type="button"
   >
     {checked && (
       <svg
+        aria-hidden="true"
         fill="none"
         height="10"
         stroke={fg.onPrimary}
@@ -1343,6 +1348,7 @@ const FAQCard: React.FC = () => {
                 padding: `${space.sm} ${space.lg}`,
                 transition: transition.interactive,
               }}
+              type="button"
             >
               {t}
             </button>
@@ -1382,6 +1388,7 @@ const FAQCard: React.FC = () => {
                   textAlign: "left",
                   width: "100%",
                 }}
+                type="button"
               >
                 <span>{item.question}</span>
                 {open ? (
@@ -1574,6 +1581,7 @@ const PreviewComponents: React.FC = () => {
               <IconButton
                 icon={() => (
                   <svg
+                    aria-hidden="true"
                     fill="none"
                     height="14"
                     stroke="currentColor"
@@ -1589,6 +1597,7 @@ const PreviewComponents: React.FC = () => {
               <IconButton
                 icon={() => (
                   <svg
+                    aria-hidden="true"
                     fill="none"
                     height="14"
                     stroke="currentColor"
@@ -1604,6 +1613,7 @@ const PreviewComponents: React.FC = () => {
               <IconButton
                 icon={() => (
                   <svg
+                    aria-hidden="true"
                     fill="none"
                     height="14"
                     stroke="currentColor"
@@ -1620,6 +1630,7 @@ const PreviewComponents: React.FC = () => {
               <IconButton
                 icon={() => (
                   <svg
+                    aria-hidden="true"
                     fill="none"
                     height="14"
                     stroke="currentColor"
@@ -1635,6 +1646,7 @@ const PreviewComponents: React.FC = () => {
               <IconButton
                 icon={() => (
                   <svg
+                    aria-hidden="true"
                     fill="none"
                     height="14"
                     stroke="currentColor"

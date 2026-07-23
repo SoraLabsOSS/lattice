@@ -56,7 +56,9 @@ const ogImage = new URL("/og.jpg", Astro.site ?? Astro.url);
       if ((window as any).locomotiveScroll) {
         try {
           (window as any).locomotiveScroll.destroy();
-        } catch {}
+        } catch {
+          // destroy() throws if already destroyed; safe to ignore
+        }
         (window as any).locomotiveScroll = null;
         (window as any).lenis = null;
       }

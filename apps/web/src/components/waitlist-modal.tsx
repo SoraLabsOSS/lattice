@@ -252,5 +252,3 @@ export const WaitlistModal: React.FC = () => {
     </Dialog.Root>
   );
 };
-
-export default WaitlistModal;
