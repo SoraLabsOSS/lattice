@@ -1,4 +1,4 @@
-import { type BrandConfig, createBrandConfig } from "@sora-lattice/generator";
+import { type BrandConfig, createBrandConfig } from "@soralabsoss/generator";
 import LZString from "lz-string";
 
 const VERSION = "v1";

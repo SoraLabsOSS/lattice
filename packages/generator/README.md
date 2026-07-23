@@ -1,4 +1,4 @@
-# @sora-lattice/generator
+# @soralabsoss/generator
 
 Pure TypeScript library that turns a small `BrandConfig` (a few colors, a couple of fonts, some style knobs) into a full design-token system: OKLCH primitive ramps, semantic tokens with WCAG-AA-validated contrast pairings, and exporters for CSS, [DTCG](https://design-tokens.github.io/community-group/format/) JSON, Tailwind, and shadcn-style themes.
 
@@ -11,7 +11,7 @@ The `@sora-lattice/web` package already depends on it via `workspace:*`. To cons
 ```jsonc
 // package.json
 "dependencies": {
-  "@sora-lattice/generator": "workspace:*"
+  "@soralabsoss/generator": "workspace:*"
 }
 ```
 
@@ -22,7 +22,7 @@ The package is built to `dist/` and exports its public surface from [`src/index.
 One-shot: produce tokens and exported artifacts in a single call.
 
 ```ts
-import { generateTheme } from '@sora-lattice/generator';
+import { generateTheme } from '@soralabsoss/generator';
 
 const theme = generateTheme(
   {
@@ -47,7 +47,7 @@ import {
   generateDesignTokens,
   exportTokens,
   validateWcagAaContrast,
-} from '@sora-lattice/generator';
+} from '@soralabsoss/generator';
 
 const config = createBrandConfig({ primaryColor: '#2e7bab' });
 
@@ -93,15 +93,15 @@ src/
 ## Scripts
 
 ```bash
-bun run --filter @sora-lattice/generator build   # tsc → dist/
-bun run --filter @sora-lattice/generator test    # vitest run
+bun run --filter @soralabsoss/generator build   # tsc → dist/
+bun run --filter @soralabsoss/generator test    # vitest run
 ```
 
 The single test in [`test/generator.test.ts`](test/generator.test.ts) covers config normalization, deterministic token output, all four export formats, and the AA contrast guarantees for both modes.
 
 ## Publishing
 
-This package is published to npm as [`@sora-lattice/generator`](https://www.npmjs.com/package/@sora-lattice/generator) under MIT, so it can be consumed outside this monorepo (e.g. a CLI in another repo calling `generateTheme()` directly, with no network dependency).
+This package is published to npm as [`@soralabsoss/generator`](https://www.npmjs.com/package/@soralabsoss/generator) under MIT, so it can be consumed outside this monorepo (e.g. a CLI in another repo calling `generateTheme()` directly, with no network dependency).
 
 To cut a release:
 

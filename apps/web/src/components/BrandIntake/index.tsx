@@ -1,5 +1,5 @@
 import { useStore } from "@nanostores/react";
-import { generateDesignTokens } from "@sora-lattice/generator";
+import { generateDesignTokens } from "@soralabsoss/generator";
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import { Download, Moon, Sun } from "lucide-react";
 import type React from "react";

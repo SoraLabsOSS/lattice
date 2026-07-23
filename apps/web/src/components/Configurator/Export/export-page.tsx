@@ -9,7 +9,7 @@ import {
   initialConfig,
   type SkillArtifact,
   type TokenSet,
-} from "@sora-lattice/generator";
+} from "@soralabsoss/generator";
 import { strToU8, zipSync } from "fflate";
 import { ArrowLeft, Check, ChevronDown, Copy, Download } from "lucide-react";
 import type React from "react";

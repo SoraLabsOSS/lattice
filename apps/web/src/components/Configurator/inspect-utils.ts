@@ -2,7 +2,7 @@
 // Inspect-mode utilities — token extraction & semantic-to-primitive mapping
 // ---------------------------------------------------------------------------
 
-import type { PrimitiveMapping } from "@sora-lattice/generator";
+import type { PrimitiveMapping } from "@soralabsoss/generator";
 
 export type TokenCategory =
   | "color"

@@ -1,4 +1,4 @@
-import type { ColorRamp, NeutralColorRamp } from "@sora-lattice/generator";
+import type { ColorRamp, NeutralColorRamp } from "@soralabsoss/generator";
 import {
   applyChromaGuardrails,
   type ColorMode,
@@ -12,7 +12,7 @@ import {
   maxChromaForLH,
   selectHues,
   toOklch,
-} from "@sora-lattice/generator";
+} from "@soralabsoss/generator";
 import { useMemo } from "react";
 import type { BrandConfig } from "./store";
 

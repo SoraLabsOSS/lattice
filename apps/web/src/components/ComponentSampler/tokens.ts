@@ -1,5 +1,5 @@
 // Shared, typed accessors for the CSS custom properties emitted by
-// `generateDesignTokens()` (see `@sora-lattice/generator`).
+// `generateDesignTokens()` (see `@soralabsoss/generator`).
 
 const t = (token: string) => `var(--${token})`;
 

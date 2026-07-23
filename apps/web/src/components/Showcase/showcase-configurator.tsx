@@ -1,5 +1,5 @@
 import { useStore } from "@nanostores/react";
-import { generateRamp } from "@sora-lattice/generator";
+import { generateRamp } from "@soralabsoss/generator";
 import type React from "react";
 import { useMemo } from "react";
 import { ColorPickerPopover } from "../ui/color-picker-popover";

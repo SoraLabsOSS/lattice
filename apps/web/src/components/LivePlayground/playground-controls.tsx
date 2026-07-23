@@ -1,4 +1,4 @@
-import { generateRamp } from "@sora-lattice/generator";
+import { generateRamp } from "@soralabsoss/generator";
 import { Moon, Settings2, Sun, X } from "lucide-react";
 import type React from "react";
 import { useMemo } from "react";
