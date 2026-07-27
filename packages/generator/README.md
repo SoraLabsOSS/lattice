@@ -1,10 +1,27 @@
 # @soralabsoss/generator
 
+[![npm version](https://img.shields.io/npm/v/%40soralabsoss%2Fgenerator.svg)](https://www.npmjs.com/package/@soralabsoss/generator)
+[![license](https://img.shields.io/npm/l/%40soralabsoss%2Fgenerator.svg)](LICENSE)
+[![types](https://img.shields.io/npm/types/%40soralabsoss%2Fgenerator.svg)](src/index.ts)
+
 Pure TypeScript library that turns a small `BrandConfig` (a few colors, a couple of fonts, some style knobs) into a full design-token system: OKLCH primitive ramps, semantic tokens with WCAG-AA-validated contrast pairings, and exporters for CSS, [DTCG](https://design-tokens.github.io/community-group/format/) JSON, Tailwind, and shadcn-style themes.
 
 It has no DOM dependencies — it runs in Node, in the browser, or inside the [`@sora-lattice/web`](../../apps/web/) Configurator that ships in this repo.
 
-## Install (workspace use)
+## Why
+
+Most shadcn/Tailwind theme tools (visual editors, preset pickers) hand you a palette and leave contrast and ramp consistency up to you. This package goes the other direction: give it one primary color and it derives a full OKLCH ramp plus every semantic pairing (background/foreground, border, interactive states, chart colors, ...), validates each pair against WCAG AA, and adjusts automatically when a step would fail. The output is deterministic and framework-agnostic — a plain function call, not a UI you have to drive — so it fits into a build step, a CLI, or a design-system pipeline just as well as into an app.
+
+## Install
+
+```bash
+npm install @soralabsoss/generator
+# or: bun add / pnpm add / yarn add
+```
+
+Requires Node >=18.20.8. The package is ESM-only — `package.json` has no CJS `require` export condition, so `require('@soralabsoss/generator')` will not resolve; use `import`.
+
+### Workspace use (inside this monorepo)
 
 The `@sora-lattice/web` package already depends on it via `workspace:*`. To consume it from another workspace package, add:
 
@@ -15,7 +32,7 @@ The `@sora-lattice/web` package already depends on it via `workspace:*`. To cons
 }
 ```
 
-The package is built to `dist/` and exports its public surface from [`src/index.ts`](src/index.ts). It's ESM-only — `package.json` has no CJS `require` export condition, so `require('@soralabsoss/generator')` will not resolve.
+The package is built to `dist/` and exports its public surface from [`src/index.ts`](src/index.ts).
 
 ## Quick start
 

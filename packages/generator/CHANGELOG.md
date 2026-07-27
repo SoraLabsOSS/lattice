@@ -3,6 +3,12 @@
 All notable changes to this package are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.2]
+
+- Fixed a crash in `generateDesignTokens` when `primaryColor` was an unparseable or partial hex string (e.g. mid-edit in a color picker): `clampPrimaryForContrast` now validates the color before computing contrast instead of letting `culori`'s `wcagContrast` throw. Invalid input now degrades to a safe fallback instead of throwing.
+- Fixed a stray trailing quote in the shadcn exporter's `--font-sans` value when the source font-family string was quoted (`shadcnExtras` in `export-tokens.ts`).
+- Added unit tests for `skills.ts` and `export-tokens.ts`, plus regression tests covering the crash fix above.
+
 ## [0.1.1]
 
 - Added `LICENSE` to the published tarball (was previously missing).
