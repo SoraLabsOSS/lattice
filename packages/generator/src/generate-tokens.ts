@@ -19,7 +19,7 @@ import {
   STEPS,
 } from "./color-utils.js";
 import { pickStep } from "./contrast-utils.js";
-import type { BrandConfig } from "./types.js";
+import { type BrandConfig, initialConfig } from "./types.js";
 
 // ---------------------------------------------------------------------------
 // Lightness targets — the tunable "knobs" for semantic mapping
@@ -1381,8 +1381,17 @@ export function generateDesignTokens(
   isDarkMode: boolean
 ): TokenResult {
   const isDark = isDarkMode;
+  // `primaryColor` drives the whole pipeline (hue selection, contrast
+  // clamping, neutral-extreme picks) and several of those steps call
+  // culori's `wcagContrast` directly, which throws on an unparseable color
+  // instead of failing soft. Sanitize once here — e.g. a partial hex typed
+  // character-by-character in a live-updating input — rather than guarding
+  // every downstream call site individually.
+  const safeConfig = toOklch(config.primaryColor)
+    ? config
+    : { ...config, primaryColor: initialConfig.primaryColor };
 
-  const allocation = allocateRamps(config);
+  const allocation = allocateRamps(safeConfig);
   const { byHueLight, byHueDark, roleHue, decorativeHues } = allocation;
 
   const emitter = new TokenEmitter(byHueLight, byHueDark, roleHue, isDark);
@@ -1390,7 +1399,7 @@ export function generateDesignTokens(
   emitPrimitiveRampTokens(emitter);
   const { primaryBaseHex, primaryAdjustment } = emitExactPrimaryToken(
     emitter,
-    config,
+    safeConfig,
     roleHue
   );
 
@@ -1403,7 +1412,7 @@ export function generateDesignTokens(
     "linear-gradient(135deg, var(--color-background-primary), var(--color-background-accent))";
 
   emitInteractiveTokens(emitter);
-  emitNonColorTokens(emitter.tokens, config, isDark);
+  emitNonColorTokens(emitter.tokens, safeConfig, isDark);
 
   const { byHue } = emitter;
   const swatches = {

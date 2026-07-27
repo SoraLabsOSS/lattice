@@ -67,7 +67,3 @@ From the repo root, `bun run dev` / `bun run build` / `bun run test` run the equ
 - **Theme tokens for the marketing site itself** live in [src/styles/global.css](src/styles/global.css) under the `@theme` block (Tailwind 4 syntax). The generator's output is *not* applied here — the Configurator scopes its CSS variables to its own preview tree.
 - **Configurator defaults** come from `initialConfig` in `@soralabsoss/generator` (see [packages/generator/src/types.ts](../../packages/generator/src/types.ts)). Overriding them at boot is just a `createBrandConfig({...})` call before mounting `<Configurator />`.
 - **Google Fonts catalog** for the typography tab is [src/data/googleFonts.ts](src/data/googleFonts.ts).
-
-## Author
-
-**Cristobal Grana** — Lead UX Engineer at GoDaddy.

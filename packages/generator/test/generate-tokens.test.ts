@@ -55,3 +55,33 @@ describe("generate-tokens: config-driven constants", () => {
     expect(tokens["--typography-size-500"]).toBe("40px");
   });
 });
+
+describe("generate-tokens: unparseable primaryColor", () => {
+  // Regression: a controlled hex input in the web app calls onChange (and
+  // thus generateDesignTokens) on every keystroke, so primaryColor is
+  // routinely an incomplete/invalid hex mid-typing (e.g. "#e", "#e44").
+  // culori's wcagContrast throws on those instead of failing soft, and it's
+  // reachable from multiple places in the pipeline (contrast clamping,
+  // neutral-extreme selection) — this must never crash generation.
+  it.each([
+    "#e",
+    "#e44",
+    "#zzzzzz",
+    "",
+    "not-a-color",
+  ])("falls back gracefully instead of throwing for primaryColor=%j", (invalidHex) => {
+    const config = createBrandConfig({ primaryColor: invalidHex });
+    expect(() => generateDesignTokens(config, false)).not.toThrow();
+    expect(() => generateDesignTokens(config, true)).not.toThrow();
+
+    const { tokens } = generateDesignTokens(config, false);
+    expect(tokens["--color-background-primary"]).toBeDefined();
+    expect(Object.keys(tokens).length).toBeGreaterThan(150);
+  });
+
+  it("does not mutate the caller's config object", () => {
+    const config = createBrandConfig({ primaryColor: "#zzzzzz" });
+    generateDesignTokens(config, false);
+    expect(config.primaryColor).toBe("#zzzzzz");
+  });
+});

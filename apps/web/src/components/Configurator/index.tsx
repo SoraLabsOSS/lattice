@@ -28,6 +28,7 @@ import TabColor from "../BrandIntake/tab-color";
 import TabStyle from "../BrandIntake/tab-style";
 import TabTypography from "../BrandIntake/tab-typography";
 import PreviewComponents from "../ComponentSampler";
+import { ConfiguratorErrorBoundary } from "../error-boundary";
 import PlaygroundDashboard from "../LivePlayground/playground-dashboard";
 import PreviewTypography from "../LivePlayground/preview-typography";
 import type { PlaygroundConfig } from "../LivePlayground/types";
@@ -560,4 +561,10 @@ const Configurator: React.FC = () => {
   );
 };
 
-export default Configurator;
+const ConfiguratorWithBoundary: React.FC = () => (
+  <ConfiguratorErrorBoundary>
+    <Configurator />
+  </ConfiguratorErrorBoundary>
+);
+
+export default ConfiguratorWithBoundary;

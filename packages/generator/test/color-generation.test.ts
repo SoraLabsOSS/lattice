@@ -56,6 +56,25 @@ describe("color-generation", () => {
         MIN_PRIMARY_CONTRAST - 0.05
       );
     });
+
+    // Regression: culori's `wcagContrast` throws (rather than returning a
+    // sentinel) on an unparseable color. A hex field that calls onChange on
+    // every keystroke passes exactly these intermediate values (e.g. "#e",
+    // "#e4") while a user is still typing, so this must fail soft, not throw.
+    it.each([
+      "#e",
+      "#e44",
+      "#zzzzzz",
+      "",
+      "not-a-color",
+    ])("does not throw for an unparseable hex %j and reports no adjustment", (invalidHex) => {
+      expect(() =>
+        clampPrimaryForContrast(invalidHex, "#ffffff", "light")
+      ).not.toThrow();
+      const result = clampPrimaryForContrast(invalidHex, "#ffffff", "light");
+      expect(result.adjusted).toBe(false);
+      expect(result.applied).toBe(invalidHex);
+    });
   });
 
   describe("maxChromaForLH", () => {

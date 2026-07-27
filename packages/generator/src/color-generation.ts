@@ -151,6 +151,21 @@ export function clampPrimaryForContrast(
   baseBgHex: string,
   mode: ColorMode
 ): PrimaryContrastClampResult {
+  // culori's `wcagContrast` throws instead of returning a sentinel when
+  // given an unparseable color (e.g. a partial hex typed character-by-character
+  // in a live-updating input), so validate via `toOklch` — which fails soft — first.
+  const o = toOklch(hex);
+  if (!o) {
+    return {
+      adjusted: false,
+      applied: hex,
+      contrastAfter: 1,
+      contrastBefore: 1,
+      mode,
+      original: hex,
+    };
+  }
+
   const initialContrast = wcagContrast(hex, baseBgHex) ?? 1;
   const unadjustedResult: PrimaryContrastClampResult = {
     adjusted: false,
@@ -161,11 +176,6 @@ export function clampPrimaryForContrast(
     original: hex,
   };
   if (initialContrast >= MIN_PRIMARY_CONTRAST) {
-    return unadjustedResult;
-  }
-
-  const o = toOklch(hex);
-  if (!o) {
     return unadjustedResult;
   }
 

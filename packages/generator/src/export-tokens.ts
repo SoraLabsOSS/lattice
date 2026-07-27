@@ -621,7 +621,7 @@ function shadcnSemantic(
 function shadcnExtras(tokens: Record<string, string>): ShadcnEntry[] {
   const fontPrimaryRaw =
     tokens["--typography-font-family-body"] || "system-ui, sans-serif";
-  const fontPrimary = fontPrimaryRaw.replace(/^'|'$/g, "");
+  const fontPrimary = fontPrimaryRaw.replace(/^'([^']*)'/, "$1");
   const radiusContainer = resolveVar(
     tokens["--shape-radius-container"] || "0.5rem",
     tokens
