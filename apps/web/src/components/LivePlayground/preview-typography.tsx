@@ -1,3 +1,4 @@
+import { ScrollArea } from "@sora-lattice/ui/components/scroll-area";
 import type React from "react";
 
 // ---------------------------------------------------------------------------
@@ -74,8 +75,8 @@ const PreviewTypography: React.FC<PreviewTypographyProps> = ({
   bodyFont: _bodyFontName,
 }) => {
   return (
-    <div
-      className="h-full overflow-y-auto"
+    <ScrollArea
+      className="h-full"
       style={{
         backgroundColor: bg.base,
         color: fg.onBase,
@@ -441,7 +442,7 @@ const PreviewTypography: React.FC<PreviewTypographyProps> = ({
           )}
         </div>
       </article>
-    </div>
+    </ScrollArea>
   );
 };
 

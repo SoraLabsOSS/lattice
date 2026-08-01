@@ -67,7 +67,9 @@ describe("@soralabsoss/generator", () => {
       expect(output).toContain("export default");
     }
     if (format === "shadcn") {
+      expect(output).toContain("@theme inline");
       expect(output).toContain("@layer base");
+      expect(output).not.toContain("--neutral-500:");
     }
   });
 

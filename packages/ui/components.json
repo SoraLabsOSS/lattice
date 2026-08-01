@@ -1,0 +1,20 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "base-rhea",
+  "rsc": false,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "src/styles/globals.css",
+    "baseColor": "neutral",
+    "cssVariables": true
+  },
+  "iconLibrary": "lucide",
+  "aliases": {
+    "components": "@sora-lattice/ui/components",
+    "utils": "@sora-lattice/ui/lib/utils",
+    "ui": "@sora-lattice/ui/components",
+    "lib": "@sora-lattice/ui/lib",
+    "hooks": "@sora-lattice/ui/hooks"
+  }
+}

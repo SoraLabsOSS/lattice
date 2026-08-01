@@ -1,5 +1,7 @@
 import { useStore } from "@nanostores/react";
-import { generateDesignTokens } from "@soralabsoss/generator";
+import { ScrollArea } from "@sora-lattice/ui/components/scroll-area";
+import { PortalContainerProvider } from "@sora-lattice/ui/lib/portal-container";
+import { generateDesignTokens, toShadcnCssVars } from "@soralabsoss/generator";
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import {
   Moon,
@@ -27,11 +29,11 @@ import TabBar from "../BrandIntake/tab-bar";
 import TabColor from "../BrandIntake/tab-color";
 import TabStyle from "../BrandIntake/tab-style";
 import TabTypography from "../BrandIntake/tab-typography";
-import PreviewComponents from "../ComponentSampler";
 import { ConfiguratorErrorBoundary } from "../error-boundary";
 import PlaygroundDashboard from "../LivePlayground/playground-dashboard";
 import PreviewTypography from "../LivePlayground/preview-typography";
 import type { PlaygroundConfig } from "../LivePlayground/types";
+import CardsDemo from "../ShadcnCardsDemo";
 import { Tooltip } from "../ui/tooltip";
 import InspectOverlay from "./inspect-overlay";
 
@@ -210,17 +212,24 @@ const Configurator: React.FC = () => {
   });
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  const getScrollViewport = () =>
+    scrollContainerRef.current?.querySelector<HTMLElement>(
+      '[data-slot="scroll-area-viewport"]'
+    ) ?? null;
+
   const handleTabChange = useCallback(
     (tab: TabId) => {
-      // Save current scroll position
-      if (scrollContainerRef.current) {
-        scrollRefs.current[activeTab] = scrollContainerRef.current.scrollTop;
+      // Save current scroll position (ScrollArea viewport is the scroller)
+      const viewport = getScrollViewport();
+      if (viewport) {
+        scrollRefs.current[activeTab] = viewport.scrollTop;
       }
       setActiveTab(tab);
       // Restore scroll position for new tab
       requestAnimationFrame(() => {
-        if (scrollContainerRef.current) {
-          scrollContainerRef.current.scrollTop = scrollRefs.current[tab] || 0;
+        const next = getScrollViewport();
+        if (next) {
+          next.scrollTop = scrollRefs.current[tab] || 0;
         }
       });
     },
@@ -254,6 +263,18 @@ const Configurator: React.FC = () => {
   } = useMemo(
     () => generateDesignTokens(config, isDarkMode),
     [config, isDarkMode]
+  );
+
+  // Components tab theme — applied ONLY on the preview surface. Never on
+  // <html>: fonts/radius/colors/spacing would restyle BrandIntake chrome.
+  // Portaled dialogs/menus mount inside this tree via PortalContainerProvider.
+  const componentsThemeVars = useMemo(
+    () => toShadcnCssVars(designTokens, isDarkMode),
+    [designTokens, isDarkMode]
+  );
+
+  const [previewPortalEl, setPreviewPortalEl] = useState<HTMLDivElement | null>(
+    null
   );
 
   // The export page receives the entire BrandConfig via a URL-encoded param;
@@ -435,29 +456,34 @@ const Configurator: React.FC = () => {
                     />
                   </LayoutGroup>
 
-                  <div
-                    className="min-h-0 flex-1 overflow-y-auto px-6 py-5"
+                  <ScrollArea
+                    className="min-h-0 flex-1"
                     ref={scrollContainerRef}
                   >
-                    <AnimatePresence initial={false} mode="wait">
-                      <motion.div
-                        animate={{ opacity: 1 }}
-                        aria-labelledby={`theme-tab-${activeTab}`}
-                        exit={{ opacity: 0 }}
-                        id={`theme-tab-panel-${activeTab}`}
-                        initial={{ opacity: 0 }}
-                        key={activeTab}
-                        role="tabpanel"
-                        transition={{ duration: 0.15, ease: [0.4, 0, 0.2, 1] }}
-                      >
-                        {activeTab === "color" && (
-                          <TabColor isDarkMode={isDarkMode} />
-                        )}
-                        {activeTab === "typography" && <TabTypography />}
-                        {activeTab === "style" && <TabStyle />}
-                      </motion.div>
-                    </AnimatePresence>
-                  </div>
+                    <div className="px-6 py-5">
+                      <AnimatePresence initial={false} mode="wait">
+                        <motion.div
+                          animate={{ opacity: 1 }}
+                          aria-labelledby={`theme-tab-${activeTab}`}
+                          exit={{ opacity: 0 }}
+                          id={`theme-tab-panel-${activeTab}`}
+                          initial={{ opacity: 0 }}
+                          key={activeTab}
+                          role="tabpanel"
+                          transition={{
+                            duration: 0.15,
+                            ease: [0.4, 0, 0.2, 1],
+                          }}
+                        >
+                          {activeTab === "color" && (
+                            <TabColor isDarkMode={isDarkMode} />
+                          )}
+                          {activeTab === "typography" && <TabTypography />}
+                          {activeTab === "style" && <TabStyle />}
+                        </motion.div>
+                      </AnimatePresence>
+                    </div>
+                  </ScrollArea>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -517,11 +543,15 @@ const Configurator: React.FC = () => {
             </div>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4 md:px-8">
+          <div className="flex min-h-0 flex-1 flex-col px-4 pb-4 md:px-8">
             <div
-              className="relative mx-auto h-full max-h-[1200px] min-h-[500px] max-w-[1600px] overflow-hidden rounded-3xl border-2 border-white shadow-sm"
+              className="relative mx-auto flex min-h-0 w-full max-w-[1600px] flex-1 flex-col overflow-hidden rounded-3xl border-2 border-white shadow-sm"
               ref={previewContainerRef}
-              style={designTokens as React.CSSProperties}
+              style={
+                previewTab === "components"
+                  ? undefined
+                  : (designTokens as React.CSSProperties)
+              }
             >
               {previewTab === "dashboard" && (
                 <PlaygroundDashboard
@@ -529,7 +559,21 @@ const Configurator: React.FC = () => {
                   onChange={handlePlaygroundChange}
                 />
               )}
-              {previewTab === "components" && <PreviewComponents />}
+              {previewTab === "components" && (
+                <div
+                  className={`relative min-h-0 flex-1 overflow-hidden bg-background font-sans text-foreground ${isDarkMode ? "dark" : ""}`}
+                  data-cards-demo-root=""
+                  ref={setPreviewPortalEl}
+                  style={{
+                    ...(componentsThemeVars as React.CSSProperties),
+                    fontFamily: "var(--font-sans)",
+                  }}
+                >
+                  <PortalContainerProvider container={previewPortalEl}>
+                    <CardsDemo />
+                  </PortalContainerProvider>
+                </div>
+              )}
               {previewTab === "blog" && (
                 <PreviewTypography
                   bodyFont={config.primaryFont}

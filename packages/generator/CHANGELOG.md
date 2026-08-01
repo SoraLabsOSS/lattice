@@ -3,6 +3,22 @@
 All notable changes to this package are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.0]
+
+- Reworked the `shadcn` exporter into a Tailwind v4 drop-in theme file (aligned
+  with [tweakcn](https://github.com/jnsahaj/tweakcn)'s export shape):
+  `@import "tailwindcss"`, `@custom-variant dark`, semantic `:root` / `.dark`,
+  `@theme inline` (including Rhea radius scale through `--radius-4xl`), and
+  `@layer base` body/border rules.
+- Removed Lattice primitive ramps from the `shadcn` export (they remain in the
+  `css` format). Fonts/radius/spacing stay on `:root` only; heading font maps
+  to `--font-serif`.
+- Expanded `toShadcnCssVars` for the Components live preview: fonts, radius
+  (density-independent), spacing unit, shadow stacks, and Tailwind
+  `--font-weight-*` remapped from brand weight slots. Added
+  `isPreviewScopedShadcnVar` to document that the map must stay on a preview
+  root (not `<html>`).
+
 ## [0.1.2]
 
 - Fixed a crash in `generateDesignTokens` when `primaryColor` was an unparseable or partial hex string (e.g. mid-edit in a color picker): `clampPrimaryForContrast` now validates the color before computing contrast instead of letting `culori`'s `wcagContrast` throw. Invalid input now degrades to a safe fallback instead of throwing.

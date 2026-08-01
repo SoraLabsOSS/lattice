@@ -1,0 +1,22 @@
+---
+import { ShadcnButtonDemo } from "../components/shadcn-button-demo";
+import BaseLayout from "../layouts/base-layout.astro";
+---
+
+<BaseLayout
+  description="Smoke test for @sora-lattice/ui shadcn Button in the Trellis monorepo."
+  title="UI package smoke test — Sora Lattice"
+>
+  <main
+    class="mx-auto flex min-h-screen max-w-3xl flex-col justify-center gap-8 px-8 py-24"
+  >
+    <div class="flex flex-col gap-2">
+      <p class="text-charcoal/80 text-sm">@sora-lattice/ui</p>
+      <h1 class="text-4xl">Shadcn Button smoke test</h1>
+      <p class="text-charcoal/80 text-base md:text-lg">
+        Buttons below are imported from the shared workspace UI package.
+      </p>
+    </div>
+    <ShadcnButtonDemo client:load />
+  </main>
+</BaseLayout>

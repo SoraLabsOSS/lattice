@@ -4,7 +4,7 @@
 [![license](https://img.shields.io/npm/l/%40soralabsoss%2Fgenerator.svg)](LICENSE)
 [![types](https://img.shields.io/npm/types/%40soralabsoss%2Fgenerator.svg)](src/index.ts)
 
-Pure TypeScript library that turns a small `BrandConfig` (a few colors, a couple of fonts, some style knobs) into a full design-token system: OKLCH primitive ramps, semantic tokens with WCAG-AA-validated contrast pairings, and exporters for CSS, [DTCG](https://design-tokens.github.io/community-group/format/) JSON, Tailwind, and shadcn-style themes.
+Pure TypeScript library that turns a small `BrandConfig` (a few colors, a couple of fonts, some style knobs) into a full design-token system: OKLCH primitive ramps, semantic tokens with WCAG-AA-validated contrast pairings, and exporters for CSS, [DTCG](https://design-tokens.github.io/community-group/format/) JSON, Tailwind, and a paste-ready shadcn / Tailwind v4 theme CSS.
 
 It has no DOM dependencies — it runs in Node, in the browser, or inside the [`@sora-lattice/web`](../../apps/web/) Configurator that ships in this repo.
 

@@ -1,3 +1,4 @@
+import { ScrollArea } from "@sora-lattice/ui/components/scroll-area";
 import type { EChartsOption } from "echarts";
 import ReactEChartsImport from "echarts-for-react/lib/index.js";
 import {
@@ -529,7 +530,7 @@ const PlaygroundDashboard: React.FC<PlaygroundDashboardProps> = ({
             </span>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
+          <ScrollArea className="min-h-0 flex-1">
             <nav className="flex flex-col gap-4 px-2 pb-2">
               {navSections.map((section) => (
                 <div key={section.title}>
@@ -568,7 +569,7 @@ const PlaygroundDashboard: React.FC<PlaygroundDashboardProps> = ({
                 </div>
               ))}
             </nav>
-          </div>
+          </ScrollArea>
 
           <div
             className="mt-auto shrink-0 px-3 pt-4"
@@ -688,533 +689,536 @@ const PlaygroundDashboard: React.FC<PlaygroundDashboardProps> = ({
           </div>
 
           {/* Content area */}
-          <div
-            className="flex-1 overflow-y-auto overflow-x-hidden"
-            style={{
-              paddingBottom: space.xl,
-              paddingLeft: space["2xl"],
-              paddingRight: space["2xl"],
-              paddingTop: space.xl,
-              transition: transition.theme,
-            }}
-          >
+          <ScrollArea className="min-h-0 flex-1">
             <div
-              className="mb-4"
-              style={{ marginBottom: space.xl, transition: transition.theme }}
+              style={{
+                paddingBottom: space.xl,
+                paddingLeft: space["2xl"],
+                paddingRight: space["2xl"],
+                paddingTop: space.xl,
+                transition: transition.theme,
+              }}
             >
-              <span
-                className="block text-[11px]"
-                style={{
-                  color: fg.onBaseMuted,
-                  fontFamily: font.primary,
-                  fontWeight: weight.bodyRegular as unknown as number,
-                  letterSpacing: "0.01em",
-                  marginBottom: space.xs,
-                  transition: transition.theme,
-                }}
+              <div
+                className="mb-4"
+                style={{ marginBottom: space.xl, transition: transition.theme }}
               >
-                {todayLabel}
-              </span>
-              <h2
-                className="leading-tight"
-                style={{
-                  color: fg.onBase,
-                  fontFamily: font.secondary,
-                  fontSize: "1.5rem",
-                  fontWeight: weight.heading as unknown as number,
-                  letterSpacing: "-0.02em",
-                  lineHeight: 1.15,
-                  margin: 0,
-                  transition: transition.theme,
-                }}
-              >
-                Good morning, Dave
-              </h2>
-            </div>
-
-            {/* Metric Cards */}
-            <div
-              className="mb-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4"
-              style={{ gap: space.md, transition: transition.theme }}
-            >
-              {metrics.map((m) => (
-                <div
-                  className="flex flex-col"
-                  key={m.label}
+                <span
+                  className="block text-[11px]"
                   style={{
-                    backgroundColor: bg.raised,
-                    border: `1px solid ${border.neutral}`,
-                    borderRadius: radius.container,
-                    boxShadow: shadow.raised,
-                    padding: space.lg,
+                    color: fg.onBaseMuted,
+                    fontFamily: font.primary,
+                    fontWeight: weight.bodyRegular as unknown as number,
+                    letterSpacing: "0.01em",
+                    marginBottom: space.xs,
                     transition: transition.theme,
                   }}
                 >
-                  <div className="flex items-start justify-between gap-2">
+                  {todayLabel}
+                </span>
+                <h2
+                  className="leading-tight"
+                  style={{
+                    color: fg.onBase,
+                    fontFamily: font.secondary,
+                    fontSize: "1.5rem",
+                    fontWeight: weight.heading as unknown as number,
+                    letterSpacing: "-0.02em",
+                    lineHeight: 1.15,
+                    margin: 0,
+                    transition: transition.theme,
+                  }}
+                >
+                  Good morning, Dave
+                </h2>
+              </div>
+
+              {/* Metric Cards */}
+              <div
+                className="mb-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4"
+                style={{ gap: space.md, transition: transition.theme }}
+              >
+                {metrics.map((m) => (
+                  <div
+                    className="flex flex-col"
+                    key={m.label}
+                    style={{
+                      backgroundColor: bg.raised,
+                      border: `1px solid ${border.neutral}`,
+                      borderRadius: radius.container,
+                      boxShadow: shadow.raised,
+                      padding: space.lg,
+                      transition: transition.theme,
+                    }}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <span
+                        className="mb-1 font-medium text-[9px] uppercase tracking-wider"
+                        style={{ color: fg.onBaseMuted }}
+                      >
+                        {m.label}
+                      </span>
+                      <div
+                        className="flex h-6 w-6 items-center justify-center"
+                        style={{
+                          backgroundColor: bg.sunken,
+                          borderRadius: radius.badge,
+                          color: fg.onSunken,
+                          transition: transition.theme,
+                        }}
+                      >
+                        <m.icon size={12} />
+                      </div>
+                    </div>
                     <span
-                      className="mb-1 font-medium text-[9px] uppercase tracking-wider"
-                      style={{ color: fg.onBaseMuted }}
-                    >
-                      {m.label}
-                    </span>
-                    <div
-                      className="flex h-6 w-6 items-center justify-center"
+                      className="text-2xl leading-tight"
                       style={{
-                        backgroundColor: bg.sunken,
-                        borderRadius: radius.badge,
-                        color: fg.onSunken,
+                        color: fg.onBase,
+                        fontFamily: font.secondary,
+                        fontWeight:
+                          "var(--font-heading-weight)" as unknown as number,
+                      }}
+                    >
+                      {m.value}
+                    </span>
+                    <span
+                      className="mt-1 flex items-center gap-0.5 font-medium text-[10px]"
+                      style={{
+                        color: m.up ? fg.success : fg.critical,
                         transition: transition.theme,
                       }}
                     >
-                      <m.icon size={12} />
-                    </div>
+                      {m.up ? (
+                        <TrendingUp size={10} />
+                      ) : (
+                        <TrendingDown size={10} />
+                      )}
+                      {m.change} vs last month
+                    </span>
                   </div>
-                  <span
-                    className="text-2xl leading-tight"
-                    style={{
-                      color: fg.onBase,
-                      fontFamily: font.secondary,
-                      fontWeight:
-                        "var(--font-heading-weight)" as unknown as number,
-                    }}
-                  >
-                    {m.value}
-                  </span>
-                  <span
-                    className="mt-1 flex items-center gap-0.5 font-medium text-[10px]"
-                    style={{
-                      color: m.up ? fg.success : fg.critical,
-                      transition: transition.theme,
-                    }}
-                  >
-                    {m.up ? (
-                      <TrendingUp size={10} />
-                    ) : (
-                      <TrendingDown size={10} />
-                    )}
-                    {m.change} vs last month
-                  </span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
 
-            <div
-              className="grid grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]"
-              style={{ gap: space.md, transition: transition.theme }}
-            >
               <div
-                className="flex flex-col"
+                className="grid grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]"
                 style={{ gap: space.md, transition: transition.theme }}
               >
-                {/* Chart Area */}
                 <div
-                  style={{
-                    backgroundColor: bg.raised,
-                    border: `1px solid ${border.neutral}`,
-                    borderRadius: radius.container,
-                    boxShadow: shadow.raised,
-                    padding: space.lg,
-                    transition: transition.theme,
-                  }}
+                  className="flex flex-col"
+                  style={{ gap: space.md, transition: transition.theme }}
                 >
-                  <div className="mb-3 flex items-center justify-between">
-                    <div>
-                      <span
-                        className="block font-semibold text-xs"
-                        style={{ color: fg.onBase }}
-                      >
-                        Revenue Analytics
-                      </span>
-                      <span
-                        className="text-[10px]"
-                        style={{ color: fg.onBaseMuted }}
-                      >
-                        Daily income over the last 7 days
-                      </span>
-                    </div>
-                    {/* Ghost button */}
-                    <button
-                      className="pg-interactive flex cursor-pointer items-center gap-1 px-2 py-1 font-medium text-[10px]"
-                      style={{
-                        backgroundColor: bg.raisedHover,
-                        borderRadius: radius.badge,
-                        color: fg.onBaseMuted,
-                        transition: transition.interactive,
-                      }}
-                      type="button"
-                    >
-                      Last 7 days <ChevronDown size={10} />
-                    </button>
-                  </div>
-                  <ReactECharts
-                    lazyUpdate
-                    notMerge
-                    option={revenueChartOption}
-                    opts={{ renderer: "canvas" }}
-                    style={{ height: 210, width: "100%" }}
-                  />
-                </div>
-
-                {/* Transactions */}
-                <div
-                  style={{
-                    backgroundColor: bg.raised,
-                    border: `1px solid ${border.neutral}`,
-                    borderRadius: radius.container,
-                    boxShadow: shadow.raised,
-                    overflow: "hidden",
-                    transition: transition.theme,
-                  }}
-                >
+                  {/* Chart Area */}
                   <div
-                    className="flex items-center justify-between"
                     style={{
-                      padding: `${space.lg} ${space.lg} 10px`,
+                      backgroundColor: bg.raised,
+                      border: `1px solid ${border.neutral}`,
+                      borderRadius: radius.container,
+                      boxShadow: shadow.raised,
+                      padding: space.lg,
                       transition: transition.theme,
                     }}
                   >
-                    <div>
-                      <span
-                        className="block font-semibold text-xs"
-                        style={{ color: fg.onBase }}
+                    <div className="mb-3 flex items-center justify-between">
+                      <div>
+                        <span
+                          className="block font-semibold text-xs"
+                          style={{ color: fg.onBase }}
+                        >
+                          Revenue Analytics
+                        </span>
+                        <span
+                          className="text-[10px]"
+                          style={{ color: fg.onBaseMuted }}
+                        >
+                          Daily income over the last 7 days
+                        </span>
+                      </div>
+                      {/* Ghost button */}
+                      <button
+                        className="pg-interactive flex cursor-pointer items-center gap-1 px-2 py-1 font-medium text-[10px]"
+                        style={{
+                          backgroundColor: bg.raisedHover,
+                          borderRadius: radius.badge,
+                          color: fg.onBaseMuted,
+                          transition: transition.interactive,
+                        }}
+                        type="button"
                       >
-                        Recent Transactions
-                      </span>
-                      <span
-                        className="text-[10px]"
-                        style={{ color: fg.onBaseMuted }}
-                      >
-                        Latest payments processed across all projects
-                      </span>
+                        Last 7 days <ChevronDown size={10} />
+                      </button>
                     </div>
-                    {/* Link button */}
-                    <button
-                      className="pg-interactive flex cursor-pointer items-center gap-1 px-2 py-1 font-medium text-[10px]"
-                      style={{
-                        borderRadius: radius.badge,
-                        color: fg.primary,
-                        transition: transition.interactive,
-                      }}
-                      type="button"
-                    >
-                      View all <ExternalLink size={9} />
-                    </button>
+                    <ReactECharts
+                      lazyUpdate
+                      notMerge
+                      option={revenueChartOption}
+                      opts={{ renderer: "canvas" }}
+                      style={{ height: 210, width: "100%" }}
+                    />
                   </div>
 
+                  {/* Transactions */}
                   <div
-                    className="overflow-x-auto"
-                    style={{ transition: transition.theme }}
+                    style={{
+                      backgroundColor: bg.raised,
+                      border: `1px solid ${border.neutral}`,
+                      borderRadius: radius.container,
+                      boxShadow: shadow.raised,
+                      overflow: "hidden",
+                      transition: transition.theme,
+                    }}
                   >
-                    <table className="w-full min-w-[560px] text-[11px]">
-                      <thead>
-                        <tr
-                          style={{
-                            borderBottom: `1px solid ${border.neutral}`,
-                            transition: transition.theme,
-                          }}
+                    <div
+                      className="flex items-center justify-between"
+                      style={{
+                        padding: `${space.lg} ${space.lg} 10px`,
+                        transition: transition.theme,
+                      }}
+                    >
+                      <div>
+                        <span
+                          className="block font-semibold text-xs"
+                          style={{ color: fg.onBase }}
                         >
-                          {["Customer", "Status", "Date", "Amount"].map((h) => (
-                            <th
-                              className="text-left font-medium"
-                              key={h}
-                              style={{
-                                color: fg.onBaseMuted,
-                                padding: `${space.sm} ${space.md}`,
-                                transition: transition.theme,
-                              }}
-                            >
-                              {h}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {tableRows.map((row, index) => {
-                          const tone =
-                            statusStyles[row.status] ?? statusStyles.Draft;
-                          return (
-                            <tr
-                              className="pg-row"
-                              key={row.customer}
-                              style={{
-                                borderBottom: `1px solid ${border.neutral}`,
-                                transition: transition.theme,
-                              }}
-                            >
-                              <td
-                                style={{ padding: `${space.sm} ${space.md}` }}
-                              >
-                                <div className="flex items-center gap-2">
-                                  <div
-                                    className="flex h-6 w-6 items-center justify-center font-semibold text-[9px]"
-                                    style={{
-                                      backgroundColor: avatarColors[index],
-                                      borderRadius: radius.action,
-                                      color: fg.onBase,
-                                      transition: transition.theme,
-                                    }}
-                                  >
-                                    {initials[index]}
-                                  </div>
-                                  <div>
-                                    <div
-                                      className="font-medium"
-                                      style={{ color: fg.onBase }}
-                                    >
-                                      {row.customer}
-                                    </div>
-                                    <div
-                                      className="text-[10px]"
-                                      style={{ color: fg.onBaseMuted }}
-                                    >
-                                      {row.email}
-                                    </div>
-                                  </div>
-                                </div>
-                              </td>
-                              <td
-                                style={{ padding: `${space.sm} ${space.md}` }}
-                              >
-                                <span
-                                  className="inline-block px-2 py-0.5 font-semibold text-[9px]"
+                          Recent Transactions
+                        </span>
+                        <span
+                          className="text-[10px]"
+                          style={{ color: fg.onBaseMuted }}
+                        >
+                          Latest payments processed across all projects
+                        </span>
+                      </div>
+                      {/* Link button */}
+                      <button
+                        className="pg-interactive flex cursor-pointer items-center gap-1 px-2 py-1 font-medium text-[10px]"
+                        style={{
+                          borderRadius: radius.badge,
+                          color: fg.primary,
+                          transition: transition.interactive,
+                        }}
+                        type="button"
+                      >
+                        View all <ExternalLink size={9} />
+                      </button>
+                    </div>
+
+                    <div
+                      className="overflow-x-auto"
+                      style={{ transition: transition.theme }}
+                    >
+                      <table className="w-full min-w-[560px] text-[11px]">
+                        <thead>
+                          <tr
+                            style={{
+                              borderBottom: `1px solid ${border.neutral}`,
+                              transition: transition.theme,
+                            }}
+                          >
+                            {["Customer", "Status", "Date", "Amount"].map(
+                              (h) => (
+                                <th
+                                  className="text-left font-medium"
+                                  key={h}
                                   style={{
-                                    backgroundColor: tone.bg,
-                                    borderRadius: radius.badge,
-                                    color: tone.fg,
+                                    color: fg.onBaseMuted,
+                                    padding: `${space.sm} ${space.md}`,
                                     transition: transition.theme,
                                   }}
                                 >
-                                  {row.status}
-                                </span>
-                              </td>
-                              <td
+                                  {h}
+                                </th>
+                              )
+                            )}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {tableRows.map((row, index) => {
+                            const tone =
+                              statusStyles[row.status] ?? statusStyles.Draft;
+                            return (
+                              <tr
+                                className="pg-row"
+                                key={row.customer}
                                 style={{
-                                  color: fg.onBaseMuted,
-                                  padding: `${space.sm} ${space.md}`,
+                                  borderBottom: `1px solid ${border.neutral}`,
                                   transition: transition.theme,
                                 }}
                               >
-                                {row.date}
-                              </td>
-                              <td
-                                style={{
-                                  color: fg.onBase,
-                                  fontWeight: 600,
-                                  padding: `${space.sm} ${space.md}`,
-                                  transition: transition.theme,
-                                }}
-                              >
-                                {row.amount}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
+                                <td
+                                  style={{ padding: `${space.sm} ${space.md}` }}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <div
+                                      className="flex h-6 w-6 items-center justify-center font-semibold text-[9px]"
+                                      style={{
+                                        backgroundColor: avatarColors[index],
+                                        borderRadius: radius.action,
+                                        color: fg.onBase,
+                                        transition: transition.theme,
+                                      }}
+                                    >
+                                      {initials[index]}
+                                    </div>
+                                    <div>
+                                      <div
+                                        className="font-medium"
+                                        style={{ color: fg.onBase }}
+                                      >
+                                        {row.customer}
+                                      </div>
+                                      <div
+                                        className="text-[10px]"
+                                        style={{ color: fg.onBaseMuted }}
+                                      >
+                                        {row.email}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td
+                                  style={{ padding: `${space.sm} ${space.md}` }}
+                                >
+                                  <span
+                                    className="inline-block px-2 py-0.5 font-semibold text-[9px]"
+                                    style={{
+                                      backgroundColor: tone.bg,
+                                      borderRadius: radius.badge,
+                                      color: tone.fg,
+                                      transition: transition.theme,
+                                    }}
+                                  >
+                                    {row.status}
+                                  </span>
+                                </td>
+                                <td
+                                  style={{
+                                    color: fg.onBaseMuted,
+                                    padding: `${space.sm} ${space.md}`,
+                                    transition: transition.theme,
+                                  }}
+                                >
+                                  {row.date}
+                                </td>
+                                <td
+                                  style={{
+                                    color: fg.onBase,
+                                    fontWeight: 600,
+                                    padding: `${space.sm} ${space.md}`,
+                                    transition: transition.theme,
+                                  }}
+                                >
+                                  {row.amount}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div
-                className="flex flex-col"
-                style={{ gap: space.md, transition: transition.theme }}
-              >
-                {/* Traffic Sources */}
                 <div
-                  style={{
-                    backgroundColor: bg.raised,
-                    border: `1px solid ${border.neutral}`,
-                    borderRadius: radius.container,
-                    boxShadow: shadow.raised,
-                    padding: space.lg,
-                    transition: transition.theme,
-                  }}
+                  className="flex flex-col"
+                  style={{ gap: space.md, transition: transition.theme }}
                 >
-                  <div className="mb-3 flex items-center justify-between">
-                    <span
-                      className="font-semibold text-xs"
-                      style={{ color: fg.onBase }}
-                    >
-                      Traffic Sources
-                    </span>
-                    <span
-                      className="text-[10px]"
-                      style={{ color: fg.onBaseMuted }}
-                    >
-                      Where visitors come from
-                    </span>
-                  </div>
+                  {/* Traffic Sources */}
                   <div
-                    className="flex flex-col"
-                    style={{ gap: space.md, transition: transition.theme }}
+                    style={{
+                      backgroundColor: bg.raised,
+                      border: `1px solid ${border.neutral}`,
+                      borderRadius: radius.container,
+                      boxShadow: shadow.raised,
+                      padding: space.lg,
+                      transition: transition.theme,
+                    }}
                   >
-                    {trafficSources.map((source) => (
-                      <div key={source.label}>
-                        <div className="mb-1 flex items-center justify-between text-[10px]">
-                          <span style={{ color: fg.onBase }}>
-                            {source.label}
-                          </span>
-                          <span style={{ color: fg.onBaseMuted }}>
-                            {source.share}%
-                          </span>
-                        </div>
-                        <div
-                          className="h-1.5 w-full overflow-hidden"
-                          style={{
-                            backgroundColor: bg.sunkenStrong,
-                            borderRadius: radius.action,
-                            transition: transition.theme,
-                          }}
-                        >
+                    <div className="mb-3 flex items-center justify-between">
+                      <span
+                        className="font-semibold text-xs"
+                        style={{ color: fg.onBase }}
+                      >
+                        Traffic Sources
+                      </span>
+                      <span
+                        className="text-[10px]"
+                        style={{ color: fg.onBaseMuted }}
+                      >
+                        Where visitors come from
+                      </span>
+                    </div>
+                    <div
+                      className="flex flex-col"
+                      style={{ gap: space.md, transition: transition.theme }}
+                    >
+                      {trafficSources.map((source) => (
+                        <div key={source.label}>
+                          <div className="mb-1 flex items-center justify-between text-[10px]">
+                            <span style={{ color: fg.onBase }}>
+                              {source.label}
+                            </span>
+                            <span style={{ color: fg.onBaseMuted }}>
+                              {source.share}%
+                            </span>
+                          </div>
                           <div
-                            className="h-full"
+                            className="h-1.5 w-full overflow-hidden"
                             style={{
-                              backgroundColor: bg.primary,
+                              backgroundColor: bg.sunkenStrong,
                               borderRadius: radius.action,
                               transition: transition.theme,
-                              width: `${source.share}%`,
                             }}
-                          />
+                          >
+                            <div
+                              className="h-full"
+                              style={{
+                                backgroundColor: bg.primary,
+                                borderRadius: radius.action,
+                                transition: transition.theme,
+                                width: `${source.share}%`,
+                              }}
+                            />
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
 
-                {/* Preferences */}
-                <div
-                  style={{
-                    backgroundColor: bg.raised,
-                    border: `1px solid ${border.neutral}`,
-                    borderRadius: radius.container,
-                    boxShadow: shadow.raised,
-                    padding: space.lg,
-                    transition: transition.theme,
-                  }}
-                >
-                  <span
-                    className="mb-1 block font-semibold text-xs"
-                    style={{ color: fg.onBase }}
-                  >
-                    Preferences
-                  </span>
-                  <span
-                    className="mb-3 block text-[10px]"
-                    style={{ color: fg.onBaseMuted }}
-                  >
-                    Configure visual and functional elements.
-                  </span>
+                  {/* Preferences */}
                   <div
-                    className="flex flex-col"
-                    style={{ gap: space.md, transition: transition.theme }}
+                    style={{
+                      backgroundColor: bg.raised,
+                      border: `1px solid ${border.neutral}`,
+                      borderRadius: radius.container,
+                      boxShadow: shadow.raised,
+                      padding: space.lg,
+                      transition: transition.theme,
+                    }}
                   >
-                    {[
-                      ["Display Name", "Acme Design Team"],
-                      ["Default Role", "Viewer (Read-only)"],
-                    ].map(([label, value]) => (
-                      <div key={label}>
-                        <div
-                          className="mb-1 text-[10px]"
-                          style={{ color: fg.onBaseMuted }}
-                        >
-                          {label}
+                    <span
+                      className="mb-1 block font-semibold text-xs"
+                      style={{ color: fg.onBase }}
+                    >
+                      Preferences
+                    </span>
+                    <span
+                      className="mb-3 block text-[10px]"
+                      style={{ color: fg.onBaseMuted }}
+                    >
+                      Configure visual and functional elements.
+                    </span>
+                    <div
+                      className="flex flex-col"
+                      style={{ gap: space.md, transition: transition.theme }}
+                    >
+                      {[
+                        ["Display Name", "Acme Design Team"],
+                        ["Default Role", "Viewer (Read-only)"],
+                      ].map(([label, value]) => (
+                        <div key={label}>
+                          <div
+                            className="mb-1 text-[10px]"
+                            style={{ color: fg.onBaseMuted }}
+                          >
+                            {label}
+                          </div>
+                          <div
+                            className="flex items-center justify-between text-[10px]"
+                            style={{
+                              backgroundColor: bg.base,
+                              border: `1px solid ${border.neutral}`,
+                              borderRadius: radius.field,
+                              color: fg.onBase,
+                              padding: `${space.sm} ${space.lg}`,
+                              transition: transition.theme,
+                            }}
+                          >
+                            <span>{value}</span>
+                            <ChevronDown
+                              size={11}
+                              style={{ color: fg.onBaseFaint }}
+                            />
+                          </div>
                         </div>
-                        <div
-                          className="flex items-center justify-between text-[10px]"
-                          style={{
-                            backgroundColor: bg.base,
-                            border: `1px solid ${border.neutral}`,
-                            borderRadius: radius.field,
-                            color: fg.onBase,
-                            padding: `${space.sm} ${space.lg}`,
-                            transition: transition.theme,
-                          }}
-                        >
-                          <span>{value}</span>
-                          <ChevronDown
-                            size={11}
-                            style={{ color: fg.onBaseFaint }}
-                          />
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                    <div className="mt-4 flex gap-2">
+                      {/* Primary button */}
+                      <button
+                        className="pg-interactive flex-1 cursor-pointer py-2 font-semibold text-[10px]"
+                        style={{
+                          backgroundColor: bg.primary,
+                          borderRadius: radius.action,
+                          color: fg.onPrimary,
+                          transition: transition.interactive,
+                        }}
+                        type="button"
+                      >
+                        Save Preferences
+                      </button>
+                      {/* Secondary (outlined) button */}
+                      <button
+                        className="pg-interactive cursor-pointer px-3 py-2 font-semibold text-[10px]"
+                        style={{
+                          backgroundColor: "transparent",
+                          border: `1px solid ${border.neutral}`,
+                          borderRadius: radius.action,
+                          color: fg.onBase,
+                          transition: transition.interactive,
+                        }}
+                        type="button"
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
-                  <div className="mt-4 flex gap-2">
-                    {/* Primary button */}
-                    <button
-                      className="pg-interactive flex-1 cursor-pointer py-2 font-semibold text-[10px]"
+
+                  {/* CTA Card */}
+                  <div
+                    style={{
+                      background: gradient,
+                      borderRadius: radius.container,
+                      boxShadow: shadow.raised,
+                      padding: space.lg,
+                      transition: transition.theme,
+                    }}
+                  >
+                    <div
+                      className="font-semibold text-xs"
                       style={{
-                        backgroundColor: bg.primary,
-                        borderRadius: radius.action,
-                        color: fg.onPrimary,
+                        color: fg.onGradient,
+                        transition: transition.theme,
+                      }}
+                    >
+                      Unleash the new API v2.0
+                    </div>
+                    <div
+                      className="mt-1 text-[10px]"
+                      style={{
+                        color: fg.onGradientMuted,
+                        transition: transition.theme,
+                      }}
+                    >
+                      Faster response times and realtime event streams.
+                    </div>
+                    {/* Ghost-on-gradient button */}
+                    <button
+                      className="pg-interactive mt-3 cursor-pointer px-2.5 py-1 text-[10px]"
+                      style={{
+                        backgroundColor: bg.gradientSoft,
+                        borderRadius: radius.badge,
+                        color: fg.onGradientMuted,
                         transition: transition.interactive,
                       }}
                       type="button"
                     >
-                      Save Preferences
-                    </button>
-                    {/* Secondary (outlined) button */}
-                    <button
-                      className="pg-interactive cursor-pointer px-3 py-2 font-semibold text-[10px]"
-                      style={{
-                        backgroundColor: "transparent",
-                        border: `1px solid ${border.neutral}`,
-                        borderRadius: radius.action,
-                        color: fg.onBase,
-                        transition: transition.interactive,
-                      }}
-                      type="button"
-                    >
-                      Cancel
+                      Read Docs
                     </button>
                   </div>
-                </div>
-
-                {/* CTA Card */}
-                <div
-                  style={{
-                    background: gradient,
-                    borderRadius: radius.container,
-                    boxShadow: shadow.raised,
-                    padding: space.lg,
-                    transition: transition.theme,
-                  }}
-                >
-                  <div
-                    className="font-semibold text-xs"
-                    style={{
-                      color: fg.onGradient,
-                      transition: transition.theme,
-                    }}
-                  >
-                    Unleash the new API v2.0
-                  </div>
-                  <div
-                    className="mt-1 text-[10px]"
-                    style={{
-                      color: fg.onGradientMuted,
-                      transition: transition.theme,
-                    }}
-                  >
-                    Faster response times and realtime event streams.
-                  </div>
-                  {/* Ghost-on-gradient button */}
-                  <button
-                    className="pg-interactive mt-3 cursor-pointer px-2.5 py-1 text-[10px]"
-                    style={{
-                      backgroundColor: bg.gradientSoft,
-                      borderRadius: radius.badge,
-                      color: fg.onGradientMuted,
-                      transition: transition.interactive,
-                    }}
-                    type="button"
-                  >
-                    Read Docs
-                  </button>
                 </div>
               </div>
             </div>
-          </div>
+          </ScrollArea>
         </div>
       </div>
     </>

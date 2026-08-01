@@ -550,13 +550,17 @@ ${semanticSerialized}
 }
 
 // ---------------------------------------------------------------------------
-// shadcn export — uses shadcn-canonical semantic variable names
+// shadcn export — drop-in Tailwind v4 / shadcn theme CSS
+//
+// Shape mirrors tweakcn's v4 generator (semantic :root/.dark + @theme inline +
+// @layer base), without dumping Lattice primitive ramps into the theme file.
+// Radius scale uses the current shadcn Rhea multipliers (not the older ±px).
 // ---------------------------------------------------------------------------
 
 type ShadcnEntry = [string, string];
 type MaybeEntry = [string, string | undefined];
 
-/** Resolve a semantic token to its concrete hex (following var() indirection). */
+/** Resolve a semantic token to its concrete value (following var() indirection). */
 function resolved(
   tokens: Record<string, string>,
   prop: string
@@ -564,6 +568,57 @@ function resolved(
   const v = tokens[prop];
   return v ? resolveVar(v, tokens) : undefined;
 }
+
+/** Strip surrounding quotes from the first font name only (keep fallbacks). */
+function unquoteFontFamily(value: string): string {
+  return value.replace(/^'([^']*)'/, "$1").replace(/^"([^"]*)"/, "$1");
+}
+
+const SHADCN_COLOR_KEYS = [
+  "background",
+  "foreground",
+  "card",
+  "card-foreground",
+  "popover",
+  "popover-foreground",
+  "primary",
+  "primary-foreground",
+  "secondary",
+  "secondary-foreground",
+  "muted",
+  "muted-foreground",
+  "accent",
+  "accent-foreground",
+  "destructive",
+  "destructive-foreground",
+  "border",
+  "input",
+  "ring",
+  "chart-1",
+  "chart-2",
+  "chart-3",
+  "chart-4",
+  "chart-5",
+  "sidebar",
+  "sidebar-foreground",
+  "sidebar-primary",
+  "sidebar-primary-foreground",
+  "sidebar-accent",
+  "sidebar-accent-foreground",
+  "sidebar-border",
+  "sidebar-ring",
+] as const;
+
+const SHADCN_SHADOW_KEYS = [
+  "shadow-2xs",
+  "shadow-xs",
+  "shadow-sm",
+  "shadow",
+  "shadow-md",
+  "shadow-lg",
+  "shadow-xl",
+  "shadow-2xl",
+] as const;
 
 function shadcnSemantic(
   tokens: Record<string, string>,
@@ -618,114 +673,348 @@ function shadcnSemantic(
   );
 }
 
-function shadcnExtras(tokens: Record<string, string>): ShadcnEntry[] {
-  const fontPrimaryRaw =
-    tokens["--typography-font-family-body"] || "system-ui, sans-serif";
-  const fontPrimary = fontPrimaryRaw.replace(/^'([^']*)'/, "$1");
-  const radiusContainer = resolveVar(
-    tokens["--shape-radius-container"] || "0.5rem",
+/** Default density base (px) — radius in Components preview uses this so
+ * Spacing (density) doesn't look like it's changing Rounding. */
+const RADIUS_PREVIEW_BASE_PX = 8;
+/** Tailwind `--spacing` unit at default density (matches stock TW). */
+const SPACING_UNIT_DEFAULT_REM = 0.25;
+
+/**
+ * Resolve `--shape-radius-*` against the default density ladder, not the
+ * live `--dimension-*` values (those scale with Spacing).
+ */
+function resolveRadiusAtDefaultDensity(
+  tokens: Record<string, string>,
+  shapeKey = "--shape-radius-container"
+): string {
+  const raw = tokens[shapeKey] || "0.625rem";
+  const ref = varReferencedName(raw);
+  if (ref?.startsWith("--dimension-")) {
+    const step = ref.slice("--dimension-".length);
+    if (step === "max") {
+      return "999px";
+    }
+    const n = Number(step);
+    if (!Number.isNaN(n)) {
+      return `${(RADIUS_PREVIEW_BASE_PX * n) / 100}px`;
+    }
+  }
+  return resolveVar(raw, tokens);
+}
+
+/** Map Lattice density (`--dimension-100`) → Tailwind spacing unit. */
+function spacingUnitFromDensity(tokens: Record<string, string>): string {
+  const dim100 = tokens["--dimension-100"];
+  const px = dim100 ? Number.parseFloat(dim100) : RADIUS_PREVIEW_BASE_PX;
+  if (!Number.isFinite(px) || px <= 0) {
+    return `${SPACING_UNIT_DEFAULT_REM}rem`;
+  }
+  return `${SPACING_UNIT_DEFAULT_REM * (px / RADIUS_PREVIEW_BASE_PX)}rem`;
+}
+
+/** Bridge Lattice shadow presets onto preview elevation.
+ * Lattice `--shadow-raised` values are intentionally soft for product UIs and
+ * nearly invisible on the cards demo (ring already defines the edge). Use a
+ * clearer three-step stack so None / Subtle / Dramatic read in the preview.
+ */
+function applyShadowVars(
+  vars: Record<string, string>,
+  tokens: Record<string, string>
+): void {
+  const raisedToken = tokens["--shadow-raised"] ?? "none";
+  const overlayToken = tokens["--shadow-overlay"] ?? "";
+  const flat = raisedToken === "none";
+  const dramatic = /20px|40px/.test(overlayToken);
+
+  let raised: string;
+  let mid: string;
+  let overlay: string;
+  if (flat) {
+    raised = "none";
+    mid = "none";
+    overlay = "none";
+  } else if (dramatic) {
+    raised =
+      "0 4px 6px -1px rgba(15, 23, 42, 0.1), 0 10px 28px -6px rgba(15, 23, 42, 0.16)";
+    mid =
+      "0 8px 16px -4px rgba(15, 23, 42, 0.12), 0 16px 40px -8px rgba(15, 23, 42, 0.18)";
+    overlay =
+      "0 20px 40px -8px rgba(15, 23, 42, 0.22), 0 8px 16px -4px rgba(15, 23, 42, 0.12)";
+  } else {
+    raised =
+      "0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.1)";
+    mid = "0 2px 4px rgba(15, 23, 42, 0.06), 0 4px 10px rgba(15, 23, 42, 0.08)";
+    overlay =
+      "0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 10px 20px -4px rgba(15, 23, 42, 0.1)";
+  }
+
+  vars["--shadow-raised"] = raised;
+  vars["--shadow-overlay"] = flat ? overlayToken : overlay;
+
+  vars["--shadow-2xs"] = raised;
+  vars["--shadow-xs"] = raised;
+  vars["--shadow-sm"] = raised;
+  vars["--shadow"] = raised;
+  vars["--shadow-md"] = mid;
+  vars["--shadow-lg"] = overlay;
+  vars["--shadow-xl"] = overlay;
+  vars["--shadow-2xl"] = overlay;
+}
+
+/**
+ * Every `toShadcnCssVars` entry is preview-scoped. Do not apply the map on
+ * `<html>` — mount it on the Components preview root (and portal into that
+ * tree) so BrandIntake chrome never inherits brand tokens.
+ */
+export function isPreviewScopedShadcnVar(_key: string): boolean {
+  return true;
+}
+
+/**
+ * Map Lattice design tokens → shadcn CSS variables for the Components preview
+ * (and live theme injection). Includes colors, fonts, radius, spacing, and
+ * shadows so Style / Typography controls update the cards demo.
+ * Secondary/accent fills stay muted like the shadcn homepage; brand hue still
+ * drives --primary / charts.
+ */
+export function toShadcnCssVars(
+  tokens: Record<string, string>,
+  isDark = false
+): Record<string, string> {
+  const entries = shadcnSemantic(tokens, isDark);
+  const mutedAccent = isDark
+    ? tokens["--color-neutral-800"]
+    : tokens["--color-neutral-100"];
+  const onBase = resolved(tokens, "--color-foreground-onBase");
+
+  const vars = Object.fromEntries(entries);
+  if (mutedAccent) {
+    vars["--secondary"] = mutedAccent;
+    vars["--accent"] = mutedAccent;
+    vars["--sidebar-accent"] = mutedAccent;
+  }
+  if (onBase) {
+    vars["--secondary-foreground"] = onBase;
+    vars["--accent-foreground"] = onBase;
+    vars["--sidebar-accent-foreground"] = onBase;
+  }
+
+  vars["--font-sans"] = unquoteFontFamily(
+    tokens["--typography-font-family-body"] || "system-ui, sans-serif"
+  );
+  vars["--font-serif"] = unquoteFontFamily(
+    tokens["--typography-font-family-heading"] ||
+      'Georgia, Cambria, "Times New Roman", Times, serif'
+  );
+
+  // Rounding only — do not let density-scaled dimensions change --radius.
+  vars["--radius"] = resolveRadiusAtDefaultDensity(tokens);
+  // Spacing (density) → Tailwind spacing unit (cards use --spacing(N)).
+  vars["--spacing"] = spacingUnitFromDensity(tokens);
+  applyShadowVars(vars, tokens);
+
+  // Remap Tailwind font-* utilities onto Lattice weight slots so Style /
+  // Typography weight pills update shadcn cards (font-medium, font-semibold…).
+  const weightLight = resolved(tokens, "--font-body-weight-light") ?? "300";
+  const weightRegular = resolved(tokens, "--font-body-weight-regular") ?? "400";
+  const weightMedium = resolved(tokens, "--font-body-weight-medium") ?? "500";
+  const weightBold = resolved(tokens, "--font-body-weight-bold") ?? "700";
+  const weightHeading = resolved(tokens, "--font-heading-weight") ?? "600";
+
+  vars["--font-body-weight-light"] = weightLight;
+  vars["--font-body-weight-regular"] = weightRegular;
+  vars["--font-body-weight-medium"] = weightMedium;
+  vars["--font-body-weight-bold"] = weightBold;
+  vars["--font-heading-weight"] = weightHeading;
+
+  vars["--font-weight-light"] = weightLight;
+  vars["--font-weight-normal"] = weightRegular;
+  vars["--font-weight-medium"] = weightMedium;
+  vars["--font-weight-semibold"] = weightHeading;
+  vars["--font-weight-bold"] = weightBold;
+
+  return vars;
+}
+
+/** Font / radius / tracking / spacing — light-mode only (same as tweakcn). */
+function shadcnTypographyExtras(tokens: Record<string, string>): ShadcnEntry[] {
+  const fontSans = unquoteFontFamily(
+    tokens["--typography-font-family-body"] || "system-ui, sans-serif"
+  );
+  const fontSerif = unquoteFontFamily(
+    tokens["--typography-font-family-heading"] ||
+      'Georgia, Cambria, "Times New Roman", Times, serif'
+  );
+  const radius = resolveVar(
+    tokens["--shape-radius-container"] || "0.625rem",
     tokens
   );
   return [
-    ["--font-sans", fontPrimary],
-    ["--font-serif", `"Lora", Georgia, serif`],
-    ["--font-mono", `"Fira Code", "Courier New", monospace`],
-    ["--radius", radiusContainer],
-    ["--shadow-x", "1px"],
-    ["--shadow-y", "2px"],
-    ["--shadow-blur", "5px"],
-    ["--shadow-spread", "1px"],
-    ["--shadow-opacity", "0.06"],
-    ["--shadow-color", "hsl(0 0% 0%)"],
-    ["--shadow-2xs", "1px 2px 5px 1px hsl(0 0% 0% / 0.03)"],
-    ["--shadow-xs", "1px 2px 5px 1px hsl(0 0% 0% / 0.03)"],
+    ["--font-sans", fontSans],
+    ["--font-serif", fontSerif],
     [
-      "--shadow-sm",
-      "1px 2px 5px 1px hsl(0 0% 0% / 0.06), 1px 1px 2px 0px hsl(0 0% 0% / 0.06)",
+      "--font-mono",
+      "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
     ],
-    [
-      "--shadow",
-      "1px 2px 5px 1px hsl(0 0% 0% / 0.06), 1px 1px 2px 0px hsl(0 0% 0% / 0.06)",
-    ],
-    [
-      "--shadow-md",
-      "1px 2px 5px 1px hsl(0 0% 0% / 0.06), 1px 2px 4px 0px hsl(0 0% 0% / 0.06)",
-    ],
-    [
-      "--shadow-lg",
-      "1px 2px 5px 1px hsl(0 0% 0% / 0.06), 1px 4px 6px 0px hsl(0 0% 0% / 0.06)",
-    ],
-    [
-      "--shadow-xl",
-      "1px 2px 5px 1px hsl(0 0% 0% / 0.06), 1px 8px 10px 0px hsl(0 0% 0% / 0.06)",
-    ],
-    ["--shadow-2xl", "1px 2px 5px 1px hsl(0 0% 0% / 0.15)"],
+    ["--radius", radius],
     ["--tracking-normal", "0em"],
     ["--spacing", "0.25rem"],
   ];
 }
 
-function shadcnPrimitives(
-  tokens: Record<string, string>,
-  space: ColorSpace
-): ShadcnEntry[] {
-  return Object.entries(tokens)
-    .filter(([p]) => isPrimitiveColorToken(p))
-    .map(([prop, v]) => {
-      const name = prop.replace("--color-", "--");
-      return [name, convertLiteral(v, space)] as ShadcnEntry;
-    });
+/**
+ * Shadow stack aligned with tweakcn's exported vars. Lattice doesn't expose
+ * per-size shadow knobs yet, so defaults stay stable and paste-compatible.
+ */
+function shadcnShadowExtras(): ShadcnEntry[] {
+  const color = (opacity: number) => `hsl(0 0% 0% / ${opacity})`;
+  return [
+    ["--shadow-x", "0px"],
+    ["--shadow-y", "1px"],
+    ["--shadow-blur", "3px"],
+    ["--shadow-spread", "0px"],
+    ["--shadow-opacity", "0.1"],
+    ["--shadow-color", "hsl(0 0% 0%)"],
+    ["--shadow-2xs", `0px 1px 3px 0px ${color(0.05)}`],
+    ["--shadow-xs", `0px 1px 3px 0px ${color(0.05)}`],
+    [
+      "--shadow-sm",
+      `0px 1px 3px 0px ${color(0.1)}, 0px 1px 2px -1px ${color(0.1)}`,
+    ],
+    [
+      "--shadow",
+      `0px 1px 3px 0px ${color(0.1)}, 0px 1px 2px -1px ${color(0.1)}`,
+    ],
+    [
+      "--shadow-md",
+      `0px 1px 3px 0px ${color(0.1)}, 0px 2px 4px -1px ${color(0.1)}`,
+    ],
+    [
+      "--shadow-lg",
+      `0px 1px 3px 0px ${color(0.1)}, 0px 4px 6px -1px ${color(0.1)}`,
+    ],
+    [
+      "--shadow-xl",
+      `0px 1px 3px 0px ${color(0.1)}, 0px 8px 10px -1px ${color(0.1)}`,
+    ],
+    ["--shadow-2xl", `0px 1px 3px 0px ${color(0.25)}`],
+  ];
 }
 
 const COLOR_VALUE_PREFIX_PATTERN = /^(#|rgb|hsl|oklch|lab|lch)/i;
 
-function renderShadcnBlock(
+function formatShadcnValue(raw: string, space: ColorSpace): string {
+  return COLOR_VALUE_PREFIX_PATTERN.test(raw.trim())
+    ? convertLiteral(raw, space)
+    : raw;
+}
+
+function renderShadcnSelector(
   selector: string,
-  sections: { label: string; entries: ShadcnEntry[] }[],
+  entries: ShadcnEntry[],
   space: ColorSpace
 ): string {
-  const lines = [`  ${selector} {`];
-  sections.forEach((section, i) => {
-    if (i > 0) {
-      lines.push("");
-    }
-    lines.push(`    /* ${section.label} */`);
-    for (const [prop, raw] of section.entries) {
-      const value = COLOR_VALUE_PREFIX_PATTERN.test(raw.trim())
-        ? convertLiteral(raw, space)
-        : raw;
-      lines.push(`    ${prop}: ${value};`);
-    }
-  });
-  lines.push("  }");
+  const lines = [`${selector} {`];
+  for (const [prop, raw] of entries) {
+    lines.push(`  ${prop}: ${formatShadcnValue(raw, space)};`);
+  }
+  lines.push("}");
   return lines.join("\n");
 }
 
+/** Tailwind v4 bridge — required for utilities like `bg-primary` to resolve. */
+function renderShadcnThemeInline(trackingNormal: string): string {
+  const colorLines = SHADCN_COLOR_KEYS.map(
+    (key) => `  --color-${key}: var(--${key});`
+  );
+  const shadowLines = SHADCN_SHADOW_KEYS.map(
+    (key) => `  --${key}: var(--${key});`
+  );
+
+  const trackingBlock =
+    trackingNormal === "0em"
+      ? ""
+      : `
+  --tracking-tighter: calc(var(--tracking-normal) - 0.05em);
+  --tracking-tight: calc(var(--tracking-normal) - 0.025em);
+  --tracking-normal: var(--tracking-normal);
+  --tracking-wide: calc(var(--tracking-normal) + 0.025em);
+  --tracking-wider: calc(var(--tracking-normal) + 0.05em);
+  --tracking-widest: calc(var(--tracking-normal) + 0.1em);`;
+
+  return `@theme inline {
+${colorLines.join("\n")}
+
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+  --font-mono: var(--font-mono);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+${shadowLines.join("\n")}${trackingBlock}
+}`;
+}
+
+function renderShadcnBaseLayer(trackingNormal: string): string {
+  const bodyTracking =
+    trackingNormal === "0em"
+      ? ""
+      : "\n    letter-spacing: var(--tracking-normal);";
+  return `@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;${bodyTracking}
+  }
+}`;
+}
+
+/**
+ * Emit a paste-ready shadcn / Tailwind v4 theme CSS file.
+ * Primitive Lattice ramps stay in the `css` export — not here.
+ */
 function exportShadcn(set: TokenSet, space: ColorSpace): string {
-  const lightBlock = renderShadcnBlock(
-    ":root",
-    [
-      {
-        entries: shadcnPrimitives(set.light, space),
-        label: "Primitive tokens",
-      },
-      { entries: shadcnSemantic(set.light, false), label: "Semantic tokens" },
-      {
-        entries: shadcnExtras(set.light),
-        label: "Typography, radius, shadows, spacing",
-      },
-    ],
-    space
-  );
-  const darkBlock = renderShadcnBlock(
-    ".dark",
-    [
-      { entries: shadcnPrimitives(set.dark, space), label: "Primitive tokens" },
-      { entries: shadcnSemantic(set.dark, true), label: "Semantic tokens" },
-    ],
-    space
-  );
-  return `@layer base {\n${lightBlock}\n\n${darkBlock}\n}`;
+  const typography = shadcnTypographyExtras(set.light);
+  const shadows = shadcnShadowExtras();
+  const trackingNormal =
+    typography.find(([k]) => k === "--tracking-normal")?.[1] ?? "0em";
+
+  const lightEntries: ShadcnEntry[] = [
+    ...shadcnSemantic(set.light, false),
+    ...typography,
+    ...shadows,
+  ];
+  const darkEntries: ShadcnEntry[] = [
+    ...shadcnSemantic(set.dark, true),
+    ...shadows,
+  ];
+
+  const lightBlock = renderShadcnSelector(":root", lightEntries, space);
+  const darkBlock = renderShadcnSelector(".dark", darkEntries, space);
+  const themeInline = renderShadcnThemeInline(trackingNormal);
+  const baseLayer = renderShadcnBaseLayer(trackingNormal);
+
+  return [
+    '@import "tailwindcss";',
+    "",
+    "@custom-variant dark (&:is(.dark *));",
+    "",
+    lightBlock,
+    "",
+    darkBlock,
+    "",
+    themeInline,
+    "",
+    baseLayer,
+    "",
+  ].join("\n");
 }
 
 // ---------------------------------------------------------------------------

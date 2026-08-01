@@ -3,6 +3,16 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
 @import "tailwindcss";
+@import "tw-animate-css";
+
+/* Scan shared UI package so shadcn utility classes are generated */
+@source "../../../../packages/ui/src/**/*.{ts,tsx}";
+
+@custom-variant dark (&:is(.dark *));
+
+/* shadcn orientation shortcuts used by ScrollArea, Separator, etc. */
+@custom-variant data-horizontal (&:where([data-orientation="horizontal"]));
+@custom-variant data-vertical (&:where([data-orientation="vertical"]));
 
 @font-face {
   font-family: "GT Sectra";
@@ -39,11 +49,6 @@
   --color-charcoal: oklch(24.3% 0 0);
   --color-gray: oklch(97.02% 0 0);
 
-  /* Custom Fonts */
-  --font-serif: "GT Sectra", Georgia, serif;
-  --font-sans: "Nunito Sans", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", monospace;
-
   /* Custom Spacing */
   --spacing-18: 4.5rem;
   --spacing-88: 22rem;
@@ -56,6 +61,55 @@
   --text-8xl: 5.5rem;
 }
 
+/*
+ * Runtime token bridges — @theme inline so utilities resolve var(--background),
+ * var(--radius), fonts at the *use* site. Required for the Components preview
+ * to theme a subtree without leaking CSS vars onto <html> / BrandIntake chrome.
+ */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+  --font-mono: var(--font-mono);
+}
+
 /* CSS Custom Properties for animations and fallback colors */
 :root {
   --color-forest-green: #2e7a48;
@@ -65,6 +119,106 @@
   --color-white: #ffffff;
   --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --font-sans: "Nunito Sans", system-ui, sans-serif;
+  --font-serif: "GT Sectra", Georgia, serif;
+  --font-mono: "IBM Plex Mono", monospace;
+
+  /* shadcn/ui CSS variables */
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --sidebar: hsl(0 0% 98%);
+  --sidebar-foreground: hsl(240 5.3% 26.1%);
+  --sidebar-primary: hsl(240 5.9% 10%);
+  --sidebar-primary-foreground: hsl(0 0% 98%);
+  --sidebar-accent: hsl(240 4.8% 95.9%);
+  --sidebar-accent-foreground: hsl(240 5.9% 10%);
+  --sidebar-border: hsl(220 13% 91%);
+  --sidebar-ring: hsl(217.2 91.2% 59.8%);
+  /* Match shadcn homepage chart blues */
+  --chart-1: var(--color-blue-300);
+  --chart-2: var(--color-blue-500);
+  --chart-3: var(--color-blue-600);
+  --chart-4: var(--color-blue-700);
+  --chart-5: var(--color-blue-800);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --sidebar: hsl(240 5.9% 10%);
+  --sidebar-foreground: hsl(240 4.8% 95.9%);
+  --sidebar-primary: hsl(224.3 76.3% 48%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(240 3.7% 15.9%);
+  --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
+  --sidebar-border: hsl(240 3.7% 15.9%);
+  --sidebar-ring: hsl(217.2 91.2% 59.8%);
+  --chart-1: var(--color-blue-300);
+  --chart-2: var(--color-blue-500);
+  --chart-3: var(--color-blue-600);
+  --chart-4: var(--color-blue-700);
+  --chart-5: var(--color-blue-800);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  .cn-font-heading {
+    font-family: var(--font-serif);
+    font-weight: var(--font-heading-weight);
+  }
+
+  /* Components preview: card elevation follows brand shadow preset.
+     shadow-sm alone is easy to miss (ring + tiny Lattice raised), so bind
+     directly to --shadow-raised set by toShadcnCssVars. */
+  [data-cards-demo-root] [data-slot="card"] {
+    box-shadow: var(--shadow-raised);
+  }
+}
+
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* Base Typography */
@@ -85,40 +239,41 @@ body.modal-open {
   overflow: hidden;
 }
 
-/* Headings */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+/* Headings — marketing/site only. Skip UI-kit titles (data-slot) so
+   AlertDialogTitle / similar keep their component typography. */
+h1:not([data-slot]),
+h2:not([data-slot]),
+h3:not([data-slot]),
+h4:not([data-slot]),
+h5:not([data-slot]),
+h6:not([data-slot]) {
   font-family: var(--font-serif);
   line-height: 1.2;
   @apply text-black;
 }
 
-h1 {
+h1:not([data-slot]) {
   @apply text-4xl md:text-6xl lg:text-7xl xl:text-7xl 2xl:text-8xl;
 }
 
-h2 {
+h2:not([data-slot]) {
   @apply text-4xl md:text-5xl lg:text-6xl;
 }
 
-h3 {
+h3:not([data-slot]) {
   @apply text-3xl md:text-4xl lg:text-5xl;
 }
 
-h4 {
+h4:not([data-slot]) {
   @apply text-xl md:text-2xl;
 }
 
-h5 {
+h5:not([data-slot]) {
   @apply text-base md:text-lg;
 }
 
-/* Body Text */
-p {
+/* Body Text — skip UI-kit descriptions (data-slot) */
+p:not([data-slot]) {
   font-family: var(--font-sans);
   line-height: 1.7;
 }
@@ -137,7 +292,7 @@ a {
   [role="button"],
   [role="tab"],
   [role="switch"]
-):focus-visible {
+):focus-visible:not([data-slot]) {
   outline: 2px solid var(--color-forest-green);
   outline-offset: 3px;
 }

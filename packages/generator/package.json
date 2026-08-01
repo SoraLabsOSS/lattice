@@ -1,6 +1,6 @@
 {
   "name": "@soralabsoss/generator",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Pure TypeScript design-token generator: OKLCH ramps, WCAG-AA-validated semantic tokens, and CSS / DTCG / Tailwind / shadcn exporters from a few brand inputs.",
   "type": "module",
   "license": "MIT",

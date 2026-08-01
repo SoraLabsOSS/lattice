@@ -71,7 +71,7 @@ const TOKEN_ASSETS: AssetDescriptor[] = [
     title: "Tailwind config",
   },
   {
-    description: "shadcn v2-compatible CSS variables",
+    description: "Drop-in Tailwind v4 / shadcn theme CSS",
     filename: "shadcn.css",
     group: "tokens",
     iconKind: "css",
