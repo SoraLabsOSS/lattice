@@ -3,7 +3,8 @@
     "@biomejs/biome": "2.5.3",
     "lefthook": "^2.1.10",
     "turbo": "^2",
-    "ultracite": "7.9.4"
+    "ultracite": "7.9.4",
+    "wrangler": "^4.118.0"
   },
   "name": "sora-lattice",
   "scripts": {
@@ -11,6 +12,7 @@
     "build": "turbo build",
     "test": "turbo test",
     "preview": "turbo preview",
+    "deploy": "bun run build && wrangler pages deploy",
     "check": "ultracite check",
     "fix": "ultracite fix",
     "prepare": "lefthook install"
