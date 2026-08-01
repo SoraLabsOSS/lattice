@@ -1,11 +1,14 @@
 import {
   type BodyFontWeights,
   type BrandConfig,
+  type BrandPreset,
   type ColorRamp,
+  createBrandConfig,
   DEFAULT_BODY_WEIGHTS,
   DEFAULT_HEADING_WEIGHT,
   FONT_WEIGHT_OPTIONS,
   type FontWeight,
+  getBrandPreset,
   initialConfig,
   type NeutralColorRamp,
 } from "@soralabsoss/generator";
@@ -16,6 +19,7 @@ export type TabId = "color" | "typography" | "style";
 export type {
   BodyFontWeights,
   BrandConfig,
+  BrandPreset,
   ColorRamp,
   FontWeight,
   NeutralColorRamp,
@@ -47,4 +51,14 @@ export function updateRampStep(rampKey: string, step: number, color: string) {
 
 export function resetConfig() {
   $brandConfig.set(initialConfig);
+}
+
+/** Replace the full brand config from a curated preset (clears ramp overrides). */
+export function applyBrandPreset(preset: BrandPreset | string) {
+  const input =
+    typeof preset === "string" ? getBrandPreset(preset)?.config : preset.config;
+  if (!input) {
+    return;
+  }
+  $brandConfig.set(createBrandConfig(input));
 }

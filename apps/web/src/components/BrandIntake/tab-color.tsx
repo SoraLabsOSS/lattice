@@ -1,22 +1,53 @@
 import { useStore } from "@nanostores/react";
 import type { GenerationMode } from "@soralabsoss/generator";
-import { NEUTRAL_STEPS, SEMANTIC_HUES } from "@soralabsoss/generator";
+import {
+  BRAND_PRESETS,
+  matchBrandPreset,
+  NEUTRAL_STEPS,
+  SEMANTIC_HUES,
+} from "@soralabsoss/generator";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, SwatchBook } from "lucide-react";
 import type React from "react";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ColorRampView } from "../Showcase/color-ramp-view";
 import { ColorPickerPopover } from "../ui/color-picker-popover";
+import { Select, type SelectOption } from "../ui/select";
 import {
   GenerationModeSelector,
   HexColorInput,
   NeutralTintSelector,
   RampSliders,
 } from "./color-row";
-import { $brandConfig, updateConfig, updateRampStep } from "./store";
+import {
+  $brandConfig,
+  applyBrandPreset,
+  updateConfig,
+  updateRampStep,
+} from "./store";
 import { type ColorSlot, useColorRamps } from "./use-color-ramps";
 
 const EXPAND_TRANSITION = { duration: 0.25, ease: [0.32, 0.72, 0, 1] as const };
+
+const CUSTOM_PRESET_VALUE = "custom";
+
+const PRESET_OPTIONS: SelectOption[] = [
+  {
+    icon: <SwatchBook size={14} />,
+    label: "Custom",
+    value: CUSTOM_PRESET_VALUE,
+  },
+  ...BRAND_PRESETS.map((preset) => ({
+    icon: (
+      <span
+        className="h-3.5 w-3.5 shrink-0 rounded-sm border border-black/10"
+        style={{ backgroundColor: preset.color }}
+      />
+    ),
+    label: preset.label,
+    value: preset.id,
+  })),
+];
 
 const AdditionalColorRow: React.FC<
   ColorSlot & { onStepChange: (step: number, color: string) => void }
@@ -86,8 +117,38 @@ const TabColor: React.FC<{ isDarkMode?: boolean }> = ({
     []
   );
 
+  const activePreset = matchBrandPreset(config.primaryColor);
+  const presetValue = activePreset?.id ?? CUSTOM_PRESET_VALUE;
+
+  const handlePresetChange = useCallback((id: string) => {
+    if (id === CUSTOM_PRESET_VALUE) {
+      return;
+    }
+    applyBrandPreset(id);
+  }, []);
+
+  const presetHint = useMemo(() => {
+    if (!activePreset) {
+      return "Pick a seed brand, or keep editing custom colors below.";
+    }
+    return activePreset.description;
+  }, [activePreset]);
+
   return (
     <div className="flex flex-col gap-8">
+      {/* Brand presets */}
+      <div className="flex flex-col gap-1.5">
+        <Select
+          label="Preset"
+          onValueChange={handlePresetChange}
+          options={PRESET_OPTIONS}
+          placeholder="Choose a preset…"
+          size="compact"
+          value={presetValue}
+        />
+        <p className="text-charcoal/80 text-xs">{presetHint}</p>
+      </div>
+
       {/* Primary color picker */}
       <div className="flex flex-col gap-3">
         <label className="font-medium text-charcoal text-sm">

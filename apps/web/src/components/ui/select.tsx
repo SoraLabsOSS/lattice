@@ -99,7 +99,7 @@ export const Select: React.FC<SelectProps> = ({
             sideOffset={4}
           >
             <BaseSelect.Popup
-              className={`border border-charcoal/10 bg-white shadow-lg ${POPUP_SIZES[size]} max-h-60 origin-top touch-pan-y overflow-y-auto overscroll-contain outline-none transition-[transform,opacity] duration-150 ease-out data-ending-style:scale-[0.95] data-starting-style:scale-[0.95] data-ending-style:opacity-0 data-starting-style:opacity-0`}
+              className={`w-(--anchor-width) min-w-(--anchor-width) border border-charcoal/10 bg-white shadow-lg ${POPUP_SIZES[size]} max-h-60 origin-top touch-pan-y overflow-y-auto overscroll-contain outline-none transition-[transform,opacity] duration-150 ease-out data-ending-style:scale-[0.95] data-starting-style:scale-[0.95] data-ending-style:opacity-0 data-starting-style:opacity-0`}
               data-lenis-prevent
             >
               {options.map((option) => (

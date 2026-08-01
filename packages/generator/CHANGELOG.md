@@ -3,6 +3,12 @@
 All notable changes to this package are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+- Added curated `BRAND_PRESETS` (seed primary + type + style knobs) with
+  `getBrandPreset` / `matchBrandPreset` helpers for the configurator preset
+  gallery.
+
 ## [0.2.0]
 
 - Reworked the `shadcn` exporter into a Tailwind v4 drop-in theme file (aligned
