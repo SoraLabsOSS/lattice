@@ -4,10 +4,12 @@ import {
   type ColorSpace,
   type ExportFormat,
   exportTokens,
+  flattenSkillFiles,
   generateDesignTokens,
   generateSkills,
   initialConfig,
   type SkillArtifact,
+  skillEntryMarkdown,
   type TokenSet,
 } from "@soralabsoss/generator";
 import { strToU8, zipSync } from "fflate";
@@ -198,7 +200,7 @@ const ExportPage: React.FC = () => {
     () =>
       skills.map((s) => ({
         description: s.description,
-        filename: s.filename,
+        filename: `${s.rootDir}/SKILL.md`,
         group: "skills",
         iconKind: "md",
         id: `skill-${s.id}` as SkillAssetId,
@@ -240,7 +242,7 @@ const ExportPage: React.FC = () => {
     (asset: AssetDescriptor): string => {
       if (asset.group === "skills") {
         const skill = skills.find((s) => `skill-${s.id}` === asset.id);
-        return skill?.content ?? "";
+        return skill ? skillEntryMarkdown(skill) : "";
       }
       return exportTokens(tokenSet, asset.id as ExportFormat, colorSpace, {
         includeSemantic: true,
@@ -273,27 +275,45 @@ const ExportPage: React.FC = () => {
 
   const handleDownload = useCallback(
     (asset: AssetDescriptor) => {
+      if (asset.group === "skills") {
+        const skill = skills.find((s) => `skill-${s.id}` === asset.id);
+        if (!skill) {
+          return;
+        }
+        const files: Record<string, Uint8Array> = {};
+        for (const file of skill.files) {
+          files[`${skill.rootDir}/${file.path}`] = strToU8(file.content);
+        }
+        const zipped = zipSync(files, { level: 6 });
+        saveBlob(
+          new Blob([zipped], { type: "application/zip" }),
+          `${skill.name}.zip`
+        );
+        return;
+      }
       const blob = new Blob([generateContent(asset)], {
         type: asset.lang === "json" ? "application/json" : "text/plain",
       });
       saveBlob(blob, asset.filename);
     },
-    [generateContent]
+    [generateContent, skills]
   );
 
-  // Bundle every token + skill asset into a single zip so "Download all" hands
-  // the user one file instead of a burst of individual downloads.
+  // Bundle every token + skill package file into one zip (Agent Skills folders).
   const handleDownloadAll = useCallback(() => {
     const files: Record<string, Uint8Array> = {};
-    for (const asset of allAssets) {
+    for (const asset of TOKEN_ASSETS) {
       files[asset.filename] = strToU8(generateContent(asset));
+    }
+    for (const { path, content } of flattenSkillFiles(skills)) {
+      files[path] = strToU8(content);
     }
     const zipped = zipSync(files, { level: 6 });
     saveBlob(
       new Blob([zipped], { type: "application/zip" }),
       "sora-lattice-export.zip"
     );
-  }, [allAssets, generateContent]);
+  }, [generateContent, skills]);
 
   // `encodeURIComponent` is required: the LZ alphabet contains `+`, which
   // URLSearchParams decodes as a space — leaving it raw silently corrupts
@@ -376,8 +396,8 @@ const ExportPage: React.FC = () => {
         >
           <h2 className="mb-6 text-charcoal">Ready to ship</h2>
           <p className="mx-auto max-w-2xl text-base text-charcoal/80 leading-relaxed md:text-lg">
-            A complete token and configuration set, plus three LLM-ready skills,
-            scoped to{" "}
+            A complete token set plus three Agent Skills packages (SKILL.md +
+            references), scoped to{" "}
             <em className="font-medium text-charcoal not-italic">
               {config.headingFont}
             </em>{" "}

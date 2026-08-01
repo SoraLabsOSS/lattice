@@ -28,3 +28,6 @@ bun-debug.log*
 .turbo/
 
 .vscode/
+
+# local skill validation scratch
+packages/generator/.tmp-skills-validate/

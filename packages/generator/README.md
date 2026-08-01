@@ -88,12 +88,13 @@ const failures = validateWcagAaContrast(light); // [] when all pairs pass AA
 | `getGeneratedColor(hex, mode)` | Compute a complementary / triadic / analogous / etc. partner from a base color. |
 | `validateWcagAaContrast(tokens, pairs?)` | Returns failing `ContrastValidationFailure[]` for the default 16 semantic pairs, or for a custom list. |
 | `pickContrastingFg(bg, ramp, isDark)` | Walk a ramp until a step meets WCAG AA against a background. |
-| `generateSkills(config, tokens)` | Generates agent-facing skill markdown (tokens/theming, component creation, accessibility) describing the emitted token system. |
+| `generateSkills(config, tokens)` | Generates [Agent Skills](https://agentskills.io/home) packages (`skills/<name>/SKILL.md` + `references/` + optional scripts) describing the emitted token system. |
+| `flattenSkillFiles(artifacts)` / `skillEntryMarkdown(artifact)` | Zip helpers — flatten packages to paths, or read the lean entry `SKILL.md`. |
 | `NAMED_HUES`, `STEPS`, `NEUTRAL_STEPS`, `GENERATION_MODES`, `SEMANTIC_HUES` | Constant tables consumed by the generator and re-exported for UI use. |
 
-Types: `BrandConfig`, `BrandConfigInput`, `ColorRamp`, `NeutralColorRamp`, `TokenSet`, `ExportFormat`, `ColorSpace`, `PrimitiveMapping`, `ContrastPair`, `ContrastValidationFailure`, `GenerationMode`.
+Types: `BrandConfig`, `BrandConfigInput`, `ColorRamp`, `NeutralColorRamp`, `TokenSet`, `ExportFormat`, `ColorSpace`, `PrimitiveMapping`, `ContrastPair`, `ContrastValidationFailure`, `GenerationMode`, `SkillArtifact`, `SkillFile`.
 
-`generateSkills` (in [`skills.ts`](src/skills.ts)) lives in this package rather than a separate one because it reads the exact `BrandConfig`/`TokenSet` shapes this package produces to generate accurate, config-specific documentation (real token names, configured density/roundness/headless-lib, etc.) — it's a consumer of this package's own output, not an unrelated concern bolted on. It's used by the Configurator's export flow ([`apps/web/src/components/Configurator/Export/export-page.tsx`](../../apps/web/src/components/Configurator/Export/export-page.tsx)) to ship a `.claude/skills`-style bundle alongside generated tokens.
+`generateSkills` (in [`skills/`](src/skills/)) lives in this package rather than a separate one because it reads the exact `BrandConfig`/`TokenSet` shapes this package produces to generate accurate, config-specific documentation (real token names, configured density/roundness/headless-lib, etc.) — it's a consumer of this package's own output, not an unrelated concern bolted on. It's used by the Configurator's export flow ([`apps/web/src/components/Configurator/Export/export-page.tsx`](../../apps/web/src/components/Configurator/Export/export-page.tsx)) to ship a `.claude/skills`-compatible bundle alongside generated tokens.
 
 ## Source layout
 
@@ -107,7 +108,7 @@ src/
 ├── generate-tokens.ts   # Semantic mapping → CSS custom properties (light + dark)
 ├── export-tokens.ts     # Format-specific writers (CSS, DTCG, Tailwind, shadcn)
 ├── accessibility.ts     # WCAG AA validation against the 16 default pairs
-├── skills.ts            # Agent/tool-facing skill descriptors for the generator API
+├── skills/              # Agent Skills packages (SKILL.md + references + scripts)
 └── culori.d.ts          # Local types for the subset of culori we use
 ```
 

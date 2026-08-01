@@ -16,7 +16,14 @@ export * from "./contrast-utils.js";
 export * from "./export-tokens.js";
 export * from "./generate-tokens.js";
 export * from "./presets.js";
-export * from "./skills.js";
+export { generateSkills } from "./skills/index.js";
+export type {
+  SkillArtifact,
+  SkillFile,
+  SkillId,
+  SystemFacts,
+} from "./skills/types.js";
+export { flattenSkillFiles, skillEntryMarkdown } from "./skills/types.js";
 export * from "./types.js";
 
 export interface GenerateThemeOptions {

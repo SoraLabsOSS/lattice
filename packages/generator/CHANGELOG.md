@@ -8,6 +8,11 @@ All notable changes to this package are documented here. Format follows
 - Added curated `BRAND_PRESETS` (seed primary + type + style knobs) with
   `getBrandPreset` / `matchBrandPreset` helpers for the configurator preset
   gallery.
+- Reshaped `generateSkills` to [Agent Skills](https://agentskills.io/home)
+  packages: `skills/<name>/SKILL.md` (lean + WHAT/WHEN/NOT description) with
+  progressive disclosure into `references/`, plus
+  `scripts/lint-token-usage.mjs` on the accessibility skill. Added
+  `flattenSkillFiles` / `skillEntryMarkdown` helpers for export zip paths.
 
 ## [0.2.0]
 
