@@ -43,7 +43,7 @@ export const StatusColorRow: React.FC<StatusColorRowProps> = ({
       </div>
 
       <AnimatePresence initial={false}>
-        {isOpen && (
+        {isOpen ? (
           <motion.div
             animate={{ height: "auto", marginBottom: 16, opacity: 1 }}
             className="overflow-hidden"
@@ -60,7 +60,7 @@ export const StatusColorRow: React.FC<StatusColorRowProps> = ({
               </div>
             </div>
           </motion.div>
-        )}
+        ) : null}
       </AnimatePresence>
 
       <ColorRampView className="h-12 rounded-xl" ramp={ramp} />

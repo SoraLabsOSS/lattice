@@ -27,6 +27,29 @@ export const DEFAULT_BODY_WEIGHTS: BodyFontWeights = {
   light: 300,
   regular: 400,
 };
+export const DEFAULT_MONO_FONT = "JetBrains Mono";
+
+export type RadiusRole =
+  | "action"
+  | "badge"
+  | "container"
+  | "field"
+  | "subcontainer"
+  | "supercontainer";
+
+/** Optional fine-grained overrides applied after Style preset enums. */
+export interface StyleOverrides {
+  /** Overrides density base for `--dimension-*` (and thus spacing + radius refs). */
+  dimensionBasePx?: number;
+  /** Per-role radius CSS values; when set, replaces the preset entry for that role. */
+  radii?: Partial<Record<RadiusRole, string>>;
+  /** Multiplier on preset radius dimension steps (0.5–1.5). Ignored when `radii` set. */
+  radiusScale?: number;
+  shadowOverlay?: string;
+  shadowRaised?: string;
+  transitionGradualMs?: number;
+  transitionSwiftMs?: number;
+}
 
 export interface BrandConfig {
   accentColor?: string;
@@ -43,6 +66,8 @@ export interface BrandConfig {
   headingWeight: FontWeight;
   headlessLib: HeadlessLib;
   logoUrl?: string;
+  /** Monospace typeface for code / mono UI. */
+  monoFont: string;
   neutralRamp?: NeutralColorRamp;
   neutralTint: "pure" | "cool" | "warm" | "brand-tinted";
   primaryColor: string;
@@ -60,6 +85,7 @@ export interface BrandConfig {
     error: string;
     info: string;
   };
+  styleOverrides?: StyleOverrides;
   tertiaryColor?: string;
   tertiaryGenerationMode?: GenerationMode;
   tertiaryRamp?: ColorRamp;
@@ -84,10 +110,11 @@ export const initialConfig: BrandConfig = {
   chromaFalloff: 80,
   density: "default",
   expressiveness: "balanced",
-  fontScale: 1.25,
+  fontScale: 1,
   headingFont: "Rubik",
   headingWeight: DEFAULT_HEADING_WEIGHT,
   headlessLib: DEFAULT_HEADLESS_LIB,
+  monoFont: DEFAULT_MONO_FONT,
   neutralTint: "brand-tinted",
   primaryColor: "#2e7bab",
   primaryFont: "Nunito",
@@ -117,10 +144,15 @@ export function createBrandConfig(input: BrandConfigInput = {}): BrandConfig {
       ...initialConfig.bodyWeights,
       ...input.bodyWeights,
     },
+    monoFont: input.monoFont ?? initialConfig.monoFont,
     rampOverrides: input.rampOverrides ?? {},
     statusColors: {
       ...initialConfig.statusColors,
       ...input.statusColors,
     },
+    styleOverrides:
+      input.styleOverrides === undefined
+        ? initialConfig.styleOverrides
+        : { ...initialConfig.styleOverrides, ...input.styleOverrides },
   };
 }

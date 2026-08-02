@@ -712,10 +712,25 @@ function spacingUnitFromDensity(tokens: Record<string, string>): string {
   return `${SPACING_UNIT_DEFAULT_REM * (px / RADIUS_PREVIEW_BASE_PX)}rem`;
 }
 
+/** First rgba() alpha in a box-shadow shorthand (for Advanced opacity knobs). */
+function firstRgbaOpacity(value: string, fallback: number): number {
+  const match = /rgba\([^,]+,[^,]+,[^,]+,([^)]+)\)/.exec(value);
+  if (!match?.[1]) {
+    return fallback;
+  }
+  const parsed = Number.parseFloat(match[1]);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function clampOpacity(value: number): number {
+  return Math.min(Math.max(value, 0), 0.55);
+}
+
 /** Bridge Lattice shadow presets onto preview elevation.
  * Lattice `--shadow-raised` values are intentionally soft for product UIs and
  * nearly invisible on the cards demo (ring already defines the edge). Use a
  * clearer three-step stack so None / Subtle / Dramatic read in the preview.
+ * Opacities scale from the generated tokens so Style Advanced sliders land.
  */
 function applyShadowVars(
   vars: Record<string, string>,
@@ -734,18 +749,25 @@ function applyShadowVars(
     mid = "none";
     overlay = "none";
   } else if (dramatic) {
-    raised =
-      "0 4px 6px -1px rgba(15, 23, 42, 0.1), 0 10px 28px -6px rgba(15, 23, 42, 0.16)";
-    mid =
-      "0 8px 16px -4px rgba(15, 23, 42, 0.12), 0 16px 40px -8px rgba(15, 23, 42, 0.18)";
-    overlay =
-      "0 20px 40px -8px rgba(15, 23, 42, 0.22), 0 8px 16px -4px rgba(15, 23, 42, 0.12)";
+    const scale = firstRgbaOpacity(overlayToken, 0.18) / 0.18 || 1;
+    const r = clampOpacity(0.1 * scale);
+    const m = clampOpacity(0.12 * scale);
+    const o = clampOpacity(0.22 * scale);
+    raised = `0 4px 6px -1px rgba(15, 23, 42, ${r}), 0 10px 28px -6px rgba(15, 23, 42, ${clampOpacity(0.16 * scale)})`;
+    mid = `0 8px 16px -4px rgba(15, 23, 42, ${m}), 0 16px 40px -8px rgba(15, 23, 42, ${clampOpacity(0.18 * scale)})`;
+    overlay = `0 20px 40px -8px rgba(15, 23, 42, ${o}), 0 8px 16px -4px rgba(15, 23, 42, ${m})`;
   } else {
-    raised =
-      "0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.1)";
-    mid = "0 2px 4px rgba(15, 23, 42, 0.06), 0 4px 10px rgba(15, 23, 42, 0.08)";
-    overlay =
-      "0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 10px 20px -4px rgba(15, 23, 42, 0.1)";
+    const scale = firstRgbaOpacity(overlayToken, 0.1) / 0.1 || 1;
+    const raisedScale = firstRgbaOpacity(raisedToken, 0.06) / 0.06 || 1;
+    const r = clampOpacity(0.06 * raisedScale);
+    const r2 = clampOpacity(0.1 * raisedScale);
+    const m = clampOpacity(0.06 * scale);
+    const m2 = clampOpacity(0.08 * scale);
+    const o = clampOpacity(0.08 * scale);
+    const o2 = clampOpacity(0.1 * scale);
+    raised = `0 1px 2px rgba(15, 23, 42, ${r}), 0 1px 3px rgba(15, 23, 42, ${r2})`;
+    mid = `0 2px 4px rgba(15, 23, 42, ${m}), 0 4px 10px rgba(15, 23, 42, ${m2})`;
+    overlay = `0 4px 6px -1px rgba(15, 23, 42, ${o}), 0 10px 20px -4px rgba(15, 23, 42, ${o2})`;
   }
 
   vars["--shadow-raised"] = raised;
@@ -806,6 +828,10 @@ export function toShadcnCssVars(
     tokens["--typography-font-family-heading"] ||
       'Georgia, Cambria, "Times New Roman", Times, serif'
   );
+  vars["--font-mono"] = unquoteFontFamily(
+    tokens["--typography-font-family-mono"] ||
+      "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace"
+  );
 
   // Rounding only — do not let density-scaled dimensions change --radius.
   vars["--radius"] = resolveRadiusAtDefaultDensity(tokens);
@@ -854,7 +880,10 @@ function shadcnTypographyExtras(tokens: Record<string, string>): ShadcnEntry[] {
     ["--font-serif", fontSerif],
     [
       "--font-mono",
-      "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+      unquoteFontFamily(
+        tokens["--typography-font-family-mono"] ||
+          "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace"
+      ),
     ],
     ["--radius", radius],
     ["--tracking-normal", "0em"],

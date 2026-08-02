@@ -19,7 +19,7 @@ import {
   STEPS,
 } from "./color-utils.js";
 import { pickStep } from "./contrast-utils.js";
-import { type BrandConfig, initialConfig } from "./types.js";
+import { type BrandConfig, initialConfig, type RadiusRole } from "./types.js";
 
 // ---------------------------------------------------------------------------
 // Lightness targets — the tunable "knobs" for semantic mapping
@@ -170,10 +170,19 @@ export interface RampAllocation {
 type RampRole =
   | "primary"
   | "secondary"
+  | "accent"
+  | "tertiary"
   | "success"
   | "warning"
   | "critical"
   | "info";
+
+const BRAND_ROLES = new Set<RampRole>([
+  "primary",
+  "secondary",
+  "accent",
+  "tertiary",
+]);
 
 // ---------------------------------------------------------------------------
 // Preset → token value mappings
@@ -227,6 +236,12 @@ const DIMENSION_BASE_PX: Record<BrandConfig["density"], number> = {
   compact: 6,
   default: 8,
 };
+
+function dimensionBaseFor(config: BrandConfig): number {
+  return (
+    config.styleOverrides?.dimensionBasePx ?? DIMENSION_BASE_PX[config.density]
+  );
+}
 
 /** Dimension step ladder — matches the shape of the sample tokens.css. */
 const DIMENSION_STEPS = [
@@ -312,10 +327,8 @@ const ACTION_SIZE_STEPS: Record<string, number> = {
 // Non-color token builders
 // ---------------------------------------------------------------------------
 
-function dimensionPrimitives(
-  density: BrandConfig["density"]
-): Record<string, string> {
-  const base = DIMENSION_BASE_PX[density];
+function dimensionPrimitives(config: BrandConfig): Record<string, string> {
+  const base = dimensionBaseFor(config);
   const out: Record<string, string> = {};
   for (const step of DIMENSION_STEPS) {
     out[`--dimension-${step}`] = `${(base * step) / 100}px`;
@@ -332,8 +345,35 @@ function spaceSemantics(): Record<string, string> {
   return out;
 }
 
+function nearestDimensionStep(step: number): number {
+  let best: number = DIMENSION_STEPS[0];
+  let bestDist = Math.abs(step - best);
+  for (const candidate of DIMENSION_STEPS) {
+    const dist = Math.abs(step - candidate);
+    if (dist < bestDist) {
+      best = candidate;
+      bestDist = dist;
+    }
+  }
+  return best;
+}
+
+function scaleRadiusValue(value: string, scale: number): string {
+  const match = value.match(/^var\(--dimension-(\d+|max)\)$/);
+  if (!match) {
+    return value;
+  }
+  if (match[1] === "max") {
+    return value;
+  }
+  const step = Number(match[1]);
+  const scaled = nearestDimensionStep(Math.round(step * scale));
+  return `var(--dimension-${scaled})`;
+}
+
 function shapeTokens(
-  roundness: BrandConfig["roundness"]
+  roundness: BrandConfig["roundness"],
+  overrides?: BrandConfig["styleOverrides"]
 ): Record<string, string> {
   const out: Record<string, string> = {
     "--shape-border-regular": "1px",
@@ -342,19 +382,27 @@ function shapeTokens(
     "--shape-radius-max": "var(--dimension-max)",
     "--shape-ringOffset": "var(--dimension-25)",
   };
+  const scale = overrides?.radiusScale ?? 1;
   for (const [key, value] of Object.entries(RADIUS_PRESETS[roundness])) {
-    out[`--shape-radius-${key}`] = value;
+    const role = key as RadiusRole;
+    const override = overrides?.radii?.[role];
+    out[`--shape-radius-${key}`] =
+      override ?? (scale === 1 ? value : scaleRadiusValue(value, scale));
   }
   return out;
 }
 
 function typographyPrimitives(config: BrandConfig): Record<string, string> {
+  const scale = config.fontScale || 1;
+  const mono = config.monoFont || initialConfig.monoFont;
   const out: Record<string, string> = {
     "--typography-font-family-body": `'${config.primaryFont}', system-ui, -apple-system, sans-serif`,
     "--typography-font-family-heading": `'${config.headingFont}', system-ui, -apple-system, sans-serif`,
+    "--typography-font-family-mono": `'${mono}', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace`,
   };
   for (const [step, px] of Object.entries(TYPOGRAPHY_SIZE_STEPS)) {
-    out[`--typography-size-${step}`] = `${px}px`;
+    out[`--typography-size-${step}`] =
+      `${Math.round(px * scale * 100) / 100}px`;
   }
   // Weight primitives — include whatever the config actually uses.
   const weights = new Set<number>([
@@ -405,6 +453,7 @@ function fontSemantics(config: BrandConfig): Record<string, string> {
     "--font-heading-family": "var(--typography-font-family-heading)",
     "--font-heading-lineheight": "125%",
     "--font-heading-weight": `var(--typography-weight-${config.headingWeight})`,
+    "--font-mono-family": "var(--typography-font-family-mono)",
   };
   for (const [name, step] of Object.entries(HEADING_SIZE_STEPS)) {
     out[`--font-heading-${name}-size`] = `var(--typography-size-${step})`;
@@ -429,19 +478,22 @@ function fontSemantics(config: BrandConfig): Record<string, string> {
 // Only `raised` and `overlay` emit visible shadow tokens.
 function shadowTokens(
   level: BrandConfig["shadows"],
-  isDark: boolean
+  isDark: boolean,
+  overrides?: BrandConfig["styleOverrides"]
 ): Record<string, string> {
   const base = isDark ? "0,0,0" : "15,23,42";
+  let tokens: Record<string, string>;
   switch (level) {
     case "none":
-      return {
+      tokens = {
         "--shadow-overlay": isDark
           ? `0 2px 6px rgba(${base},0.25), 0 1px 2px rgba(${base},0.18)`
           : `0 2px 6px rgba(${base},0.05), 0 1px 2px rgba(${base},0.03)`,
         "--shadow-raised": "none",
       };
+      break;
     case "dramatic":
-      return {
+      tokens = {
         "--shadow-overlay": isDark
           ? `0 20px 40px rgba(${base},0.55), 0 8px 16px rgba(${base},0.35)`
           : `0 20px 40px rgba(${base},0.18), 0 8px 16px rgba(${base},0.1)`,
@@ -449,8 +501,9 @@ function shadowTokens(
           ? `0 2px 6px rgba(${base},0.08)`
           : `0 2px 6px rgba(${base},0.06)`,
       };
+      break;
     default:
-      return {
+      tokens = {
         "--shadow-overlay": isDark
           ? `0 10px 25px rgba(${base},0.45), 0 4px 10px rgba(${base},0.25)`
           : `0 10px 25px rgba(${base},0.1), 0 4px 10px rgba(${base},0.06)`,
@@ -459,6 +512,13 @@ function shadowTokens(
           : `0 1px 3px rgba(${base},0.06)`,
       };
   }
+  if (overrides?.shadowRaised) {
+    tokens["--shadow-raised"] = overrides.shadowRaised;
+  }
+  if (overrides?.shadowOverlay) {
+    tokens["--shadow-overlay"] = overrides.shadowOverlay;
+  }
+  return tokens;
 }
 
 // Shared alpha scale for interaction states. Consumed both by the raw
@@ -497,10 +557,18 @@ const TRANSITION_DURATIONS_BY_EXPRESSIVENESS: Record<
 };
 
 function transitionTokens(
-  expressiveness: BrandConfig["expressiveness"]
+  expressiveness: BrandConfig["expressiveness"],
+  overrides?: BrandConfig["styleOverrides"]
 ): Record<string, string> {
-  const { swift, gradual } =
-    TRANSITION_DURATIONS_BY_EXPRESSIVENESS[expressiveness];
+  const presets = TRANSITION_DURATIONS_BY_EXPRESSIVENESS[expressiveness];
+  const swift =
+    overrides?.transitionSwiftMs === undefined
+      ? presets.swift
+      : `${overrides.transitionSwiftMs}ms`;
+  const gradual =
+    overrides?.transitionGradualMs === undefined
+      ? presets.gradual
+      : `${overrides.transitionGradualMs}ms`;
 
   const out: Record<string, string> = {
     "--transition-gradual-duration": gradual,
@@ -606,33 +674,58 @@ function resolveSecondaryColor(config: BrandConfig): string {
       );
 }
 
-/** Priority-order assignment: primary wins collisions, then secondary, then status. */
-const STATUS_ASSIGNMENT_PRIORITY: RampRole[] = [
-  "primary",
-  "secondary",
-  "success",
-  "warning",
-  "critical",
-  "info",
-];
+function resolveAccentColor(config: BrandConfig): string {
+  return config.useCustomAccent && config.accentColor
+    ? config.accentColor
+    : getGeneratedColor(
+        config.primaryColor,
+        config.accentGenerationMode || "triadic"
+      );
+}
+
+function resolveTertiaryColor(config: BrandConfig): string {
+  return config.useCustomTertiary && config.tertiaryColor
+    ? config.tertiaryColor
+    : getGeneratedColor(
+        config.primaryColor,
+        config.tertiaryGenerationMode || "analogous"
+      );
+}
+
+/** Priority-order assignment: primary wins collisions, then secondary, then optional brand roles, then status. */
+function assignmentPriority(config: BrandConfig): RampRole[] {
+  const roles: RampRole[] = ["primary", "secondary"];
+  if (config.useAccent) {
+    roles.push("accent");
+  }
+  if (config.useTertiary) {
+    roles.push("tertiary");
+  }
+  roles.push("success", "warning", "critical", "info");
+  return roles;
+}
 
 function assignStatusRamps(
   mode: ColorMode,
   falloff: number,
-  statusInput: Record<RampRole, string>,
+  statusInput: Partial<Record<RampRole, string>>,
   primary: BrandRampInfo,
   secondary: BrandRampInfo,
   byHue: Record<string, ColorRamp | NeutralColorRamp>,
-  roleHue: Record<RampRole, string>
+  roleHue: Record<RampRole, string>,
+  priority: RampRole[]
 ): void {
-  for (const role of STATUS_ASSIGNMENT_PRIORITY) {
+  for (const role of priority) {
     const hex = statusInput[role];
+    if (!hex) {
+      continue;
+    }
     const oklch = toOklch(hex);
     const h = oklch?.h || 0;
     const l = oklch?.l ?? 0.5;
     const c = oklch?.c ?? 0;
-    const isBrandRole = role === "primary" || role === "secondary";
-    // Brand roles (primary/secondary) bucket with the narrow rule so they don't
+    const isBrandRole = BRAND_ROLES.has(role);
+    // Brand roles bucket with the narrow rule so they don't
     // greedily occupy a reserved status hue; status roles bucket normally.
     const hueName = isBrandRole ? hueNameForRole(h) : hueNameFor(h);
     roleHue[role] = hueName;
@@ -709,7 +802,7 @@ function buildModeRamps(
     { mode }
   );
 
-  const statusInput: Record<RampRole, string> = {
+  const statusInput: Partial<Record<RampRole, string>> = {
     critical: config.statusColors.error,
     info: config.statusColors.info,
     primary: config.primaryColor,
@@ -717,18 +810,26 @@ function buildModeRamps(
     success: config.statusColors.success,
     warning: config.statusColors.warning,
   };
+  if (config.useAccent) {
+    statusInput.accent = resolveAccentColor(config);
+  }
+  if (config.useTertiary) {
+    statusInput.tertiary = resolveTertiaryColor(config);
+  }
 
   const byHue: Record<string, ColorRamp | NeutralColorRamp> = {
     neutral: neutralRamp,
   };
-  const roleHue: Record<RampRole, string> = {
+  const roleHue = {
+    accent: secondary.hue,
     critical: "red",
     info: "blue",
     primary: primary.hue,
     secondary: secondary.hue,
     success: "green",
+    tertiary: secondary.hue,
     warning: "yellow",
-  };
+  } as Record<RampRole, string>;
 
   assignStatusRamps(
     mode,
@@ -737,7 +838,8 @@ function buildModeRamps(
     primary,
     secondary,
     byHue,
-    roleHue
+    roleHue,
+    assignmentPriority(config)
   );
 
   const decorativeHues = assignDecorativeRamps(mode, byHue);
@@ -770,6 +872,12 @@ function overrideKeyForHue(
   }
   if (roleHue.info === hue) {
     return "info";
+  }
+  if (roleHue.accent === hue) {
+    return "accent";
+  }
+  if (roleHue.tertiary === hue) {
+    return "tertiary";
   }
   return hue;
 }
@@ -1109,12 +1217,12 @@ function emitBackgroundTokens(
   );
   emitter.assignPicked(
     "background-accent",
-    roleHue.secondary,
+    roleHue.accent,
     LIGHTNESS_TARGETS.strong
   );
   emitter.assignPicked(
     "background-accentSubtle",
-    roleHue.secondary,
+    roleHue.accent,
     LIGHTNESS_TARGETS.subtle
   );
 
@@ -1178,7 +1286,7 @@ function emitForegroundTokens(
   );
   emitter.assignPicked(
     "foreground-accent",
-    roleHue.secondary,
+    roleHue.accent,
     LIGHTNESS_TARGETS.fgColored
   );
   for (const role of SEMANTIC_ROLES) {
@@ -1241,7 +1349,7 @@ function emitForegroundTokens(
   emitter.assignContrastFg(
     "foreground-onAccentSubtle",
     "background-accentSubtle",
-    roleHue.secondary
+    roleHue.accent
   );
   for (const role of SEMANTIC_ROLES) {
     const cap = capitalizeFirst(role);
@@ -1302,7 +1410,7 @@ function emitBorderTokens(
   };
   emitter.assignPicked(
     "border-accent",
-    roleHue.secondary,
+    roleHue.accent,
     LIGHTNESS_TARGETS.strong
   );
   for (const role of SEMANTIC_ROLES) {
@@ -1315,7 +1423,10 @@ function emitBorderTokens(
 }
 
 /** Chart tokens. */
-function emitChartTokens(emitter: TokenEmitter): void {
+function emitChartTokens(
+  emitter: TokenEmitter,
+  roleHue: Record<RampRole, string>
+): void {
   // Chart gridlines — a faint neutral primitive (no hardcoded literal). Dark
   // mode uses a mid step so gridlines read against the chart surface.
   emitter.assignPrimitiveRef(
@@ -1335,6 +1446,21 @@ function emitChartTokens(emitter: TokenEmitter): void {
   emitter.semanticMap["color-chart-primaryGradientEnd"] = {
     ...bgPrimaryMapping,
   };
+
+  // Optional tertiary brand role surfaces as a secondary chart series color.
+  if (roleHue.tertiary && roleHue.tertiary !== roleHue.secondary) {
+    emitter.assignPicked(
+      "chart-secondary",
+      roleHue.tertiary,
+      LIGHTNESS_TARGETS.strong
+    );
+  } else {
+    emitter.assignPicked(
+      "chart-secondary",
+      roleHue.secondary,
+      LIGHTNESS_TARGETS.strong
+    );
+  }
 }
 
 /**
@@ -1366,14 +1492,15 @@ function emitNonColorTokens(
   config: BrandConfig,
   isDark: boolean
 ): void {
-  Object.assign(tokens, dimensionPrimitives(config.density));
+  const overrides = config.styleOverrides;
+  Object.assign(tokens, dimensionPrimitives(config));
   Object.assign(tokens, typographyPrimitives(config));
   Object.assign(tokens, spaceSemantics());
-  Object.assign(tokens, shapeTokens(config.roundness));
+  Object.assign(tokens, shapeTokens(config.roundness, overrides));
   Object.assign(tokens, fontSemantics(config));
-  Object.assign(tokens, shadowTokens(config.shadows, isDark));
+  Object.assign(tokens, shadowTokens(config.shadows, isDark, overrides));
   Object.assign(tokens, stateTokens());
-  Object.assign(tokens, transitionTokens(config.expressiveness));
+  Object.assign(tokens, transitionTokens(config.expressiveness, overrides));
 }
 
 export function generateDesignTokens(
@@ -1406,7 +1533,7 @@ export function generateDesignTokens(
   emitBackgroundTokens(emitter, roleHue, decorativeHues);
   emitForegroundTokens(emitter, roleHue, decorativeHues, primaryBaseHex);
   emitBorderTokens(emitter, roleHue);
-  emitChartTokens(emitter);
+  emitChartTokens(emitter, roleHue);
 
   emitter.tokens["--gradient-primary"] =
     "linear-gradient(135deg, var(--color-background-primary), var(--color-background-accent))";

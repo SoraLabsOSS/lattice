@@ -1,4 +1,5 @@
 import { useStore } from "@nanostores/react";
+import { DEFAULT_MONO_FONT } from "@soralabsoss/generator";
 import type React from "react";
 import { useCallback, useEffect } from "react";
 import {
@@ -15,6 +16,26 @@ import {
 } from "./store";
 
 export { GOOGLE_FONTS };
+
+const MONO_FONTS = GOOGLE_FONTS.filter(
+  (f) =>
+    /mono|code|consolas|courier|jetbrains|fira|source code|ibm plex mono|space mono|roboto mono|ubuntu mono|inconsolata|anonymous|cascadia/i.test(
+      f
+    ) ||
+    f === "JetBrains Mono" ||
+    f === "Fira Code" ||
+    f === "Space Mono" ||
+    f === "IBM Plex Mono" ||
+    f === "Source Code Pro" ||
+    f === "Roboto Mono" ||
+    f === "Inconsolata" ||
+    f === "Ubuntu Mono"
+);
+
+const MONO_OPTIONS =
+  MONO_FONTS.length > 0
+    ? Array.from(new Set([DEFAULT_MONO_FONT, ...MONO_FONTS, ...GOOGLE_FONTS]))
+    : GOOGLE_FONTS;
 
 interface WeightPillsProps {
   fontFamily: string;
@@ -56,13 +77,14 @@ const TabTypography: React.FC = () => {
   const config = useStore($brandConfig);
 
   useEffect(() => {
-    const loadFont = (family: string, role: "heading" | "body") => {
+    const loadFont = (family: string, role: string) => {
       const id = `tab-typo-font-${role}-${family.replace(/\s+/g, "+")}`;
       appendGoogleFontStylesheet(family, id);
     };
     loadFont(config.headingFont, "heading");
     loadFont(config.primaryFont, "body");
-  }, [config.headingFont, config.primaryFont]);
+    loadFont(config.monoFont || DEFAULT_MONO_FONT, "mono");
+  }, [config.headingFont, config.primaryFont, config.monoFont]);
 
   const handleBodyFontChange = useCallback((font: string) => {
     updateConfig({ customBodyFontName: undefined, primaryFont: font });
@@ -70,6 +92,10 @@ const TabTypography: React.FC = () => {
 
   const handleHeadingFontChange = useCallback((font: string) => {
     updateConfig({ customHeadingFontName: undefined, headingFont: font });
+  }, []);
+
+  const handleMonoFontChange = useCallback((font: string) => {
+    updateConfig({ monoFont: font });
   }, []);
 
   const setBodyWeight = useCallback(
@@ -126,6 +152,60 @@ const TabTypography: React.FC = () => {
               />
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Mono + type scale */}
+      <div className="flex flex-col gap-6 border-charcoal/5 border-t pt-4">
+        <Combobox
+          label="Mono Typeface"
+          onValueChange={handleMonoFontChange}
+          options={MONO_OPTIONS}
+          placeholder="Search mono fonts..."
+          size="compact"
+          value={config.monoFont || DEFAULT_MONO_FONT}
+        />
+
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-2">
+            <label
+              className="font-medium text-charcoal text-sm"
+              htmlFor="font-scale"
+            >
+              Type scale
+            </label>
+            <span className="font-mono text-charcoal/80 text-xs">
+              {config.fontScale.toFixed(2)}×
+            </span>
+          </div>
+          <p className="text-charcoal/80 text-xs">
+            Multiplies the typography size ladder across the system.
+          </p>
+          <input
+            className="w-full accent-forest-green"
+            id="font-scale"
+            max={1.4}
+            min={1}
+            onChange={(e) =>
+              updateConfig(
+                { fontScale: Number.parseFloat(e.target.value) },
+                "fontScale"
+              )
+            }
+            step={0.05}
+            type="range"
+            value={config.fontScale}
+          />
+          <p
+            className="mt-1 text-charcoal"
+            style={{
+              fontFamily: `'${config.headingFont}', system-ui, sans-serif`,
+              fontSize: `calc(1rem * ${config.fontScale})`,
+              fontWeight: config.headingWeight,
+            }}
+          >
+            Aa — sample at {config.fontScale.toFixed(2)}×
+          </p>
         </div>
       </div>
     </div>

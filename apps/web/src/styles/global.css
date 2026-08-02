@@ -203,10 +203,14 @@
     font-family: var(--font-serif);
     font-weight: var(--font-heading-weight);
   }
+}
 
-  /* Components preview: card elevation follows brand shadow preset.
-     shadow-sm alone is easy to miss (ring + tiny Lattice raised), so bind
-     directly to --shadow-raised set by toShadcnCssVars. */
+/*
+ * Components preview: card elevation follows brand shadow preset.
+ * Must live in @layer utilities — Card uses shadow-sm, and utilities beat
+ * @layer base, so a base rule never wins.
+ */
+@layer utilities {
   [data-cards-demo-root] [data-slot="card"] {
     box-shadow: var(--shadow-raised);
   }

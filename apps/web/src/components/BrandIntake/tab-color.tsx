@@ -1,10 +1,14 @@
 import { useStore } from "@nanostores/react";
-import type { GenerationMode } from "@soralabsoss/generator";
+import type { ColorRamp, GenerationMode } from "@soralabsoss/generator";
 import {
   BRAND_PRESETS,
+  generateOklchRamp,
+  getGeneratedColor,
   matchBrandPreset,
+  maxChromaForLH,
   NEUTRAL_STEPS,
   SEMANTIC_HUES,
+  toOklch,
 } from "@soralabsoss/generator";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, SwatchBook } from "lucide-react";
@@ -19,6 +23,7 @@ import {
   NeutralTintSelector,
   RampSliders,
 } from "./color-row";
+import { StatusColorRow } from "./status-color-row";
 import {
   $brandConfig,
   applyBrandPreset,
@@ -28,6 +33,19 @@ import {
 import { type ColorSlot, useColorRamps } from "./use-color-ramps";
 
 const EXPAND_TRANSITION = { duration: 0.25, ease: [0.32, 0.72, 0, 1] as const };
+
+function rampFromHex(hex: string, isDark: boolean): ColorRamp {
+  const oklch = toOklch(hex);
+  const h = oklch?.h || 0;
+  const l = oklch?.l ?? 0.5;
+  const c = oklch?.c ?? 0;
+  const maxC = maxChromaForLH(l, h);
+  const satRatio = maxC > 0 ? c / maxC : 0;
+  return generateOklchRamp(h, c, l, 0.8, {
+    mode: isDark ? "dark" : "light",
+    satRatio,
+  });
+}
 
 const CUSTOM_PRESET_VALUE = "custom";
 
@@ -79,6 +97,56 @@ const TabColor: React.FC<{ isDarkMode?: boolean }> = ({
   const derived = useColorRamps(config, isDarkMode);
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   const [isAdditionalOpen, setIsAdditionalOpen] = useState(false);
+  const [isStatusOpen, setIsStatusOpen] = useState(false);
+
+  const accentColor = useMemo(() => {
+    if (config.useCustomAccent && config.accentColor) {
+      return config.accentColor;
+    }
+    return getGeneratedColor(
+      config.primaryColor,
+      config.accentGenerationMode || "triadic"
+    );
+  }, [
+    config.accentColor,
+    config.accentGenerationMode,
+    config.primaryColor,
+    config.useCustomAccent,
+  ]);
+
+  const tertiaryColor = useMemo(() => {
+    if (config.useCustomTertiary && config.tertiaryColor) {
+      return config.tertiaryColor;
+    }
+    return getGeneratedColor(
+      config.primaryColor,
+      config.tertiaryGenerationMode || "analogous"
+    );
+  }, [
+    config.primaryColor,
+    config.tertiaryColor,
+    config.tertiaryGenerationMode,
+    config.useCustomTertiary,
+  ]);
+
+  const accentRamp = useMemo(
+    () => rampFromHex(accentColor, isDarkMode),
+    [accentColor, isDarkMode]
+  );
+  const tertiaryRamp = useMemo(
+    () => rampFromHex(tertiaryColor, isDarkMode),
+    [isDarkMode, tertiaryColor]
+  );
+
+  const statusRamps = useMemo(
+    () => ({
+      error: rampFromHex(config.statusColors.error, isDarkMode),
+      info: rampFromHex(config.statusColors.info, isDarkMode),
+      success: rampFromHex(config.statusColors.success, isDarkMode),
+      warning: rampFromHex(config.statusColors.warning, isDarkMode),
+    }),
+    [config.statusColors, isDarkMode]
+  );
 
   const handlePrimaryChange = useCallback(
     (c: string) => updateConfig({ primaryColor: c, rampOverrides: {} }),
@@ -100,6 +168,49 @@ const TabColor: React.FC<{ isDarkMode?: boolean }> = ({
     []
   );
 
+  const handleAccentChange = useCallback((c: string) => {
+    updateConfig({
+      accentColor: c,
+      rampOverrides: {},
+      useAccent: true,
+      useCustomAccent: true,
+    });
+  }, []);
+
+  const handleAccentGeneration = useCallback((mode: GenerationMode) => {
+    updateConfig({
+      accentGenerationMode: mode,
+      useAccent: true,
+      useCustomAccent: false,
+    });
+  }, []);
+
+  const handleTertiaryChange = useCallback((c: string) => {
+    updateConfig({
+      rampOverrides: {},
+      tertiaryColor: c,
+      useCustomTertiary: true,
+      useTertiary: true,
+    });
+  }, []);
+
+  const handleTertiaryGeneration = useCallback((mode: GenerationMode) => {
+    updateConfig({
+      tertiaryGenerationMode: mode,
+      useCustomTertiary: false,
+      useTertiary: true,
+    });
+  }, []);
+
+  const handleStatusChange = useCallback(
+    (key: keyof typeof config.statusColors) => (color: string) => {
+      updateConfig({
+        statusColors: { ...config.statusColors, [key]: color },
+      });
+    },
+    [config.statusColors]
+  );
+
   const handleNeutralTintChange = useCallback(
     (tint: "pure" | "cool" | "warm" | "brand-tinted") =>
       updateConfig({ neutralTint: tint }),
@@ -107,7 +218,7 @@ const TabColor: React.FC<{ isDarkMode?: boolean }> = ({
   );
 
   const handleChromaFalloffChange = useCallback(
-    (value: number) => updateConfig({ chromaFalloff: value }),
+    (value: number) => updateConfig({ chromaFalloff: value }, "chromaFalloff"),
     []
   );
 
@@ -169,7 +280,6 @@ const TabColor: React.FC<{ isDarkMode?: boolean }> = ({
           onStepChange={handleRampStep("primary")}
           ramp={derived.primaryRamp}
         />
-        {false}
         <div>
           <button
             aria-controls="primary-advanced-settings"
@@ -240,6 +350,125 @@ const TabColor: React.FC<{ isDarkMode?: boolean }> = ({
         />
       </div>
 
+      {/* Accent */}
+      <div className="flex flex-col gap-4 border-charcoal/10 border-t pt-6">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-col gap-0.5">
+            <label
+              className="font-medium text-charcoal text-sm"
+              htmlFor="use-accent"
+            >
+              Accent
+            </label>
+            <p className="text-charcoal/80 text-xs">
+              Independent accent surfaces (buttons, chips). Off = follows
+              secondary.
+            </p>
+          </div>
+          <button
+            aria-checked={config.useAccent}
+            aria-label="Enable accent color"
+            className={`relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors ${
+              config.useAccent ? "bg-forest-green" : "bg-charcoal/15"
+            }`}
+            id="use-accent"
+            onClick={() => updateConfig({ useAccent: !config.useAccent })}
+            role="switch"
+            type="button"
+          >
+            <span
+              className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
+                config.useAccent ? "translate-x-5" : "translate-x-0"
+              }`}
+            />
+          </button>
+        </div>
+        {config.useAccent && (
+          <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-3">
+                <ColorPickerPopover
+                  color={accentColor}
+                  onChange={handleAccentChange}
+                />
+                <HexColorInput
+                  color={accentColor}
+                  onChange={handleAccentChange}
+                />
+              </div>
+              <ColorRampView
+                className="h-8 rounded-lg"
+                onStepChange={handleRampStep("accent")}
+                ramp={accentRamp}
+              />
+            </div>
+            <GenerationModeSelector
+              onChange={handleAccentGeneration}
+              value={config.accentGenerationMode}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Tertiary */}
+      <div className="flex flex-col gap-4 border-charcoal/10 border-t pt-6">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-col gap-0.5">
+            <label
+              className="font-medium text-charcoal text-sm"
+              htmlFor="use-tertiary"
+            >
+              Tertiary
+            </label>
+            <p className="text-charcoal/80 text-xs">
+              Optional third brand hue for charts and accents.
+            </p>
+          </div>
+          <button
+            aria-checked={config.useTertiary}
+            aria-label="Enable tertiary color"
+            className={`relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors ${
+              config.useTertiary ? "bg-forest-green" : "bg-charcoal/15"
+            }`}
+            id="use-tertiary"
+            onClick={() => updateConfig({ useTertiary: !config.useTertiary })}
+            role="switch"
+            type="button"
+          >
+            <span
+              className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
+                config.useTertiary ? "translate-x-5" : "translate-x-0"
+              }`}
+            />
+          </button>
+        </div>
+        {config.useTertiary && (
+          <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-3">
+                <ColorPickerPopover
+                  color={tertiaryColor}
+                  onChange={handleTertiaryChange}
+                />
+                <HexColorInput
+                  color={tertiaryColor}
+                  onChange={handleTertiaryChange}
+                />
+              </div>
+              <ColorRampView
+                className="h-8 rounded-lg"
+                onStepChange={handleRampStep("tertiary")}
+                ramp={tertiaryRamp}
+              />
+            </div>
+            <GenerationModeSelector
+              onChange={handleTertiaryGeneration}
+              value={config.tertiaryGenerationMode}
+            />
+          </div>
+        )}
+      </div>
+
       {/* Neutral tint */}
       <div className="flex flex-col gap-3 border-charcoal/10 border-t pt-6">
         <label className="font-medium text-charcoal text-sm">Neutral</label>
@@ -253,6 +482,70 @@ const TabColor: React.FC<{ isDarkMode?: boolean }> = ({
           onChange={handleNeutralTintChange}
           value={config.neutralTint}
         />
+      </div>
+
+      {/* Status colors */}
+      <div className="border-charcoal/10 border-t pt-6">
+        <button
+          aria-controls="status-color-ramps"
+          aria-expanded={isStatusOpen}
+          className={`flex w-full cursor-pointer items-center justify-between rounded-lg py-2 font-medium text-sm transition-colors ${
+            isStatusOpen
+              ? "text-forest-green"
+              : "text-charcoal/70 hover:text-charcoal"
+          }`}
+          onClick={() => setIsStatusOpen(!isStatusOpen)}
+          type="button"
+        >
+          <span>Status Colors</span>
+          <ChevronDown
+            className={`transition-transform duration-200 ${isStatusOpen ? "rotate-180" : ""}`}
+            size={16}
+          />
+        </button>
+
+        <AnimatePresence initial={false}>
+          {isStatusOpen && (
+            <motion.div
+              animate={{ height: "auto", opacity: 1 }}
+              className="overflow-hidden"
+              exit={{ height: 0, opacity: 0 }}
+              id="status-color-ramps"
+              initial={{ height: 0, opacity: 0 }}
+              transition={{
+                height: EXPAND_TRANSITION,
+                opacity: { duration: 0.2, ease: "easeInOut" },
+              }}
+            >
+              <div className="flex flex-col gap-6 py-4">
+                <StatusColorRow
+                  baseColor={config.statusColors.success}
+                  label="Success"
+                  onChange={handleStatusChange("success")}
+                  ramp={statusRamps.success}
+                />
+                <StatusColorRow
+                  baseColor={config.statusColors.warning}
+                  label="Warning"
+                  onChange={handleStatusChange("warning")}
+                  ramp={statusRamps.warning}
+                />
+                <StatusColorRow
+                  baseColor={config.statusColors.error}
+                  label="Error"
+                  onChange={handleStatusChange("error")}
+                  ramp={statusRamps.error}
+                />
+                <StatusColorRow
+                  baseColor={config.statusColors.info}
+                  label="Info"
+                  onChange={handleStatusChange("info")}
+                  ramp={statusRamps.info}
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Additional colors */}

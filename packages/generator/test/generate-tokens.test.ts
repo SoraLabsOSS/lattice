@@ -54,6 +54,58 @@ describe("generate-tokens: config-driven constants", () => {
     expect(tokens["--typography-size-200"]).toBe("16px");
     expect(tokens["--typography-size-500"]).toBe("40px");
   });
+
+  it("scales typography sizes by fontScale", () => {
+    const { tokens } = generateDesignTokens(
+      createBrandConfig({ fontScale: 1.25 }),
+      false
+    );
+    expect(tokens["--typography-size-200"]).toBe("20px");
+    expect(tokens["--typography-size-500"]).toBe("50px");
+  });
+
+  it("emits mono font family from monoFont", () => {
+    const { tokens } = generateDesignTokens(
+      createBrandConfig({ monoFont: "Fira Code" }),
+      false
+    );
+    expect(tokens["--typography-font-family-mono"]).toContain("Fira Code");
+    expect(tokens["--font-mono-family"]).toBe(
+      "var(--typography-font-family-mono)"
+    );
+  });
+
+  it("applies styleOverrides for dimension base and transitions", () => {
+    const { tokens } = generateDesignTokens(
+      createBrandConfig({
+        styleOverrides: {
+          dimensionBasePx: 12,
+          transitionGradualMs: 600,
+          transitionSwiftMs: 80,
+        },
+      }),
+      false
+    );
+    expect(tokens["--dimension-100"]).toBe("12px");
+    expect(tokens["--transition-swift-duration"]).toBe("80ms");
+    expect(tokens["--transition-gradual-duration"]).toBe("600ms");
+  });
+
+  it("maps accent tokens to accent hue when useAccent is enabled", () => {
+    const without = generateDesignTokens(createBrandConfig(), false);
+    const withAccent = generateDesignTokens(
+      createBrandConfig({
+        accentColor: "#e11d48",
+        useAccent: true,
+        useCustomAccent: true,
+      }),
+      false
+    );
+    expect(withAccent.tokens["--color-background-accent"]).toBeDefined();
+    expect(withAccent.tokens["--color-background-accent"]).not.toBe(
+      without.tokens["--color-background-accent"]
+    );
+  });
 });
 
 describe("generate-tokens: unparseable primaryColor", () => {

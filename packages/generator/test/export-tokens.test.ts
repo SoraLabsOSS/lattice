@@ -341,6 +341,39 @@ describe("toShadcnCssVars", () => {
     expect(isPreviewScopedShadcnVar("--primary")).toBe(true);
     expect(isPreviewScopedShadcnVar("--radius")).toBe(true);
   });
+
+  it("scales preview shadows from styleOverrides opacity", () => {
+    const soft = toShadcnCssVars(
+      generateDesignTokens(
+        createBrandConfig({
+          shadows: "subtle",
+          styleOverrides: {
+            shadowOverlay: "0 10px 25px rgba(15,23,42,0.05)",
+            shadowRaised: "0 1px 3px rgba(15,23,42,0.03)",
+          },
+        }),
+        false
+      ).tokens,
+      false
+    );
+    const strong = toShadcnCssVars(
+      generateDesignTokens(
+        createBrandConfig({
+          shadows: "subtle",
+          styleOverrides: {
+            shadowOverlay: "0 10px 25px rgba(15,23,42,0.3)",
+            shadowRaised: "0 1px 3px rgba(15,23,42,0.25)",
+          },
+        }),
+        false
+      ).tokens,
+      false
+    );
+
+    expect(soft["--shadow-raised"]).toContain("rgba");
+    expect(strong["--shadow-raised"]).not.toBe(soft["--shadow-raised"]);
+    expect(strong["--shadow-raised"]).toMatch(/0\.2[0-9]|0\.25|0\.4/);
+  });
 });
 
 describe("exportTokens against a real generated theme", () => {

@@ -24,7 +24,7 @@ import {
   Users,
 } from "lucide-react";
 import type React from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { PlaygroundConfig } from "./types";
 
 // ---------------------------------------------------------------------------
@@ -202,12 +202,14 @@ const PlaygroundDashboard: React.FC<PlaygroundDashboardProps> = ({
   // (the design tokens are inline-styled on a parent in Configurator, not on
   // documentElement, so a global lookup misses).
   const rootRef = useRef<HTMLDivElement>(null);
-  const [chartPalette, setChartPalette] = useState<ChartPalette>(
-    CHART_PALETTE_FALLBACK
-  );
+  // Start null so the chart mounts only after CSS vars are read — mounting
+  // with CHART_PALETTE_FALLBACK then swapping to real tokens re-ran the
+  // intro animation a second time.
+  const [chartPalette, setChartPalette] = useState<ChartPalette | null>(null);
+  const chartIntroPlayedRef = useRef(false);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: config isn't read directly, but its identity change is the signal that the parent finished applying new design tokens as CSS vars, which is what we re-read here.
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = rootRef.current;
     if (!el) {
       return;
@@ -243,6 +245,7 @@ const PlaygroundDashboard: React.FC<PlaygroundDashboardProps> = ({
     // Bail out via same-reference return to avoid an update loop, since the
     // parent passes a fresh `config` object each render.
     setChartPalette((prev) =>
+      prev &&
       (Object.keys(next) as (keyof ChartPalette)[]).every(
         (k) => prev[k] === next[k]
       )
@@ -356,17 +359,22 @@ const PlaygroundDashboard: React.FC<PlaygroundDashboardProps> = ({
   const revenueSeries = REVENUE_CHART_REVENUE_SERIES;
   const orderSeries = REVENUE_CHART_ORDER_SERIES;
 
-  const revenueChartOption = useMemo<EChartsOption>(() => {
+  const revenueChartOption = useMemo<EChartsOption | null>(() => {
+    if (!chartPalette) {
+      return null;
+    }
     const { primary, primarySubtle, raised, grid, textMuted, textFaint } =
       chartPalette;
     const reduceMotion =
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Intro animation once; palette/theme refreshes should not replay bars/line.
+    const playIntro = !(chartIntroPlayedRef.current || reduceMotion);
 
     return {
-      animation: !reduceMotion,
-      animationDuration: reduceMotion ? 0 : 700,
-      animationDurationUpdate: reduceMotion ? 0 : 420,
+      animation: playIntro,
+      animationDuration: playIntro ? 700 : 0,
+      animationDurationUpdate: 0,
       animationEasing: "cubicOut",
       animationEasingUpdate: "cubicOut",
       grid: {
@@ -463,6 +471,12 @@ const PlaygroundDashboard: React.FC<PlaygroundDashboardProps> = ({
       ],
     };
   }, [chartPalette]);
+
+  useLayoutEffect(() => {
+    if (revenueChartOption) {
+      chartIntroPlayedRef.current = true;
+    }
+  }, [revenueChartOption]);
 
   const trafficSources = [
     { color: bg.primary, label: "Direct", share: 45 },
@@ -847,13 +861,16 @@ const PlaygroundDashboard: React.FC<PlaygroundDashboardProps> = ({
                         Last 7 days <ChevronDown size={10} />
                       </button>
                     </div>
-                    <ReactECharts
-                      lazyUpdate
-                      notMerge
-                      option={revenueChartOption}
-                      opts={{ renderer: "canvas" }}
-                      style={{ height: 210, width: "100%" }}
-                    />
+                    {revenueChartOption ? (
+                      <ReactECharts
+                        lazyUpdate
+                        option={revenueChartOption}
+                        opts={{ renderer: "canvas" }}
+                        style={{ height: 210, width: "100%" }}
+                      />
+                    ) : (
+                      <div aria-hidden="true" style={{ height: 210 }} />
+                    )}
                   </div>
 
                   {/* Transactions */}

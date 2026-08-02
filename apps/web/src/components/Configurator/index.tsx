@@ -8,7 +8,9 @@ import {
   MousePointerClick,
   PanelLeftClose,
   PanelLeftOpen,
+  Redo2,
   Sun,
+  Undo2,
 } from "lucide-react";
 import React, {
   useCallback,
@@ -21,8 +23,14 @@ import { decodeBrandConfig, encodeBrandConfig } from "../../lib/config-url";
 import { siteImages } from "../../lib/site-images";
 import {
   $brandConfig,
+  $canRedo,
+  $canUndo,
   FONT_WEIGHT_OPTIONS,
+  initBrandConfigPersistence,
+  redo,
+  replaceConfig,
   type TabId,
+  undo,
   updateConfig,
 } from "../BrandIntake/store";
 import TabBar from "../BrandIntake/tab-bar";
@@ -174,7 +182,7 @@ const hydrateFromUrlIfPresent = () => {
   }
   const decoded = decodeBrandConfig(raw);
   if (decoded) {
-    $brandConfig.set(decoded);
+    replaceConfig(decoded);
   }
   params.delete("c");
   const search = params.toString();
@@ -187,10 +195,49 @@ const hydrateFromUrlIfPresent = () => {
 
 const Configurator: React.FC = () => {
   const config = useStore($brandConfig);
+  const canUndo = useStore($canUndo);
+  const canRedo = useStore($canRedo);
   const isDesktop = useIsDesktop();
 
   useEffect(() => {
+    initBrandConfigPersistence();
     hydrateFromUrlIfPresent();
+  }, []);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const tag = target?.tagName;
+      if (
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        tag === "SELECT" ||
+        target?.isContentEditable
+      ) {
+        return;
+      }
+      const mod = event.metaKey || event.ctrlKey;
+      if (!mod) {
+        return;
+      }
+      const key = event.key.toLowerCase();
+      if (key === "z" && !event.shiftKey) {
+        event.preventDefault();
+        undo();
+        return;
+      }
+      if (key === "z" && event.shiftKey) {
+        event.preventDefault();
+        redo();
+        return;
+      }
+      if (key === "y") {
+        event.preventDefault();
+        redo();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
   // Local UI state
@@ -236,13 +283,17 @@ const Configurator: React.FC = () => {
     [activeTab]
   );
 
-  // Load Google Fonts for both body and heading typefaces
+  // Load Google Fonts for body, heading, and mono typefaces
   useEffect(() => {
     const weightsQuery = `wght@${FONT_WEIGHT_OPTIONS.join(";")}`;
     for (const [family, role] of [
       [config.headingFont, "heading"],
       [config.primaryFont, "body"],
+      [config.monoFont, "mono"],
     ] as const) {
+      if (!family) {
+        continue;
+      }
       const id = `playground-font-${role}-${family.replace(/\s+/g, "+")}`;
       if (document.getElementById(id)) {
         continue;
@@ -253,7 +304,7 @@ const Configurator: React.FC = () => {
       link.href = `https://fonts.googleapis.com/css2?family=${family.replace(/\s+/g, "+")}:${weightsQuery}&display=swap`;
       document.head.appendChild(link);
     }
-  }, [config.primaryFont, config.headingFont]);
+  }, [config.primaryFont, config.headingFont, config.monoFont]);
 
   // Generate design tokens as CSS custom properties
   const {
@@ -499,6 +550,30 @@ const Configurator: React.FC = () => {
           <div className="flex shrink-0 flex-wrap items-center justify-between gap-4 px-4 py-4 md:px-8">
             <PreviewTabBar active={previewTab} onChange={setPreviewTab} />
             <div className="flex w-full items-center justify-between gap-2 md:w-auto md:justify-start">
+              <div className="flex items-center gap-1">
+                <Tooltip label="Undo (Ctrl/⌘Z)" side="bottom">
+                  <button
+                    aria-label="Undo"
+                    className="flex cursor-pointer items-center justify-center rounded-full border border-transparent p-2.5 text-charcoal/80 transition-all duration-250 hover:bg-forest-green/10 hover:text-charcoal disabled:cursor-not-allowed disabled:opacity-30"
+                    disabled={!canUndo}
+                    onClick={() => undo()}
+                    type="button"
+                  >
+                    <Undo2 size={14} strokeWidth={1.5} />
+                  </button>
+                </Tooltip>
+                <Tooltip label="Redo (Ctrl/⌘⇧Z)" side="bottom">
+                  <button
+                    aria-label="Redo"
+                    className="flex cursor-pointer items-center justify-center rounded-full border border-transparent p-2.5 text-charcoal/80 transition-all duration-250 hover:bg-forest-green/10 hover:text-charcoal disabled:cursor-not-allowed disabled:opacity-30"
+                    disabled={!canRedo}
+                    onClick={() => redo()}
+                    type="button"
+                  >
+                    <Redo2 size={14} strokeWidth={1.5} />
+                  </button>
+                </Tooltip>
+              </div>
               <DarkModeToggle
                 isDark={isDarkMode}
                 onToggle={() => setIsDarkMode(!isDarkMode)}
