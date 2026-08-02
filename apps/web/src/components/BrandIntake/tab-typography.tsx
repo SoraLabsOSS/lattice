@@ -87,11 +87,19 @@ const TabTypography: React.FC = () => {
   }, [config.headingFont, config.primaryFont, config.monoFont]);
 
   const handleBodyFontChange = useCallback((font: string) => {
-    updateConfig({ customBodyFontName: undefined, primaryFont: font });
+    const isCustom = !GOOGLE_FONTS.includes(font);
+    updateConfig({
+      customBodyFontName: isCustom ? font : undefined,
+      primaryFont: font,
+    });
   }, []);
 
   const handleHeadingFontChange = useCallback((font: string) => {
-    updateConfig({ customHeadingFontName: undefined, headingFont: font });
+    const isCustom = !GOOGLE_FONTS.includes(font);
+    updateConfig({
+      customHeadingFontName: isCustom ? font : undefined,
+      headingFont: font,
+    });
   }, []);
 
   const handleMonoFontChange = useCallback((font: string) => {
@@ -110,11 +118,12 @@ const TabTypography: React.FC = () => {
       {/* Heading typeface + weight */}
       <div className="flex flex-col gap-6">
         <Combobox
+          allowCustom
           displayValue={config.customHeadingFontName}
           label="Heading Typeface"
           onValueChange={handleHeadingFontChange}
           options={GOOGLE_FONTS}
-          placeholder="Search Google Fonts..."
+          placeholder="Search or type a font name…"
           size="compact"
           value={config.headingFont}
         />
@@ -131,11 +140,12 @@ const TabTypography: React.FC = () => {
       {/* Body typeface + weights */}
       <div className="flex flex-col gap-6 border-charcoal/5 border-t pt-4">
         <Combobox
+          allowCustom
           displayValue={config.customBodyFontName}
           label="Body Typeface"
           onValueChange={handleBodyFontChange}
           options={GOOGLE_FONTS}
-          placeholder="Search Google Fonts..."
+          placeholder="Search or type a font name…"
           size="compact"
           value={config.primaryFont}
         />
@@ -155,13 +165,14 @@ const TabTypography: React.FC = () => {
         </div>
       </div>
 
-      {/* Mono + type scale */}
+      {/* Mono + type scale + tracking */}
       <div className="flex flex-col gap-6 border-charcoal/5 border-t pt-4">
         <Combobox
+          allowCustom
           label="Mono Typeface"
           onValueChange={handleMonoFontChange}
           options={MONO_OPTIONS}
-          placeholder="Search mono fonts..."
+          placeholder="Search or type a mono font…"
           size="compact"
           value={config.monoFont || DEFAULT_MONO_FONT}
         />
@@ -202,10 +213,43 @@ const TabTypography: React.FC = () => {
               fontFamily: `'${config.headingFont}', system-ui, sans-serif`,
               fontSize: `calc(1rem * ${config.fontScale})`,
               fontWeight: config.headingWeight,
+              letterSpacing: `${config.letterSpacing}em`,
             }}
           >
             Aa — sample at {config.fontScale.toFixed(2)}×
           </p>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-2">
+            <label
+              className="font-medium text-charcoal text-sm"
+              htmlFor="letter-spacing"
+            >
+              Letter spacing
+            </label>
+            <span className="font-mono text-charcoal/80 text-xs">
+              {config.letterSpacing.toFixed(3)}em
+            </span>
+          </div>
+          <p className="text-charcoal/80 text-xs">
+            Global tracking for body and heading text.
+          </p>
+          <input
+            className="w-full accent-forest-green"
+            id="letter-spacing"
+            max={0.1}
+            min={-0.05}
+            onChange={(e) =>
+              updateConfig(
+                { letterSpacing: Number.parseFloat(e.target.value) },
+                "letterSpacing"
+              )
+            }
+            step={0.005}
+            type="range"
+            value={config.letterSpacing}
+          />
         </div>
       </div>
     </div>

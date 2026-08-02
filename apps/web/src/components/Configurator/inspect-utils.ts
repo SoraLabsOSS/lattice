@@ -34,13 +34,20 @@ function categorize(tokenName: string): TokenCategory {
   if (tokenName.startsWith("color-")) {
     return "color";
   }
-  if (tokenName.startsWith("spacing-")) {
+  if (
+    tokenName.startsWith("spacing-") ||
+    tokenName.startsWith("space-") ||
+    tokenName.startsWith("dimension-")
+  ) {
     return "spacing";
   }
-  if (tokenName.startsWith("radius-")) {
+  if (
+    tokenName.startsWith("radius-") ||
+    tokenName.startsWith("shape-radius-")
+  ) {
     return "radius";
   }
-  if (tokenName.startsWith("font-")) {
+  if (tokenName.startsWith("font-") || tokenName.startsWith("typography-")) {
     return "typography";
   }
   if (tokenName.startsWith("shadow-")) {
@@ -143,7 +150,11 @@ export function findStyledAncestor(
  */
 export type TokenEditInfo =
   | { kind: "ramp"; rampKey: string; displayRamp: string; step: number }
-  | { kind: "primaryColor"; displayRamp: string };
+  | { kind: "primaryColor"; displayRamp: string }
+  | { kind: "dimensionBase"; label: string }
+  | { kind: "radiusScale"; label: string }
+  | { kind: "shadowOpacity"; which: "raised" | "overlay"; label: string }
+  | { kind: "transitionMs"; which: "swift" | "gradual"; label: string };
 
 export function getTokenEditInfo(
   tokenName: string,
@@ -151,24 +162,72 @@ export function getTokenEditInfo(
   semanticMap: Record<string, PrimitiveMapping>
 ): TokenEditInfo | null {
   const mapping = semanticMap[tokenName];
-  if (!mapping) {
-    return null;
+  if (mapping) {
+    if (mapping.target === "primaryColor") {
+      return { displayRamp: mapping.ramp ?? "primary", kind: "primaryColor" };
+    }
+
+    const step = isDarkMode ? mapping.darkStep : mapping.lightStep;
+    if (mapping.ramp && step !== null && step !== undefined) {
+      const rampKey = mapping.role ?? mapping.ramp;
+      return { displayRamp: mapping.ramp, kind: "ramp", rampKey, step };
+    }
   }
 
-  if (mapping.target === "primaryColor") {
-    return { displayRamp: mapping.ramp ?? "primary", kind: "primaryColor" };
-  }
+  return getStyleTokenEditInfo(tokenName);
+}
 
-  const step = isDarkMode ? mapping.darkStep : mapping.lightStep;
-  if (!mapping.ramp || step === null || step === undefined) {
-    return null;
+/** Map spacing / radius / shadow / motion tokens onto BrandConfig knobs. */
+export function getStyleTokenEditInfo(tokenName: string): TokenEditInfo | null {
+  if (
+    tokenName.startsWith("space-") ||
+    tokenName.startsWith("dimension-") ||
+    tokenName.startsWith("spacing-")
+  ) {
+    return { kind: "dimensionBase", label: "Spacing base" };
   }
-  const rampKey = mapping.role ?? mapping.ramp;
-  return { displayRamp: mapping.ramp, kind: "ramp", rampKey, step };
+  if (
+    tokenName.startsWith("shape-radius-") ||
+    tokenName.startsWith("radius-")
+  ) {
+    return { kind: "radiusScale", label: "Radius intensity" };
+  }
+  if (tokenName === "shadow-raised") {
+    return {
+      kind: "shadowOpacity",
+      label: "Raised shadow",
+      which: "raised",
+    };
+  }
+  if (tokenName === "shadow-overlay") {
+    return {
+      kind: "shadowOpacity",
+      label: "Overlay shadow",
+      which: "overlay",
+    };
+  }
+  if (
+    tokenName === "transition-swift-duration" ||
+    tokenName === "transition-interactive"
+  ) {
+    return { kind: "transitionMs", label: "Swift duration", which: "swift" };
+  }
+  if (
+    tokenName === "transition-gradual-duration" ||
+    tokenName === "transition-theme" ||
+    tokenName === "transition-chart"
+  ) {
+    return {
+      kind: "transitionMs",
+      label: "Gradual duration",
+      which: "gradual",
+    };
+  }
+  return null;
 }
 
 /**
- * Quick check: is this token editable (backed by a ramp step)?
+ * Quick check: is this token editable (ramp, primary, or style override)?
  */
 export function isEditableToken(
   tokenName: string,
@@ -191,7 +250,10 @@ export function getEditLabel(
   if (info.kind === "primaryColor") {
     return `${info.displayRamp} \u00b7 base`;
   }
-  return `${info.displayRamp} \u00b7 ${info.step}`;
+  if (info.kind === "ramp") {
+    return `${info.displayRamp} \u00b7 ${info.step}`;
+  }
+  return info.label;
 }
 
 /** Category display name */

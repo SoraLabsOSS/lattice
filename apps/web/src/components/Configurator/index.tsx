@@ -621,6 +621,7 @@ const Configurator: React.FC = () => {
           <div className="flex min-h-0 flex-1 flex-col px-4 pb-4 md:px-8">
             <div
               className="relative mx-auto flex min-h-0 w-full max-w-[1600px] flex-1 flex-col overflow-hidden rounded-3xl border-2 border-white shadow-sm"
+              data-token-scope=""
               ref={previewContainerRef}
               style={
                 previewTab === "components"

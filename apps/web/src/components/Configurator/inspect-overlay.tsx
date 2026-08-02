@@ -117,13 +117,12 @@ const InspectOverlay: React.FC<InspectOverlayProps> = ({
           return;
         }
 
-        // Find nearest ancestor with color/gradient token refs
-        const styled = findStyledAncestor(target, container, (el) => {
-          const tokens = extractTokensFromElement(el);
-          return tokens.some(
-            (t) => t.category === "color" || t.category === "gradient"
-          );
-        });
+        // Find nearest ancestor with any design-token refs
+        const styled = findStyledAncestor(
+          target,
+          container,
+          (el) => extractTokensFromElement(el).length > 0
+        );
         if (!styled) {
           setHighlight(null);
           lastElementRef.current = null;
@@ -203,13 +202,10 @@ const InspectOverlay: React.FC<InspectOverlayProps> = ({
     };
   }, [isActive, containerRef, updateHighlight, editingToken, clearHighlight]);
 
-  // Only show color & gradient tokens in the flyout
-  const colorTokens =
-    highlight?.tokens.filter(
-      (t) => t.category === "color" || t.category === "gradient"
-    ) ?? [];
+  // Show all token categories (colors + spacing / radius / shadow / …)
+  const flyoutTokens = highlight?.tokens ?? [];
 
-  const flyoutVisible = !!highlight && colorTokens.length > 0;
+  const flyoutVisible = !!highlight && flyoutTokens.length > 0;
 
   if (!isActive) {
     return null;
@@ -253,7 +249,7 @@ const InspectOverlay: React.FC<InspectOverlayProps> = ({
         onMouseLeave={handleFlyoutMouseLeave}
         semanticMap={semanticMap}
         targetRect={highlight?.rect ?? null}
-        tokens={colorTokens}
+        tokens={flyoutTokens}
         visible={flyoutVisible}
       />
     </>

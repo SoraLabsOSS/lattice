@@ -255,15 +255,17 @@ const LandingPlayground: React.FC = () => {
                   Heading
                 </label>
                 <Combobox
+                  allowCustom
                   displayValue={config.customHeadingFontName}
-                  onValueChange={(f) =>
+                  onValueChange={(f) => {
+                    const isCustom = !GOOGLE_FONTS.includes(f);
                     updateConfig({
-                      customHeadingFontName: undefined,
+                      customHeadingFontName: isCustom ? f : undefined,
                       headingFont: f,
-                    })
-                  }
+                    });
+                  }}
                   options={GOOGLE_FONTS}
-                  placeholder="Search Google Fonts..."
+                  placeholder="Search or type a font name…"
                   size="compact"
                   value={config.headingFont}
                 />
@@ -273,15 +275,17 @@ const LandingPlayground: React.FC = () => {
                   Body
                 </label>
                 <Combobox
+                  allowCustom
                   displayValue={config.customBodyFontName}
-                  onValueChange={(f) =>
+                  onValueChange={(f) => {
+                    const isCustom = !GOOGLE_FONTS.includes(f);
                     updateConfig({
-                      customBodyFontName: undefined,
+                      customBodyFontName: isCustom ? f : undefined,
                       primaryFont: f,
-                    })
-                  }
+                    });
+                  }}
                   options={GOOGLE_FONTS}
-                  placeholder="Search Google Fonts..."
+                  placeholder="Search or type a font name…"
                   size="compact"
                   value={config.primaryFont}
                 />

@@ -108,6 +108,7 @@
   --font-sans: var(--font-sans);
   --font-serif: var(--font-serif);
   --font-mono: var(--font-mono);
+  --tracking-normal: var(--tracking-normal);
 }
 
 /* CSS Custom Properties for animations and fallback colors */
@@ -123,6 +124,7 @@
   --font-sans: "Nunito Sans", system-ui, sans-serif;
   --font-serif: "GT Sectra", Georgia, serif;
   --font-mono: "IBM Plex Mono", monospace;
+  --tracking-normal: 0em;
 
   /* shadcn/ui CSS variables */
   --radius: 0.625rem;

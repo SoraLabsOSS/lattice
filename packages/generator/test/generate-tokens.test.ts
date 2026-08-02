@@ -75,6 +75,17 @@ describe("generate-tokens: config-driven constants", () => {
     );
   });
 
+  it("emits letterSpacing as typography tracking", () => {
+    const { tokens } = generateDesignTokens(
+      createBrandConfig({ letterSpacing: 0.025 }),
+      false
+    );
+    expect(tokens["--typography-letter-spacing"]).toBe("0.025em");
+    expect(tokens["--font-body-letter-spacing"]).toBe(
+      "var(--typography-letter-spacing)"
+    );
+  });
+
   it("applies styleOverrides for dimension base and transitions", () => {
     const { tokens } = generateDesignTokens(
       createBrandConfig({

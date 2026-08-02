@@ -859,6 +859,8 @@ export function toShadcnCssVars(
   vars["--font-weight-semibold"] = weightHeading;
   vars["--font-weight-bold"] = weightBold;
 
+  vars["--tracking-normal"] = tokens["--typography-letter-spacing"] ?? "0em";
+
   return vars;
 }
 
@@ -886,7 +888,7 @@ function shadcnTypographyExtras(tokens: Record<string, string>): ShadcnEntry[] {
       ),
     ],
     ["--radius", radius],
-    ["--tracking-normal", "0em"],
+    ["--tracking-normal", tokens["--typography-letter-spacing"] ?? "0em"],
     ["--spacing", "0.25rem"],
   ];
 }

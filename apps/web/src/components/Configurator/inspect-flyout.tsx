@@ -1,6 +1,14 @@
 import type { PrimitiveMapping } from "@soralabsoss/generator";
 import { AnimatePresence } from "framer-motion";
-import { Palette, Pencil, Sparkles } from "lucide-react";
+import {
+  Box,
+  Circle,
+  Clock,
+  Palette,
+  Pencil,
+  Sparkles,
+  Type,
+} from "lucide-react";
 import type React from "react";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -29,9 +37,22 @@ const CATEGORY_ICONS: Partial<
 > = {
   color: Palette,
   gradient: Sparkles,
+  radius: Circle,
+  shadow: Box,
+  spacing: Box,
+  transition: Clock,
+  typography: Type,
 };
 
-const CATEGORY_ORDER: TokenCategory[] = ["color", "gradient"];
+const CATEGORY_ORDER: TokenCategory[] = [
+  "color",
+  "gradient",
+  "spacing",
+  "radius",
+  "shadow",
+  "transition",
+  "typography",
+];
 
 /** CSS easing for the flyout slide */
 const SLIDE_EASE = "cubic-bezier(0.16, 1, 0.3, 1)"; // ease-out-expo
@@ -227,6 +248,38 @@ export const InspectFlyout: React.FC<InspectFlyoutProps> = ({
 // TokenRow
 // ---------------------------------------------------------------------------
 
+const CATEGORY_GLYPH: Record<TokenCategory, string> = {
+  color: "C",
+  gradient: "G",
+  radius: "R",
+  shadow: "H",
+  spacing: "S",
+  transition: "M",
+  typography: "T",
+};
+
+const TOKEN_DISPLAY_REPLACERS: Array<[RegExp, string]> = [
+  [/^color-(background|foreground|border|chart)-/, "$1/"],
+  [/^color-/, ""],
+  [/^spacing-/, ""],
+  [/^space-/, ""],
+  [/^dimension-/, "dim/"],
+  [/^shape-radius-/, ""],
+  [/^radius-/, ""],
+  [/^font-family-/, ""],
+  [/^shadow-/, ""],
+  [/^transition-/, ""],
+  [/^gradient-/, "gradient/"],
+];
+
+function formatTokenDisplayName(tokenName: string): string {
+  let name = tokenName;
+  for (const [pattern, replacement] of TOKEN_DISPLAY_REPLACERS) {
+    name = name.replace(pattern, replacement);
+  }
+  return name;
+}
+
 const TokenRow: React.FC<{
   token: TokenInfo;
   isDarkMode: boolean;
@@ -238,18 +291,7 @@ const TokenRow: React.FC<{
   const editBtnRef = useRef<HTMLButtonElement>(null);
   const editable = isEditableToken(token.tokenName, isDarkMode, semanticMap);
   const editLabel = getEditLabel(token.tokenName, isDarkMode, semanticMap);
-
-  // Strip common prefix for shorter display
-  const displayName = token.tokenName
-    .replace(/^color-(background|foreground|border|chart)-/, "$1/")
-    .replace(/^color-/, "")
-    .replace(/^spacing-/, "")
-    .replace(/^radius-/, "")
-    .replace(/^font-family-/, "")
-    .replace(/^shadow-/, "")
-    .replace(/^transition-/, "")
-    .replace(/^gradient-/, "gradient/");
-
+  const displayName = formatTokenDisplayName(token.tokenName);
   const isColor = token.category === "color" || token.category === "gradient";
 
   return (
@@ -269,13 +311,7 @@ const TokenRow: React.FC<{
       ) : (
         <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-charcoal/5">
           <span className="text-[8px] text-charcoal/40">
-            {token.category === "spacing"
-              ? "S"
-              : token.category === "radius"
-                ? "R"
-                : token.category === "typography"
-                  ? "T"
-                  : "·"}
+            {CATEGORY_GLYPH[token.category]}
           </span>
         </div>
       )}
@@ -293,7 +329,7 @@ const TokenRow: React.FC<{
         </div>
       </div>
 
-      {/* Edit button — only for editable color tokens */}
+      {/* Edit button — ramp colors + style override knobs */}
       {editable && (isHovered || isEditing) && (
         <button
           className={`shrink-0 cursor-pointer rounded p-1 transition-colors ${

@@ -81,6 +81,7 @@ const PreviewTypography: React.FC<PreviewTypographyProps> = ({
         backgroundColor: bg.base,
         color: fg.onBase,
         fontFamily: font.primary,
+        letterSpacing: "var(--typography-letter-spacing)",
         transition: transition.theme,
       }}
     >
@@ -175,7 +176,7 @@ const PreviewTypography: React.FC<PreviewTypographyProps> = ({
             fontFamily: font.secondary,
             fontSize: "2.25rem",
             fontWeight: weight.heading as unknown as number,
-            letterSpacing: "-0.02em",
+            letterSpacing: "var(--font-heading-letter-spacing)",
             lineHeight: 1.15,
             margin: 0,
           }}
@@ -259,7 +260,7 @@ const PreviewTypography: React.FC<PreviewTypographyProps> = ({
                 fontFamily: font.secondary,
                 fontSize: "1.375rem",
                 fontWeight: weight.heading as unknown as number,
-                letterSpacing: "-0.01em",
+                letterSpacing: "var(--font-heading-letter-spacing)",
                 lineHeight: 1.3,
                 margin: 0,
               }}
@@ -323,7 +324,7 @@ const PreviewTypography: React.FC<PreviewTypographyProps> = ({
                 fontFamily: font.secondary,
                 fontSize: "1.375rem",
                 fontWeight: weight.heading as unknown as number,
-                letterSpacing: "-0.01em",
+                letterSpacing: "var(--font-heading-letter-spacing)",
                 lineHeight: 1.3,
                 margin: 0,
               }}

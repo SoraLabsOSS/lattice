@@ -395,10 +395,14 @@ function shapeTokens(
 function typographyPrimitives(config: BrandConfig): Record<string, string> {
   const scale = config.fontScale || 1;
   const mono = config.monoFont || initialConfig.monoFont;
+  const tracking = Number.isFinite(config.letterSpacing)
+    ? config.letterSpacing
+    : 0;
   const out: Record<string, string> = {
     "--typography-font-family-body": `'${config.primaryFont}', system-ui, -apple-system, sans-serif`,
     "--typography-font-family-heading": `'${config.headingFont}', system-ui, -apple-system, sans-serif`,
     "--typography-font-family-mono": `'${mono}', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace`,
+    "--typography-letter-spacing": `${tracking}em`,
   };
   for (const [step, px] of Object.entries(TYPOGRAPHY_SIZE_STEPS)) {
     out[`--typography-size-${step}`] =
@@ -437,6 +441,7 @@ function fontSemantics(config: BrandConfig): Record<string, string> {
     "--font-action-xs-lineheight": "calc(140% / 120%)",
     // Body
     "--font-body-family": "var(--typography-font-family-body)",
+    "--font-body-letter-spacing": "var(--typography-letter-spacing)",
     "--font-body-lineheight": "150%",
     "--font-body-weight-bold": `var(--typography-weight-${config.bodyWeights.bold})`,
     "--font-body-weight-light": `var(--typography-weight-${config.bodyWeights.light})`,
@@ -451,6 +456,7 @@ function fontSemantics(config: BrandConfig): Record<string, string> {
     "--font-field-xs-lineheight": "calc(140% / 120%)",
     // Heading
     "--font-heading-family": "var(--typography-font-family-heading)",
+    "--font-heading-letter-spacing": "var(--typography-letter-spacing)",
     "--font-heading-lineheight": "125%",
     "--font-heading-weight": `var(--typography-weight-${config.headingWeight})`,
     "--font-mono-family": "var(--typography-font-family-mono)",

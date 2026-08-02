@@ -65,6 +65,8 @@ export interface BrandConfig {
   headingFont: string;
   headingWeight: FontWeight;
   headlessLib: HeadlessLib;
+  /** Global letter-spacing in em (emitted as `--typography-letter-spacing`). */
+  letterSpacing: number;
   logoUrl?: string;
   /** Monospace typeface for code / mono UI. */
   monoFont: string;
@@ -114,6 +116,7 @@ export const initialConfig: BrandConfig = {
   headingFont: "Rubik",
   headingWeight: DEFAULT_HEADING_WEIGHT,
   headlessLib: DEFAULT_HEADLESS_LIB,
+  letterSpacing: 0,
   monoFont: DEFAULT_MONO_FONT,
   neutralTint: "brand-tinted",
   primaryColor: "#2e7bab",
@@ -144,6 +147,7 @@ export function createBrandConfig(input: BrandConfigInput = {}): BrandConfig {
       ...initialConfig.bodyWeights,
       ...input.bodyWeights,
     },
+    letterSpacing: input.letterSpacing ?? initialConfig.letterSpacing,
     monoFont: input.monoFont ?? initialConfig.monoFont,
     rampOverrides: input.rampOverrides ?? {},
     statusColors: {
