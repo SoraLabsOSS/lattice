@@ -24,7 +24,7 @@ export default defineConfig({
       },
     }),
   ],
-  site: "https://lattice.soralabs.io.vn/",
+  site: "https://lattice.soralabs.studio/",
   vite: {
     optimizeDeps: {
       include: ["@base-ui/react", "@sora-lattice/ui > @base-ui/react"],

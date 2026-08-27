@@ -1,4 +1,5 @@
 ---
+import SeoHead from "../components/seo-head.astro";
 import "../styles/global.css";
 
 export interface Props {
@@ -10,37 +11,12 @@ const {
   title = "Sora Lattice - Build a design system in 10 minutes",
   description = "Tokens, components, Figma, and complete documentation—customized to your brand. Skip the 6-month setup and start building today.",
 } = Astro.props;
-
-const ogImage = new URL("/og.jpg", Astro.site ?? Astro.url);
 ---
 
 <!doctype html>
 <html class="lenis" lang="en">
   <head>
-    <meta charset="UTF-8">
-    <meta content={description} name="description">
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <link href="/favicon.svg" rel="icon" type="image/svg+xml">
-    <meta content={Astro.generator} name="generator">
-    <title>{title}</title>
-
-    <!-- Open Graph / Facebook -->
-    <meta content="website" property="og:type">
-    <meta content={title} property="og:title">
-    <meta content={description} property="og:description">
-    <meta content={ogImage.href} property="og:image">
-    <meta content="Sora Lattice" property="og:image:alt">
-
-    <!-- Twitter -->
-    <meta content="summary_large_image" property="twitter:card">
-    <meta content={title} property="twitter:title">
-    <meta content={description} property="twitter:description">
-    <meta content={ogImage.href} property="twitter:image">
-    <meta content="Sora Lattice" property="twitter:image:alt">
-
-    <!-- Preload fonts for better performance -->
-    <link href="https://fonts.googleapis.com" rel="preconnect">
-    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+    <SeoHead description={description} title={title} />
   </head>
   <body>
     <slot />

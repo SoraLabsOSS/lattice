@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import Loader from "../components/loader.astro";
+import SeoHead from "../components/seo-head.astro";
 
 export interface Props {
   description?: string;
@@ -11,33 +12,12 @@ const {
   title = "Generate | Sora Lattice",
   description = "Configure and generate your design system tokens.",
 } = Astro.props;
-
-const ogImage = new URL("/og.jpg", Astro.site ?? Astro.url);
 ---
 
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
-    <meta content={description} name="description">
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <link href="/favicon.svg" rel="icon" type="image/svg+xml">
-    <meta content={Astro.generator} name="generator">
-    <title>{title}</title>
-
-    <meta content="website" property="og:type">
-    <meta content={title} property="og:title">
-    <meta content={description} property="og:description">
-    <meta content={ogImage.href} property="og:image">
-    <meta content="Sora Lattice" property="og:image:alt">
-    <meta content="summary_large_image" property="twitter:card">
-    <meta content={title} property="twitter:title">
-    <meta content={description} property="twitter:description">
-    <meta content={ogImage.href} property="twitter:image">
-    <meta content="Sora Lattice" property="twitter:image:alt">
-
-    <link href="https://fonts.googleapis.com" rel="preconnect">
-    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+    <SeoHead description={description} title={title} />
   </head>
   <body>
     <Loader />
